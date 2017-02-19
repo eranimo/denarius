@@ -4,7 +4,7 @@ var HtmlWebpackPlugin = require('html-webpack-plugin');
 module.exports = function(env) {
   return {
     entry: './src/index.js',
-    devtool: "cheap-eval-source-map",
+    devtool: "source-map",
     output: {
       filename: '[name].js',
       path: path.resolve(__dirname, 'dist')
@@ -24,5 +24,5 @@ module.exports = function(env) {
     devServer: {
       stats: 'errors-only'
     }
-  }
-}
+  };
+};

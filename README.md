@@ -9,7 +9,7 @@ A JavaScript agent-based economic simulation.
 - Traders have money (and start with an initial amount)
 - Traders have Goods (called Inventory)
 - Jobs are functions over Inventory: they add and subtract Goods
-- A Market has buy and sell Orders created by agents
+- A Market has buy and sell Orders created by Traders
 - A Order can be accepted or denied (which means it didn't go through)
 - Agents have a price belief reinforced by the their accepted Orders
   - price belief is a range of two prices where the price can be anywhere between

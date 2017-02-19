@@ -6,11 +6,11 @@ export default class Market {
   traders: Array<Trader>;
 
   constructor() {
-
+    this.traders = [];
   }
 
   // trades between traders at this market
-  simulate() {
+  resolveOrders() {
 
   }
 

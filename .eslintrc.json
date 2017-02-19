@@ -1,0 +1,22 @@
+{
+  "parser": "babel-eslint",
+  "plugins": [
+    "flowtype"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "rules": {
+    "semi": 2,
+    "flowtype/use-flow-type": 1,
+    "flowtype/object-type-delimiter": 2,
+    "flowtype/space-before-type-colon": 2,
+    "flowtype/require-parameter-type": 2,
+    "flowtype/require-return-type": 2,
+    "flowtype/require-variable-type": 2
+  }
+}

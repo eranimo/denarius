@@ -2,6 +2,7 @@
 import Inventory from './inventory';
 import type { Job } from './jobs';
 import type { Good } from './goods';
+import type Market from './market';
 import _ from 'lodash';
 
 
@@ -9,6 +10,8 @@ export default class Trader {
   job: Job;
   inventory: Inventory;
   money: number;
+  moneyLastRound: number;
+  market: ?Market;
   lastRound: {
     hasWorked: ?bool,
     hasTraded: ?bool
@@ -17,6 +20,7 @@ export default class Trader {
   constructor(job: Job) {
     this.job = job;
     this.money = 0;
+    this.moneyLastRound = 0;
     this.inventory = new Inventory();
     this.lastRound = {
       hasWorked: null,
@@ -42,5 +46,9 @@ export default class Trader {
     // decide if we need to trade
     // create buy orders for goods required to do work that aren't in the inventory
     // create sell orders for goods in the inventory that aren't required for work
+  }
+
+  toString(): string {
+    return `Trader(job: ${this.job.displayName})`;
   }
 }

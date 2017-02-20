@@ -25,7 +25,7 @@ export default class Simulation {
     this.round = 0;
 
     // make a market
-    this.market = new Market();
+    this.market = new Market(this);
 
     // create a few Traders with some inventory
     // woodcutters

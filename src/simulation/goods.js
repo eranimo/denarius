@@ -17,7 +17,5 @@ export const food: Good = {
   displayName: 'Food'
 };
 
-console.log('GOODS', wood, food);
-
 
 export const GOODS: Array<Good> = [wood, food];

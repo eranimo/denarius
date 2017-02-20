@@ -25,6 +25,14 @@ export default class Inventory {
     }
   }
 
+  get size(): number {
+    let result: number = 0;
+    for (const [good, amount]: [Good, number] of this.store.entries()) {
+      result += amount;
+    }
+    return result;
+  }
+
   // gets the amount of a good in an inventory, 0 otherwise
   get(good: Good): number {
     return this.store.get(good) || 0;
@@ -38,7 +46,7 @@ export default class Inventory {
   // gets the difference between an amount of a good and how much we have
   // if positive, we have a deficit
   // if negative, we have a surplus
-  diff(good: Good, amount: number): number {
+  differenceOf(good: Good, amount: number): number {
     return amount - this.get(good);
   }
 
@@ -47,7 +55,9 @@ export default class Inventory {
     let result: Map<Good, number> = new Map;
     for (const [myGood, myAmount]: [Good, number] of this.store.entries()) {
       for (const [theirGood, theirAmount]: [Good, number] of goodMap.entries()) {
-        result.set(myGood, myAmount - theirAmount);
+        if (myGood == theirGood) {
+          result.set(myGood, myAmount - theirAmount);
+        }
       }
     }
     return result;
@@ -55,10 +65,10 @@ export default class Inventory {
 
   // does this inventory have these goods?
   hasGoods(goodMap: Map<Good, number>): bool {
-    const diff: Map<Good, number> = this.difference(goodMap);
     let result: bool = false;
     for (const [good, amount]: [Good, number] of this.store.entries()) {
-      result = amount > 0;
+      const thisAmount: number = goodMap.get(good) || 0;
+      result = amount >= thisAmount;
     }
     return result;
   }
@@ -71,6 +81,14 @@ export default class Inventory {
 
     for (const [good, amount]: [Good, number] of goodMap.entries()) {
       this.subtract(good, amount);
+    }
+
+    return true;
+  }
+
+  giveGoods(goodMap: Map<Good, number>): bool {
+    for (const [good, amount]: [Good, number] of goodMap.entries()) {
+      this.add(good, amount);
     }
 
     return true;

@@ -27,14 +27,10 @@ export default class Trader {
   // do their job
   work() {
     // subtract Goods required to do job
-    let hasRequiredGoods: bool = true;
-    _.forEach(this.job.requiredGoods, (good: Good, amount: number) => {
-      if (!this.inventory.hasAmount(good, amount)) {
-        hasRequiredGoods = false;
-      }
-    });
-    // perform the job
-    if (hasRequiredGoods) {
+    if (this.inventory.hasGoods(this.job.requiredGoods)) {
+      // take the goods required for the job
+      this.inventory.takeGoods(this.job.requiredGoods);
+      // perform the job
       this.job.workFunc(this.inventory);
       this.lastRound.hasWorked = true;
     } else {

@@ -20,8 +20,9 @@ export default class Inventory {
   subtract(good: Good, amount: number) {
     if (this.hasAmount(good, amount)) {
       this.store.set(good, this.get(good) - amount);
+    } else {
+      throw new Error(`Missing ${amount} good: ${good.key}`);
     }
-    throw new Error(`Missing ${amount} good: ${good.key}`);
   }
 
   // gets the amount of a good in an inventory, 0 otherwise
@@ -31,13 +32,13 @@ export default class Inventory {
 
   // checks if the inventory has the amount of a good
   hasAmount(good: Good, amount: number): bool {
-    return (this.get(good) || 0) <= amount;
+    return (this.get(good) || 0) >= amount;
   }
 
   // gets the difference between an amount of a good and how much we have
   // if positive, we have a deficit
   // if negative, we have a surplus
-  difference(good: Good, amount: number): number {
+  diff(good: Good, amount: number): number {
     return amount - this.get(good);
   }
 
@@ -68,10 +69,18 @@ export default class Inventory {
       return false;
     }
 
-    for (const [good, amount]: [Good, number] of this.store.entries()) {
+    for (const [good, amount]: [Good, number] of goodMap.entries()) {
       this.subtract(good, amount);
     }
 
     return true;
+  }
+
+  debug() {
+    console.groupCollapsed('inventory');
+    for (const [good, amount]: [Good, number] of this.store.entries()) {
+      console.log(`${good.key}: ${amount}`);
+    }
+    console.groupEnd('inventory');
   }
 }

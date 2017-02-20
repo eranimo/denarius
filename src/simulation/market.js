@@ -139,4 +139,14 @@ export default class Market {
     trader.market = undefined;
     this.traders.delete(trader);
   }
+
+  simulate() {
+    for (const trader: Trader of this.traders) {
+      trader.debug();
+      // do their job
+      trader.work();
+      // perform trades
+      trader.trade();
+    }
+  }
 }

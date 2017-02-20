@@ -1,25 +1,23 @@
 // @flow
-import * as JOBS from './jobs';
 import type { Job } from './jobs';
 
 
 export type Good = {
   key: string,
-  displayName: string,
-  producer: Job
+  displayName: string
 }
 
 export const wood: Good = {
   key: 'wood',
-  displayName: 'Wood',
-  producer: JOBS.woodcutter
+  displayName: 'Wood'
 };
 
 export const food: Good = {
   key: 'food',
-  displayName: 'Food',
-  producer: JOBS.farmer
+  displayName: 'Food'
 };
+
+console.log('GOODS', wood, food);
 
 
 export const GOODS: Array<Good> = [wood, food];

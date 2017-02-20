@@ -2,8 +2,8 @@
 import Inventory from './inventory';
 import Trader from './trader';
 import Market from './market';
-import * as JOBS from './jobs';
 import * as GOODS from './goods';
+import * as JOBS from './jobs';
 import type { Job } from './jobs';
 import type { Good } from './goods';
 
@@ -21,6 +21,15 @@ export default class Simulation {
   round: number;
   market: Market;
   constructor() {
+    this.setup();
+  }
+
+  reset() {
+    this.setup();
+  }
+
+
+  setup() {
     // start time
     this.round = 0;
 
@@ -47,12 +56,7 @@ export default class Simulation {
 
   nextRound() {
     this.round += 1;
-    this.market.traders.forEach((trader: Trader) => {
-      // do their job
-      trader.work();
-      // perform trades
-      trader.trade();
-    });
+    this.market.simulate();
 
     // resolve the orders for this round
     this.market.resolveOrders();

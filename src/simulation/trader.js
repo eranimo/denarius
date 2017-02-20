@@ -22,7 +22,7 @@ export default class Trader {
 
   constructor(job: Job) {
     this.job = job;
-    this.money = 0;
+    this.money = 10;
     this.moneyLastRound = 0;
     this.failedTrades = 0;
     this.successfulTrades = 0;
@@ -48,16 +48,23 @@ export default class Trader {
   }
 
   trade() {
-    // decide if we need to trade
+    // TODO: decide if we need to trade
     // create buy orders for goods required to do work that aren't in the inventory
     // create sell orders for goods in the inventory that aren't required for work
   }
 
   updatePriceBelief(good: Good, orderType: OrderType, isSuccessful: bool) {
-    
+    // TODO: handle price belief
   }
 
   toString(): string {
     return `Trader(job: ${this.job.displayName})`;
+  }
+
+  debug() {
+    const str: string = `Trader (Job: ${this.job.key}, Money: ${this.money})`;
+    console.groupCollapsed(str);
+    this.inventory.debug();
+    console.groupEnd(str);
   }
 }

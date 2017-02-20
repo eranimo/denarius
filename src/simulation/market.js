@@ -140,6 +140,20 @@ export default class Market {
     this.traders.delete(trader);
   }
 
+  buy(order: MarketOrder) {
+    const buyOrders: ?Set<MarketOrder> = this.buyOrders.get(order.good);
+    if (buyOrders) {
+      buyOrders.add(order);
+    }
+  }
+
+  sell(order: MarketOrder) {
+    const sellOrders: ?Set<MarketOrder> = this.sellOrders.get(order.good);
+    if (sellOrders) {
+      sellOrders.add(order);
+    }
+  }
+
   simulate() {
     for (const trader: Trader of this.traders) {
       trader.debug();

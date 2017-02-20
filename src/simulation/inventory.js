@@ -43,14 +43,9 @@ export default class Inventory {
     return (this.get(good) || 0) >= amount;
   }
 
-  // gets the difference between an amount of a good and how much we have
+  // returns the difference of this inventory and a map of goods
   // if positive, we have a deficit
   // if negative, we have a surplus
-  differenceOf(good: Good, amount: number): number {
-    return amount - this.get(good);
-  }
-
-  // returns the difference of this inventory and a map of goods
   difference(goodMap: Map<Good, number>): Map<Good, number> {
     let result: Map<Good, number> = new Map;
     for (const [myGood, myAmount]: [Good, number] of this.store.entries()) {

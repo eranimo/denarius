@@ -8,6 +8,7 @@ export type Job = {
   key: string,
   displayName: string,
   color: string,
+  idealInventory: Map<Good, number>,
   requiredGoods: Map<Good, number>,
   workFunc: (inventory: Inventory) => Inventory
 }
@@ -16,6 +17,9 @@ export const woodcutter: Job = {
   key: 'woodcutter',
   displayName: 'Woodcutter',
   color: 'brown',
+  idealInventory: new Map([
+    [GOODS.food, 5]
+  ]),
   requiredGoods: new Map([
     [GOODS.food, 2]
   ]),
@@ -30,6 +34,9 @@ export const farmer: Job = {
   key: 'farmer',
   displayName: 'Farmer',
   color: 'green',
+  idealInventory: new Map([
+    [GOODS.wood, 5]
+  ]),
   requiredGoods: new Map([
     [GOODS.wood, 1]
   ]),

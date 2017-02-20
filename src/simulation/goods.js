@@ -20,3 +20,6 @@ export const food: Good = {
   displayName: 'Food',
   producer: JOBS.farmer
 };
+
+
+export const GOODS: Array<Good> = [wood, food];

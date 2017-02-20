@@ -5,6 +5,10 @@ import type { Good } from './goods';
 export default class Inventory {
   store: Map<Good, number>;
 
+  constructor() {
+    this.store = new Map();
+  }
+
   add(good: Good, amount: number) {
     if (!this.store.has(good)) {
       this.store.set(good, amount);

@@ -12,6 +12,8 @@ export default class Trader {
   money: number;
   moneyLastRound: number;
   market: ?Market;
+  failedTrades: number;
+  successfulTrades: number;
   lastRound: {
     hasWorked: ?bool,
     hasTraded: ?bool
@@ -21,6 +23,8 @@ export default class Trader {
     this.job = job;
     this.money = 0;
     this.moneyLastRound = 0;
+    this.failedTrades = 0;
+    this.successfulTrades = 0;
     this.inventory = new Inventory();
     this.lastRound = {
       hasWorked: null,

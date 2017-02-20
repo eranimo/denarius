@@ -38,24 +38,24 @@ class TradeHistoryItem {
 // a set of data points for the trade simulation
 export class TradeHistory {
   prices: TradeHistoryItem;
-  num_buy_orders: TradeHistoryItem;
-  num_sell_orders: TradeHistoryItem;
-  num_trades: TradeHistoryItem;
+  numBuyOrders: TradeHistoryItem;
+  numSellOrders: TradeHistoryItem;
+  unitsTraded: TradeHistoryItem;
   profit: TradeHistoryItem;
 
   constructor() {
     this.prices = new TradeHistoryItem('prices');
-    this.num_buy_orders = new TradeHistoryItem('num_buy_orders');
-    this.num_sell_orders = new TradeHistoryItem('num_sell_orders');
-    this.num_trades = new TradeHistoryItem('num_trades');
+    this.numBuyOrders = new TradeHistoryItem('numBuyOrders');
+    this.numSellOrders = new TradeHistoryItem('numSellOrders');
+    this.unitsTraded = new TradeHistoryItem('unitsTraded');
     this.profit = new TradeHistoryItem('profit');
   }
 
   register(item: any) {
     this.prices.register(item);
-    this.num_buy_orders.register(item);
-    this.num_sell_orders.register(item);
-    this.num_trades.register(item);
+    this.numBuyOrders.register(item);
+    this.numSellOrders.register(item);
+    this.unitsTraded.register(item);
     this.profit.register(item);
   }
 }

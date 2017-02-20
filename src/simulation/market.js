@@ -5,25 +5,28 @@ import Simulation from './index';
 import { GOODS } from './goods';
 import type { Good } from './goods';
 import _ from 'lodash';
+import { TradeHistory } from './tradeHistory';
 
 
 export default class Market {
   traders: Set<Trader>;
   buyOrders: Map<Good, Set<MarketOrder>>;
   sellOrders: Map<Good, Set<MarketOrder>>;
+  history: TradeHistory;
 
   constructor(simulation: Simulation) {
     this.traders = new Set();
     this.buyOrders = new Map();
     this.sellOrders = new Map();
 
-    for (const good: Good of GOODS) {
-      this.buyOrders.set(good, new Set());
-    }
+    this.history = new TradeHistory();
 
     for (const good: Good of GOODS) {
+      this.buyOrders.set(good, new Set());
       this.sellOrders.set(good, new Set());
+      this.history.register(good);
     }
+
   }
 
   // resolve all orders by matching sell and buy orders
@@ -40,6 +43,13 @@ export default class Market {
       const sortedBuyOrders: Array<MarketOrder> = _.sortBy(buyOrders.values(), ['price'], ['DESC']);
       // sort sell orders from lowest to highest price
       const sortedSellOrders: Array<MarketOrder> = _.sortBy(sellOrders.values(), ['price'], ['ASC']);
+
+      const totalBuyAmount: number = _.sumBy(sortedBuyOrders, 'amount');
+      const totalSellAmount: number = _.sumBy(sortedSellOrders, 'amount');
+
+      let moneyTraded: number = 0;
+      let unitsTraded: number = 0;
+
       // match buy_orders[0] with sell_orders[0] until one list is empty
       while(sortedBuyOrders.length > 0 && sortedSellOrders.length > 0) {
         const buyOrder: MarketOrder = sortedBuyOrders[0];
@@ -52,9 +62,17 @@ export default class Market {
         // remove money from buyer and give it to seller
         this.transferMoney(sellOrder.trader, buyOrder.trader, clearingPrice);
 
+        // update metrics
+        buyOrder.trader.successfulTrades++;
+        sellOrder.trader.successfulTrades++;
+
+        // update price beliefs
+        buyOrder.trader.updatePriceBelief(buyOrder.good, buyOrder.orderType, true);
+        sellOrder.trader.updatePriceBelief(sellOrder.good, sellOrder.orderType, true);
+
+        // change amounts
         buyOrder.amount = buyOrder.amount - goodsTraded;
         sellOrder.amount = sellOrder.amount - goodsTraded;
-
 
         // throw out (deny) all other orders
         if (buyOrder.amount === 0) {
@@ -64,10 +82,37 @@ export default class Market {
         if (sellOrder.amount === 0) {
           sellOrders.delete(sellOrder);
         }
+
+        moneyTraded += clearingPrice;
+        unitsTraded += goodsTraded;
+      }
+
+      // record failure
+      for (const leftoverSellOrder: MarketOrder of sortedSellOrders) {
+        leftoverSellOrder.trader.failedTrades++;
+        leftoverSellOrder.trader.updatePriceBelief(leftoverSellOrder.good, leftoverSellOrder.orderType, false);
+      }
+
+      for (const leftoverBuyOrder: MarketOrder of sortedBuyOrders) {
+        leftoverBuyOrder.trader.failedTrades++;
+        leftoverBuyOrder.trader.updatePriceBelief(leftoverBuyOrder.good, leftoverBuyOrder.orderType, false);
+      }
+
+      // log some stuff for the history books
+      this.history.numBuyOrders.add(good, totalBuyAmount);
+      this.history.numSellOrders.add(good, totalSellAmount);
+      this.history.unitsTraded.add(good, unitsTraded);
+
+      if (unitsTraded > 0) {
+        this.history.profit.add(good, moneyTraded / unitsTraded);
+      } else {
+        // no units were traded this round, so use the last round's average price
+        this.history.profit.add(good, this.history.prices.average(good, 1));
       }
     }
   }
 
+  // transfer a good from one Trader to another
   transferGood(fromTrader: Trader, toTrader: Trader, good: Good, amount: number) {
     if (fromTrader.inventory.hasAmount(good, amount)) {
       toTrader.inventory.subtract(good, amount);
@@ -76,6 +121,7 @@ export default class Market {
     throw new Error(`Trader ${fromTrader.toString()} doesn't have ${good.displayName} goods`);
   }
 
+  // transfer money from one Trader to another
   transferMoney(fromTrader: Trader, toTrader: Trader, amount: number) {
     if (fromTrader.money <= amount) {
       fromTrader.money -= amount;

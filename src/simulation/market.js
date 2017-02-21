@@ -67,8 +67,8 @@ export default class Market {
         sellOrder.trader.successfulTrades++;
 
         // update price beliefs
-        buyOrder.trader.updatePriceBelief(buyOrder.good, buyOrder.orderType, true);
-        sellOrder.trader.updatePriceBelief(sellOrder.good, sellOrder.orderType, true);
+        buyOrder.trader.updatePriceBelief(buyOrder.good, buyOrder.orderType, true, clearingPrice);
+        sellOrder.trader.updatePriceBelief(sellOrder.good, sellOrder.orderType, true, clearingPrice);
 
         // change amounts
         buyOrder.amount = buyOrder.amount - goodsTraded;
@@ -130,8 +130,13 @@ export default class Market {
     throw new Error(`Trader ${fromTrader.toString()} doesn't have ${amount} money`);
   }
 
+  avgHistoricalPrice(good: Good, dayRange: number): number {
+    return this.history.prices.average(good, dayRange);
+  }
+
   addTrader(trader: Trader) {
     trader.market = this;
+    trader.moveToMarket(this);
     this.traders.add(trader);
   }
 

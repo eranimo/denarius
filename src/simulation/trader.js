@@ -2,10 +2,21 @@
 import Inventory from './inventory';
 import type { Job } from './jobs';
 import type { Good } from './goods';
+import { GOODS } from './goods';
 import type { OrderType } from './marketOrder';
 import MarketOrder from './marketOrder';
 import type Market from './market';
 import _ from 'lodash';
+import PriceRange from './priceRange';
+
+
+function positionInRange(value: number, min: number, max: number): number {
+  value -= min;
+  max -= min;
+  min = 0;
+  value = value / (max - min);
+  return _.clamp(value, 0, 1);
+}
 
 
 export default class Trader {
@@ -16,6 +27,8 @@ export default class Trader {
   market: ?Market;
   failedTrades: number;
   successfulTrades: number;
+  priceBelief: Map<Good, PriceRange>;
+  observedTradingRange: Map<Good, Array<number>>;
   lastRound: {
     hasWorked: ?bool,
     hasTraded: ?bool
@@ -32,6 +45,23 @@ export default class Trader {
       hasWorked: null,
       hasTraded: null,
     };
+  }
+
+  moveToMarket(market: Market) {
+    this.market = market;
+    this.priceBelief = new Map();
+    this.observedTradingRange = new Map();
+
+    // TODO: should price belief be reset when Trader moves to a new Market?
+
+    // price belief initial state
+    for (const good: Good of GOODS) {
+      const averageGoodPrice: number = this.market.avgHistoricalPrice(good, 15);
+      const low: number = averageGoodPrice * 0.5;
+      const high: number = averageGoodPrice * 1.5;
+      this.observedTradingRange.set(good, [low, high]);
+      this.priceBelief.set(good, new PriceRange(low, high));
+    }
   }
 
   // do their job
@@ -106,25 +136,156 @@ export default class Trader {
   }
 
   determinePriceOf(good: Good): number {
-    return 0;
+    const priceBelief: ?PriceRange = this.priceBelief.get(good);
+    if (priceBelief) {
+      return priceBelief.random();
+    }
+    throw new Error('Price belief not set');
+  }
+
+  // Gets the lowest and highst price of a Good this trader has seen
+  tradingRangeExtremes(good: Good): PriceRange {
+    const tradingRange: ?Array<number> = this.observedTradingRange.get(good);
+    if (!tradingRange) {
+      throw new Error('Trader has no trade data');
+    }
+    return new PriceRange(_.min(tradingRange), _.max(tradingRange));
   }
 
   // determine how much of a good to sell
   determineSellQuantity(good: Good): number {
-    return 0;
+    if (!this.market) {
+      throw new Error('Trader not at a market');
+    }
+    const meanPrice: number = this.market.avgHistoricalPrice(good, 15);
+    const tradingRange: PriceRange = this.tradingRangeExtremes.get(good);
+    const favoribility: number = positionInRange(meanPrice, tradingRange.low, tradingRange.high);
+    const amountToSell: number = Math.round(favoribility * this.surplusOfGood(good));
+    return amountToSell < 1 ? 1 : amountToSell;
   }
 
-  // determine how much of a good to buy
+  // determine how much of a good to sell
   determineBuyQuantity(good: Good): number {
-    return 0;
+    if (!this.market) {
+      throw new Error('Trader not at a market');
+    }
+    const meanPrice: number = this.market.avgHistoricalPrice(good, 15);
+    const tradingRange: PriceRange = this.tradingRangeExtremes.get(good);
+    const favoribility: number = positionInRange(meanPrice, tradingRange.low, tradingRange.high);
+    const amountToBuy: number = Math.round(favoribility * this.shortageOfGood(good));
+    return amountToBuy < 1 ? 1 : amountToBuy;
   }
 
-  updatePriceBelief(good: Good, orderType: OrderType, isSuccessful: bool) {
-    // TODO: handle price belief
+  surplusOfGood(good: Good): number {
+    return Math.min(0, this.inventory.get(good) - this.idealAmountOfGood(good));
   }
 
-  toString(): string {
-    return `Trader(job: ${this.job.displayName})`;
+  shortageOfGood(good: Good): number {
+    if (this.inventory.get(good) === 0) {
+      return this.idealAmountOfGood(good);
+    }
+    return this.idealAmountOfGood(good) - this.inventory.get(good);
+  }
+
+  idealAmountOfGood(good: Good): number {
+    return this.job.idealInventory.get(good) || 0;
+  }
+
+  updatePriceBelief(good: Good, orderType: OrderType, isSuccessful: bool, clearingPrice: ?number) {
+    if (!this.observedTradingRange || !this.market || !this.priceBelief) {
+      return;
+    }
+
+    const SIGNIFICANT: number = 0.25; // 25% more or less is "significant"
+    const SIG_IMBALANCE: number = 0.33;
+    const LOW_INVENTORY: number = 0.1; // 10% of ideal inventory = "LOW"
+    const HIGH_INVENTORY: number = 2.0; // 200% of ideal inventory = "HIGH"
+    const MIN_PRICE: number = 0.01; // lowest allowed price of a Good
+
+    if (isSuccessful && clearingPrice) {
+      const tradingRange: ?Array<number> = this.observedTradingRange.get(good);
+      if (tradingRange){
+        tradingRange.push(clearingPrice);
+      }
+    }
+
+    const publicMeanPrice: number = this.market.avgHistoricalPrice(good, 1);
+    // $FlowFixMe
+    const priceBelief: PriceRange = this.priceBelief.get(good);
+    const meanPrice: number = priceBelief.mean();
+    let wobble: number = 0.05; // the degree which the Trader should bid outside the belief
+
+    // how different the public mean price is from the price belief
+    const deltaToMeanPrice: number = meanPrice - publicMeanPrice;
+
+    if (isSuccessful) {
+      if (orderType === 'buy' && deltaToMeanPrice > SIGNIFICANT) {
+        priceBelief.low -= deltaToMeanPrice / 2;
+        priceBelief.high -= deltaToMeanPrice / 2;
+      } else if (orderType === 'sell' && deltaToMeanPrice < -SIGNIFICANT) {
+        priceBelief.low -= deltaToMeanPrice / 2;
+        priceBelief.high -= deltaToMeanPrice / 2;
+      }
+
+      // increase the belief's certainty
+      priceBelief.low += wobble * meanPrice;
+      priceBelief.high -= wobble * meanPrice;
+    } else { // failed order
+
+      // shift towards mean price
+      priceBelief.low -= deltaToMeanPrice / 2;
+      priceBelief.high -= deltaToMeanPrice / 2;
+
+      // check for inventory special cases
+      const stock: number = this.inventory.get(good);
+      const ideal: number = this.idealAmountOfGood(good);
+
+      if (orderType === 'buy' && stock < LOW_INVENTORY * ideal) {
+        // if we're buying and inventory is too low: we're desperate to buy
+        wobble *= 2;
+      } else if (orderType === 'sell' && stock > HIGH_INVENTORY * ideal) {
+        // if we're selling and inventory is too high: we're desperate to sell
+        wobble *= 2;
+      } else {
+        // all other failure cases
+
+        // $FlowFixMe
+        const buys: number = this.market.history.numBuyOrders.average(good, 1);
+        // $FlowFixMe
+        const sells: number = this.market.history.numSellOrders.average(good, 1);
+
+        if (buys + sells > 0) {
+          const supplyVsDemand: number = (sells - buys) / (sells + buys);
+
+          if (supplyVsDemand > SIG_IMBALANCE || supplyVsDemand < -SIG_IMBALANCE) {
+            // too much supply? lower bid lower to sell faster
+            // too much demand? raise price to buy faster
+
+            const newMeanPrice: number = publicMeanPrice * (1 - supplyVsDemand);
+            const deltaToMean: number = meanPrice - newMeanPrice;
+
+            // TODO: should we set meanPrice = newMeanPrice here?
+
+            // shift the price belief to the new price mean
+            priceBelief.low -= deltaToMean / 2;
+            priceBelief.high -= deltaToMean / 2;
+          }
+        } else {
+          throw new Error('Weird case where no buy or sell orders happened');
+        }
+      }
+
+      // decrease belief's certainty since we've just changed it (we could be wrong)
+      priceBelief.low -= wobble * meanPrice;
+      priceBelief.high += wobble * meanPrice;
+
+      // make sure the price belief doesn't decrease below the minimum
+      if (priceBelief.low < MIN_PRICE) {
+        priceBelief.low = MIN_PRICE;
+      } else if (priceBelief.high < MIN_PRICE) {
+        priceBelief.high = MIN_PRICE;
+      }
+    }
   }
 
   debug() {

@@ -1,36 +1,57 @@
 // @flow
 import _ from 'lodash';
+import type { Good } from './goods';
 
 
 // A list of a particular type of historically-relevant economic data
 class TradeHistoryItem {
   name: string;
-  record: Object;
+  record: Map<Good, Array<number>>;
 
   constructor(name: string) {
     this.name = name;
-    this.record = {};
+    this.record = new Map();
   }
 
-  register(key: any) {
-    if (!(key in this.record)) {
-      this.record[key] = [];
+  register(key: Good) {
+    if (!this.record.has(key)) {
+      this.record.set(key, []);
     }
   }
 
-  add(key: any, ...value: any) {
-    this.record[key].push(...value);
+  add(key: Good, values: Array<number>) {
+    if (isNaN(values[0])) {
+      console.trace();
+    }
+    if (this.record.has(key)) {
+      // $FlowFixMe
+      const currentArray: Array<number> = this.record.get(key);
+      const newArray: Array<number> = currentArray;
+      newArray.push(...values);
+      this.record.set(key, newArray);
+    } else {
+      this.record.set(key, values);
+    }
   }
 
   toString(): string {
     return `TradeHistoryItem(${this.name})`;
   }
 
-  average(key: any, range: number = 10): number {
-    if (key in this.record) {
-      return _.mean(_.takeRight(this.record[key], range));
+  average(key: Good, range: number = 10): number {
+    if (this.record.has(key)) {
+      const avg: number = _.mean(_.takeRight(this.record.get(key), range));
+      return isNaN(avg) ? 0 : avg;
     }
     return 0;
+  }
+
+  debug() {
+    console.groupCollapsed('TradeHistoryItem');
+    for (const [key, value]: [Good, Array<number>] of this.record.entries()) {
+      console.log(`${key.key}: ${value.join(', ')}`);
+    }
+    console.groupEnd('TradeHistoryItem');
   }
 
 }
@@ -51,11 +72,10 @@ export class TradeHistory {
     this.profit = new TradeHistoryItem('profit');
   }
 
-  register(item: any) {
+  register(item: Good) {
     this.prices.register(item);
     this.numBuyOrders.register(item);
     this.numSellOrders.register(item);
     this.unitsTraded.register(item);
-    this.profit.register(item);
   }
 }

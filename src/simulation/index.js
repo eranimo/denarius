@@ -34,22 +34,22 @@ export default class Simulation {
     this.round = 0;
 
     // make a market
-    this.market = new Market(this);
+    this.market = new Market();
 
     // create a few Traders with some inventory
     // woodcutters
     for (let i: number = 0; i < SETTINGS.initialJobs.woodcutter; i++) {
       const trader: Trader = new Trader(JOBS.woodcutter);
-      trader.inventory.add(GOODS.food, 3);
-      trader.inventory.add(GOODS.wood, 3);
+      trader.inventory.add(GOODS.food, 4);
+      trader.inventory.add(GOODS.wood, 4);
       this.market.addTrader(trader);
     };
 
     // farmers
     for (let i: number = 0; i < SETTINGS.initialJobs.farmer; i++) {
       const trader: Trader = new Trader(JOBS.farmer);
-      trader.inventory.add(GOODS.food, 3);
-      trader.inventory.add(GOODS.wood, 3);
+      trader.inventory.add(GOODS.food, 4);
+      trader.inventory.add(GOODS.wood, 4);
       this.market.addTrader(trader);
     };
   }

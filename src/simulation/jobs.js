@@ -45,3 +45,5 @@ export const farmer: Job = {
     return inventory;
   }
 };
+
+export const JOBS: Array<Job> = [woodcutter, farmer];

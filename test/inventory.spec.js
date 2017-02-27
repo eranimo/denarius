@@ -19,6 +19,9 @@ test('inventory size', () => {
   expect(inventory.size).toBe(20);
   expect(inventory.get(GOODS.food)).toBe(10);
   expect(inventory.get(GOODS.wood)).toBe(10);
+
+  expect(inventory.hasAmount(GOODS.wood, 10)).toBe(true);
+  expect(inventory.hasAmount(GOODS.food, 10)).toBe(true);
 });
 
 test('inventory add and subtract', () => {
@@ -26,11 +29,7 @@ test('inventory add and subtract', () => {
   inventory.subtract(GOODS.food, 1);
 
   expect(inventory.get(GOODS.food)).toBe(9);
-
-  function testSubtract(): any {
-    return inventory.subtract(GOODS.food, 100);
-  }
-  expect(testSubtract).toThrowError(/Missing/);
+  expect(inventory.subtract(GOODS.food, 100)).toBe(false);
 });
 
 test('inventory hasAmount', () => {
@@ -56,11 +55,11 @@ test('inventory takeGoods', () => {
   inventory.add(GOODS.wood, 10);
 
   inventory.takeGoods(new Map([
-    [GOODS.food, 2],
+    [GOODS.food, 10],
     [GOODS.wood, 2]
   ]));
 
-  expect(inventory.get(GOODS.food)).toBe(8);
+  expect(inventory.get(GOODS.food)).toBe(0);
   expect(inventory.get(GOODS.wood)).toBe(8);
 
   // return false when we don't have the goods
@@ -99,13 +98,31 @@ test('inventory hasGoods', () => {
     [GOODS.wood, 10]
   ]));
 
+  expect(inventory.size).toBe(20);
+
   expect(inventory.hasGoods(new Map([
     [GOODS.food, 5],
     [GOODS.wood, 5]
   ]))).toBe(true);
 
+  expect(inventory.hasAmount(GOODS.food, 5)).toBe(true);
+  expect(inventory.hasAmount(GOODS.wood, 15)).toBe(false);
+
   expect(inventory.hasGoods(new Map([
     [GOODS.food, 5],
     [GOODS.wood, 15]
   ]))).toBe(false);
+});
+
+test('inventory has and take', () => {
+  const someGoods: Map<Good, number> = new Map([
+    [GOODS.food, 10],
+    [GOODS.wood, 10]
+  ]);
+  inventory.giveGoods(someGoods);
+  expect(inventory.size).toBe(20);
+
+  expect(inventory.hasGoods(someGoods)).toBe(true);
+  expect(inventory.takeGoods(someGoods)).toBe(true);
+  expect(inventory.size).toBe(0);
 });

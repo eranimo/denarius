@@ -1,5 +1,6 @@
 // @flow
 import type { Good } from './goods';
+import _ from 'lodash';
 
 
 export default class Inventory {
@@ -17,11 +18,12 @@ export default class Inventory {
     }
   }
 
-  subtract(good: Good, amount: number) {
+  subtract(good: Good, amount: number): boolean {
     if (this.hasAmount(good, amount)) {
       this.store.set(good, this.get(good) - amount);
+      return true;
     } else {
-      throw new Error(`Missing ${amount} good: ${good.key}`);
+      return false;
     }
   }
 
@@ -39,8 +41,8 @@ export default class Inventory {
   }
 
   // checks if the inventory has the amount of a good
-  hasAmount(good: Good, amount: number): bool {
-    return (this.get(good) || 0) >= amount;
+  hasAmount(good: Good, amount: number): boolean {
+    return this.get(good) >= amount;
   }
 
   // returns the difference of this inventory and a map of goods
@@ -59,18 +61,19 @@ export default class Inventory {
   }
 
   // does this inventory have these goods?
-  hasGoods(goodMap: Map<Good, number>): bool {
-    let result: bool = false;
-    for (const [good, amount]: [Good, number] of this.store.entries()) {
-      const thisAmount: number = goodMap.get(good) || 0;
-      result = amount >= thisAmount;
+  hasGoods(goodMap: Map<Good, number>): boolean {
+    for (const [good, amount]: [Good, number] of goodMap.entries()) {
+      const result: boolean = this.hasAmount(good, amount);
+      if (!result) {
+        return false;
+      }
     }
-    return result;
+    return true;
   }
 
   // takes a map of goods
-  takeGoods(goodMap: Map<Good, number>): bool {
-    if (!this.hasGoods(goodMap)) {
+  takeGoods(goodMap: Map<Good, number>): boolean {
+    if (this.hasGoods(goodMap) === false) {
       return false;
     }
 
@@ -81,7 +84,7 @@ export default class Inventory {
     return true;
   }
 
-  giveGoods(goodMap: Map<Good, number>): bool {
+  giveGoods(goodMap: Map<Good, number>): boolean {
     for (const [good, amount]: [Good, number] of goodMap.entries()) {
       this.add(good, amount);
     }

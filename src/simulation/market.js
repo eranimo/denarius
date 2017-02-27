@@ -1,9 +1,10 @@
 // @flow
 import Trader from './trader';
 import MarketOrder from './marketOrder';
-import Simulation from './index';
 import { GOODS } from './goods';
+import { JOBS } from './jobs';
 import type { Good } from './goods';
+import type { Job } from './jobs';
 import _ from 'lodash';
 import { TradeHistory } from './tradeHistory';
 
@@ -14,7 +15,7 @@ export default class Market {
   sellOrders: Map<Good, Set<MarketOrder>>;
   history: TradeHistory;
 
-  constructor(simulation: Simulation) {
+  constructor() {
     this.traders = new Set();
     this.buyOrders = new Map();
     this.sellOrders = new Map();
@@ -25,6 +26,13 @@ export default class Market {
       this.buyOrders.set(good, new Set());
       this.sellOrders.set(good, new Set());
       this.history.register(good);
+      this.history.prices.add(good, [1.0]);
+      this.history.numBuyOrders.add(good, [1.0]);
+      this.history.numSellOrders.add(good, [1.0]);
+      this.history.unitsTraded.add(good, [1.0]);
+    }
+    for (const job: Job of JOBS) {
+      this.history.profit.register(job);
     }
 
   }
@@ -99,15 +107,15 @@ export default class Market {
       }
 
       // log some stuff for the history books
-      this.history.numBuyOrders.add(good, totalBuyAmount);
-      this.history.numSellOrders.add(good, totalSellAmount);
-      this.history.unitsTraded.add(good, unitsTraded);
+      this.history.numBuyOrders.add(good, [totalBuyAmount]);
+      this.history.numSellOrders.add(good, [totalSellAmount]);
+      this.history.unitsTraded.add(good, [unitsTraded]);
 
       if (unitsTraded > 0) {
-        this.history.profit.add(good, moneyTraded / unitsTraded);
+        this.history.profit.add(good, [moneyTraded / unitsTraded]);
       } else {
         // no units were traded this round, so use the last round's average price
-        this.history.profit.add(good, this.history.prices.average(good, 1));
+        this.history.profit.add(good, [this.history.prices.average(good, 1)]);
       }
     }
   }
@@ -135,7 +143,6 @@ export default class Market {
   }
 
   addTrader(trader: Trader) {
-    trader.market = this;
     trader.moveToMarket(this);
     this.traders.add(trader);
   }
@@ -149,6 +156,8 @@ export default class Market {
     const buyOrders: ?Set<MarketOrder> = this.buyOrders.get(order.good);
     if (buyOrders) {
       buyOrders.add(order);
+    } else {
+      throw new Error(`Unknown good ${order.good.key} in buy order set`);
     }
   }
 
@@ -156,6 +165,8 @@ export default class Market {
     const sellOrders: ?Set<MarketOrder> = this.sellOrders.get(order.good);
     if (sellOrders) {
       sellOrders.add(order);
+    } else {
+      throw new Error(`Unknown good ${order.good.key} in sell order set`);
     }
   }
 

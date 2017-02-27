@@ -78,12 +78,19 @@ export default class Trader {
     }
   }
 
+  // gets a map of goods that we want to trade
+  // if amount is positive then we need to sell that good
+  // if amount is negative then we need to buy that good
+  goodsToTrade(): Map<Good, number> {
+    return this.inventory.difference(this.job.idealInventory);
+  }
+
   // trade goods that this Trader needs to buy or sell, returns whether or not they traded this round
-  trade(): bool {
+  trade(): boolean {
     const buyOrders: Set<MarketOrder> = new Set();
     const sellOrders: Set<MarketOrder> = new Set();
     // create buy orders for goods required to do work that aren't in the inventory
-    const idealDifference: Map<Good, number> = this.inventory.difference(this.job.idealInventory);
+    const idealDifference: Map<Good, number> = this.goodsToTrade();
     for (const [good, amount]: [Good, number] of idealDifference) {
       if (amount > 0) {
         // surplus: create sell order
@@ -94,6 +101,7 @@ export default class Trader {
       } else {
         // deficit: create buy order
         const order: ?MarketOrder = this.createBuyOrder(good, Math.abs(amount));
+        console.log(good, amount, order);
         if (order) {
           sellOrders.add(order);
         }
@@ -130,6 +138,7 @@ export default class Trader {
     const price: number = this.determinePriceOf(good);
     const ideal: number = this.determineBuyQuantity(good);
     const quantityToBuy: number = limit > ideal ? limit : ideal; // can't buy more than the limit
+    console.log(quantityToBuy, limit, ideal);
     if (quantityToBuy > 0) {
       return new MarketOrder('buy', good, quantityToBuy, price, this);
     }
@@ -152,14 +161,18 @@ export default class Trader {
     return new PriceRange(_.min(tradingRange), _.max(tradingRange));
   }
 
+  getGoodFavoribility(good: Good, meanPrice: number): number {
+    const tradingRange: PriceRange = this.tradingRangeExtremes(good);
+    return positionInRange(meanPrice, tradingRange.low, tradingRange.high);
+  }
+
   // determine how much of a good to sell
   determineSellQuantity(good: Good): number {
     if (!this.market) {
       throw new Error('Trader not at a market');
     }
     const meanPrice: number = this.market.avgHistoricalPrice(good, 15);
-    const tradingRange: PriceRange = this.tradingRangeExtremes.get(good);
-    const favoribility: number = positionInRange(meanPrice, tradingRange.low, tradingRange.high);
+    const favoribility: number = this.getGoodFavoribility(good, meanPrice);
     const amountToSell: number = Math.round(favoribility * this.surplusOfGood(good));
     return amountToSell < 1 ? 1 : amountToSell;
   }
@@ -170,16 +183,18 @@ export default class Trader {
       throw new Error('Trader not at a market');
     }
     const meanPrice: number = this.market.avgHistoricalPrice(good, 15);
-    const tradingRange: PriceRange = this.tradingRangeExtremes.get(good);
-    const favoribility: number = positionInRange(meanPrice, tradingRange.low, tradingRange.high);
+    const favoribility: number = this.getGoodFavoribility(good, meanPrice);
     const amountToBuy: number = Math.round(favoribility * this.shortageOfGood(good));
     return amountToBuy < 1 ? 1 : amountToBuy;
   }
 
+  // determins how much of a good do we have over the amount that we need
+  // i.e. the amount we can safely get rid of
   surplusOfGood(good: Good): number {
     return Math.min(0, this.inventory.get(good) - this.idealAmountOfGood(good));
   }
 
+  // determine how much of a good to buy
   shortageOfGood(good: Good): number {
     if (this.inventory.get(good) === 0) {
       return this.idealAmountOfGood(good);

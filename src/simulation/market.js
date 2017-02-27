@@ -50,9 +50,9 @@ export default class Market {
       }
 
       // sort buy orders from highest to lowest price
-      const sortedBuyOrders: Array<MarketOrder> = _.sortBy(buyOrders.values(), ['price'], ['DESC']);
+      const sortedBuyOrders: Array<MarketOrder> = _.sortBy(Array.from(buyOrders), ['price'], ['DESC']);
       // sort sell orders from lowest to highest price
-      const sortedSellOrders: Array<MarketOrder> = _.sortBy(sellOrders.values(), ['price'], ['ASC']);
+      const sortedSellOrders: Array<MarketOrder> = _.sortBy(Array.from(sellOrders), ['price'], ['ASC']);
 
       const totalBuyAmount: number = _.sumBy(sortedBuyOrders, 'amount');
       const totalSellAmount: number = _.sumBy(sortedSellOrders, 'amount');
@@ -86,11 +86,11 @@ export default class Market {
 
         // throw out (deny) all other orders
         if (buyOrder.amount === 0) {
-          buyOrders.delete(buyOrder);
+          sortedBuyOrders.shift();
         }
 
         if (sellOrder.amount === 0) {
-          sellOrders.delete(sellOrder);
+          sortedSellOrders.shift();
         }
 
         moneyTraded += clearingPrice;
@@ -127,17 +127,19 @@ export default class Market {
     if (fromTrader.inventory.hasAmount(good, amount)) {
       toTrader.inventory.subtract(good, amount);
       toTrader.inventory.add(good, amount);
+    } else {
+      throw new Error(`Trader ${fromTrader.toString()} doesn't have ${amount} '${good.displayName}' goods (it has ${fromTrader.inventory.get(good)})`);
     }
-    throw new Error(`Trader ${fromTrader.toString()} doesn't have ${good.displayName} goods`);
   }
 
   // transfer money from one Trader to another
   transferMoney(fromTrader: Trader, toTrader: Trader, amount: number) {
-    if (fromTrader.money <= amount) {
+    if (fromTrader.money >= amount) {
       fromTrader.money -= amount;
       toTrader.money += amount;
+    } else {
+      throw new Error(`Trader ${fromTrader.toString()} doesn't have ${amount} money (it has ${fromTrader.money})`);
     }
-    throw new Error(`Trader ${fromTrader.toString()} doesn't have ${amount} money`);
   }
 
   avgHistoricalPrice(good: Good, dayRange: number): number {

@@ -34,6 +34,14 @@ class TradeHistoryItem {
     }
   }
 
+  size(key: Good): number {
+    if (this.record.has(key)) {
+      // $FlowFixMe
+      return this.record.get(key).length;
+    }
+    return 0;
+  }
+
   toString(): string {
     return `TradeHistoryItem(${this.name})`;
   }

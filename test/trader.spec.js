@@ -6,62 +6,68 @@ import * as GOODS from '../src/simulation/goods';
 import * as JOBS from '../src/simulation/jobs';
 
 
-let trader: Trader;
+let farmer: Trader;
+let woodcutter: Trader;
 let market: Market;
 
 market = new Market();
-trader = new Trader(JOBS.farmer);
+farmer = new Trader(JOBS.farmer, 'farmer');
+woodcutter = new Trader(JOBS.woodcutter, 'woodcutter');
 
-const INITIAL_FOOD: number = 0;
-const INITIAL_WOOD: number = 5;
+test('farmer initial state', () => {
+  expect(farmer.money).toBe(10);
+  expect(farmer.failedTrades).toBe(0);
+  expect(farmer.successfulTrades).toBe(0);
 
-test('trader initial state', () => {
-  expect(trader.money).toBe(10);
-  expect(trader.failedTrades).toBe(0);
-  expect(trader.successfulTrades).toBe(0);
-
-  expect(trader.inventory.size).toBe(0);
+  expect(farmer.inventory.size).toBe(0);
 });
 
-describe('trader goes to market', () => {
+describe('farmer goes to market', () => {
 
-  test('adding inventory to trader', () => {
-    market.addTrader(trader);
-    expect(trader.market).toBe(market);
-    trader.inventory.add(GOODS.food, INITIAL_FOOD);
-    trader.inventory.add(GOODS.wood, INITIAL_WOOD);
+  test('adding inventory to traders', () => {
+    market.addTrader(farmer);
+    market.addTrader(woodcutter);
+    expect(farmer.market).toBe(market);
+    expect(woodcutter.market).toBe(market);
 
-    expect(trader.inventory.size).toBe(INITIAL_FOOD + INITIAL_WOOD);
+    farmer.inventory.add(GOODS.wood, 5);
+    expect(farmer.inventory.size).toBe(5);
+
+    woodcutter.inventory.add(GOODS.food, 5);
+    expect(woodcutter.inventory.size).toBe(5);
+
   });
 
-  test('trader does work', () => {
-    expect(trader.lastRound.hasWorked).toBe(null);
-    expect(trader.inventory.get(GOODS.wood)).toBe(INITIAL_WOOD);
-    expect(trader.inventory.hasAmount(GOODS.wood, 1)).toBe(true);
-    trader.work();
-    expect(trader.lastRound.hasWorked).toBe(true);
+  test('traders does work', () => {
+    expect(farmer.lastRound.hasWorked).toBe(null);
+    expect(farmer.inventory.get(GOODS.wood)).toBe(5);
+    expect(farmer.inventory.hasAmount(GOODS.wood, 1)).toBe(true);
+    farmer.work();
+    woodcutter.work();
+    expect(farmer.lastRound.hasWorked).toBe(true);
 
     // expect work to have taken required goods
-    expect(trader.inventory.get(GOODS.wood)).toBe(INITIAL_WOOD - 1);
+    expect(farmer.inventory.get(GOODS.wood)).toBe(5 - 1);
 
     // expect work to added the inventory
-    expect(trader.inventory.get(GOODS.food)).toBe(INITIAL_FOOD + 1);
+    expect(farmer.inventory.get(GOODS.food)).toBe(0 + 1);
   });
 
-  describe('trader does trading', () => {
+  describe('farmer does trading', () => {
 
-    test('trader ', () => {
+    test('trader setup', () => {
       // a farmer requires 5 wood, so we expect a buy order for 2 wood
-      const expectedWoodToBuy: number = Math.abs(INITIAL_WOOD - 1 - 5);
-      expect(trader.goodsToTrade().get(GOODS.wood)).toBe(-expectedWoodToBuy);
+      expect(farmer.goodsToTrade().get(GOODS.wood)).toBe(-1);
       // $FlowFixMe
       expect(market.buyOrders.get(GOODS.wood).size).toBe(0);
-      expect(trader.shortageOfGood(GOODS.wood)).toBe(1);
+      expect(farmer.shortageOfGood(GOODS.wood)).toBe(1);
     });
 
-    test('trader buys 1 wood and sells 1 food', () => {
-      const tradeResult: boolean = trader.trade();
-      expect(tradeResult).toBe(true);
+    test('traders trade stuff', () => {
+      // farmer buys 1 wood and sells 1 food
+      // woodcutter buys 1 food and sells 1 wood
+      expect(farmer.trade()).toBe(true);
+      expect(woodcutter.trade()).toBe(true);
 
       // $FlowFixMe
       expect(market.buyOrders.get(GOODS.wood).size).toBe(1);
@@ -73,7 +79,11 @@ describe('trader goes to market', () => {
       // $FlowFixMe
       expect(Array.from(market.buyOrders.get(GOODS.wood).keys())[0].amount).toBe(1);
 
-      expect(trader.goodsToTrade().get(GOODS.food)).toBe(1);
+      expect(farmer.goodsToTrade().get(GOODS.food)).toBe(1);
+    });
+
+    test('market resolved orders', () => {
+      market.resolveOrders();
     });
   });
 });

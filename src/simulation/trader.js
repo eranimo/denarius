@@ -21,6 +21,7 @@ function positionInRange(value: number, min: number, max: number): number {
 
 
 export default class Trader {
+  name: string;
   job: Job;
   inventory: Inventory;
   money: number;
@@ -35,8 +36,9 @@ export default class Trader {
     hasTraded: ?bool
   };
 
-  constructor(job: Job) {
+  constructor(job: Job, name: string = '') {
     this.job = job;
+    this.name = name;
     this.money = 10;
     this.moneyLastRound = 0;
     this.failedTrades = 0;
@@ -304,6 +306,10 @@ export default class Trader {
         priceBelief.high = MIN_PRICE;
       }
     }
+  }
+
+  toString(): string {
+    return `${this.name || this.job.displayName}`;
   }
 
   debug() {

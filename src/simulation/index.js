@@ -54,9 +54,22 @@ export default class Simulation {
 
   nextRound() {
     this.round += 1;
+    const text: string = `Simulation round #${this.round}`;
+    console.group(text);
+    console.groupCollapsed('Traders before trade:');
+    for (const trader: Trader of this.market.traders) {
+      trader.debug();
+    }
+    console.groupEnd('Traders before trade:');
     this.market.simulate();
-
     // resolve the orders for this round
     this.market.resolveOrders();
+    console.groupCollapsed('Traders after trade:');
+    for (const trader: Trader of this.market.traders) {
+      trader.debug();
+    }
+    console.groupEnd('Traders after trade:');
+    console.groupEnd(text);
+
   }
 }

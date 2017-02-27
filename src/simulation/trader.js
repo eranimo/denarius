@@ -10,6 +10,8 @@ import _ from 'lodash';
 import PriceRange from './priceRange';
 
 
+let currentId: number = 1;
+
 //
 function positionInRange(value: number, min: number, max: number): number {
   value -= min;
@@ -21,10 +23,12 @@ function positionInRange(value: number, min: number, max: number): number {
 
 
 export default class Trader {
+  id: number;
   name: string;
   job: Job;
   inventory: Inventory;
   money: number;
+  bankrupt: boolean;
   moneyLastRound: number;
   market: ?Market;
   failedTrades: number;
@@ -37,9 +41,12 @@ export default class Trader {
   };
 
   constructor(job: Job, name: string = '') {
+    this.id = currentId;
+    currentId++;
     this.job = job;
     this.name = name;
     this.money = 10;
+    this.bankrupt = false;
     this.moneyLastRound = 0;
     this.failedTrades = 0;
     this.successfulTrades = 0;
@@ -92,6 +99,8 @@ export default class Trader {
   trade(): boolean {
     const buyOrders: Set<MarketOrder> = new Set();
     const sellOrders: Set<MarketOrder> = new Set();
+    let totalBuyOrderPrices: number = 0;
+
     // create buy orders for goods required to do work that aren't in the inventory
     const idealDifference: Map<Good, number> = this.goodsToTrade();
     for (const [good, amount]: [Good, number] of idealDifference) {
@@ -105,7 +114,13 @@ export default class Trader {
         // deficit: create buy order
         const order: ?MarketOrder = this.createBuyOrder(good, Math.abs(amount));
         if (order) {
-          buyOrders.add(order);
+          totalBuyOrderPrices += order.amount;
+          if (totalBuyOrderPrices <= this.money) {
+            buyOrders.add(order);
+          } else {
+            this.bankrupt = true;
+            return false;
+          }
         }
       }
     }
@@ -309,11 +324,14 @@ export default class Trader {
   }
 
   toString(): string {
-    return `${this.name || this.job.displayName}`;
+    return `<Trader id: ${this.id} name: ${this.name || 'none'}>`;
   }
 
   debug() {
-    const str: string = `Trader (Job: ${this.job.key}, Money: ${this.money})`;
+    const changeInMoney: number = _.round(this.money - this.moneyLastRound, 2);
+    const totalTrades: number = (this.successfulTrades + this.failedTrades);
+    const success: number = _.round(this.successfulTrades / totalTrades * 100, 2);
+    const str: string = `Trader #${this.id} (Job: ${this.job.key}, Money: ${this.money} (Δ ${changeInMoney}), Bankrupt: ${this.bankrupt ? 'Yes' : 'No'}, Successful Trade Percent: ${success}%)`;
     console.groupCollapsed(str);
     this.inventory.debug();
     console.groupEnd(str);

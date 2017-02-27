@@ -26,6 +26,8 @@ export default class Market {
       this.buyOrders.set(good, new Set());
       this.sellOrders.set(good, new Set());
       this.history.register(good);
+
+      // make some fake historical data
       this.history.prices.add(good, [1.0]);
       this.history.numBuyOrders.add(good, [1.0]);
       this.history.numSellOrders.add(good, [1.0]);

@@ -12,8 +12,8 @@ let market: Market;
 market = new Market();
 trader = new Trader(JOBS.farmer);
 
-const INITIAL_FOOD: number = 3;
-const INITIAL_WOOD: number = 4;
+const INITIAL_FOOD: number = 0;
+const INITIAL_WOOD: number = 5;
 
 test('trader initial state', () => {
   expect(trader.money).toBe(10);
@@ -48,22 +48,32 @@ describe('trader goes to market', () => {
     expect(trader.inventory.get(GOODS.food)).toBe(INITIAL_FOOD + 1);
   });
 
-  test('trader does trading', () => {
-    // a farmer requires 5 wood, so we expect a buy order for 2 wood
-    const expectedWoodToBuy: number = Math.abs(INITIAL_WOOD - 1 - 5);
-    expect(trader.goodsToTrade()).toEqual(new Map([
-      [GOODS.wood, -expectedWoodToBuy]
-    ]));
-    // $FlowFixMe
-    expect(market.buyOrders.get(GOODS.wood).size).toBe(0);
-    console.log(trader.getGoodFavoribility(GOODS.wood, 1));
-    console.log(trader.tradingRangeExtremes(GOODS.wood));
-    expect(trader.determinePriceOf(GOODS.wood)).toBeGreaterThan(0);
-    expect(trader.determineBuyQuantity(GOODS.wood)).toBe(expectedWoodToBuy);
-    const tradeResult: boolean = trader.trade();
-    expect(tradeResult).toBe(true);
+  describe('trader does trading', () => {
 
-    // $FlowFixMe
-    expect(market.buyOrders.get(GOODS.wood).size).toBe(1);
+    test('trader ', () => {
+      // a farmer requires 5 wood, so we expect a buy order for 2 wood
+      const expectedWoodToBuy: number = Math.abs(INITIAL_WOOD - 1 - 5);
+      expect(trader.goodsToTrade().get(GOODS.wood)).toBe(-expectedWoodToBuy);
+      // $FlowFixMe
+      expect(market.buyOrders.get(GOODS.wood).size).toBe(0);
+      expect(trader.shortageOfGood(GOODS.wood)).toBe(1);
+    });
+
+    test('trader buys 1 wood and sells 1 food', () => {
+      const tradeResult: boolean = trader.trade();
+      expect(tradeResult).toBe(true);
+
+      // $FlowFixMe
+      expect(market.buyOrders.get(GOODS.wood).size).toBe(1);
+      // $FlowFixMe
+      expect(market.sellOrders.get(GOODS.food).size).toBe(1);
+
+      // $FlowFixMe
+      expect(Array.from(market.sellOrders.get(GOODS.food).keys())[0].amount).toBe(1);
+      // $FlowFixMe
+      expect(Array.from(market.buyOrders.get(GOODS.wood).keys())[0].amount).toBe(1);
+
+      expect(trader.goodsToTrade().get(GOODS.food)).toBe(1);
+    });
   });
 });

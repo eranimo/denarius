@@ -51,10 +51,14 @@ export default class Inventory {
   difference(goodMap: Map<Good, number>): Map<Good, number> {
     let result: Map<Good, number> = new Map;
     for (const [myGood, myAmount]: [Good, number] of this.store.entries()) {
-      for (const [theirGood, theirAmount]: [Good, number] of goodMap.entries()) {
-        if (myGood == theirGood) {
-          result.set(myGood, myAmount - theirAmount);
+      if (goodMap.has(myGood)) {
+        for (const [theirGood, theirAmount]: [Good, number] of goodMap.entries()) {
+          if (myGood == theirGood) {
+            result.set(myGood, myAmount - theirAmount);
+          }
         }
+      } else {
+        result.set(myGood, myAmount);
       }
     }
     return result;

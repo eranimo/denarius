@@ -10,6 +10,7 @@ import _ from 'lodash';
 import PriceRange from './priceRange';
 
 
+//
 function positionInRange(value: number, min: number, max: number): number {
   value -= min;
   max -= min;
@@ -101,9 +102,8 @@ export default class Trader {
       } else {
         // deficit: create buy order
         const order: ?MarketOrder = this.createBuyOrder(good, Math.abs(amount));
-        console.log(good, amount, order);
         if (order) {
-          sellOrders.add(order);
+          buyOrders.add(order);
         }
       }
     }
@@ -138,7 +138,6 @@ export default class Trader {
     const price: number = this.determinePriceOf(good);
     const ideal: number = this.determineBuyQuantity(good);
     const quantityToBuy: number = limit > ideal ? limit : ideal; // can't buy more than the limit
-    console.log(quantityToBuy, limit, ideal);
     if (quantityToBuy > 0) {
       return new MarketOrder('buy', good, quantityToBuy, price, this);
     }
@@ -161,9 +160,13 @@ export default class Trader {
     return new PriceRange(_.min(tradingRange), _.max(tradingRange));
   }
 
-  getGoodFavoribility(good: Good, meanPrice: number): number {
+  // determine how favorable a price for a good is compared to what have traded
+  // a favoribility of 1 means that the price is perfect and we should buy the amount we want to
+  // < 1 means that the price is too high and we should buy less
+  // > 1 means that the price is too low and we should buy more
+  getGoodFavoribility(good: Good, price: number): number {
     const tradingRange: PriceRange = this.tradingRangeExtremes(good);
-    return positionInRange(meanPrice, tradingRange.low, tradingRange.high);
+    return positionInRange(price, tradingRange.low, tradingRange.high);
   }
 
   // determine how much of a good to sell

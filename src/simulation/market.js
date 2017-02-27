@@ -181,6 +181,8 @@ export default class Market {
       trader.work();
       // perform trades
       trader.trade();
+
+      trader.recordProfit();
     }
   }
 }

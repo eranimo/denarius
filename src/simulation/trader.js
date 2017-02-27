@@ -6,6 +6,7 @@ import { GOODS } from './goods';
 import type { OrderType } from './marketOrder';
 import MarketOrder from './marketOrder';
 import type Market from './market';
+import type { Loan } from './bank'; 
 import _ from 'lodash';
 import PriceRange from './priceRange';
 
@@ -28,11 +29,13 @@ export default class Trader {
   job: Job;
   inventory: Inventory;
   money: number;
+  loans: Set<Loan>;
   bankrupt: boolean;
   moneyLastRound: number;
   market: ?Market;
   failedTrades: number;
   successfulTrades: number;
+  profit: Array<number>;
   priceBelief: Map<Good, PriceRange>;
   observedTradingRange: Map<Good, Array<number>>;
   lastRound: {
@@ -46,6 +49,8 @@ export default class Trader {
     this.job = job;
     this.name = name;
     this.money = 10;
+    this.loans = new Set();
+    this.profit = [];
     this.bankrupt = false;
     this.moneyLastRound = 0;
     this.failedTrades = 0;
@@ -321,6 +326,15 @@ export default class Trader {
         priceBelief.high = MIN_PRICE;
       }
     }
+  }
+
+  avergagePastProfit(daysAgo: number): number {
+    return _.mean(_.takeRight(this.profit, daysAgo));
+  }
+
+  recordProfit() {
+    const profit: number = this.money - this.moneyLastRound;
+    this.profit.push(profit);
   }
 
   toString(): string {

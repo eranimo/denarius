@@ -57,6 +57,10 @@ export default class Bank {
     this.loans = new Set();
   }
 
+  get solvencyRatio(): number {
+    return this.reserves / this.totalCredit;
+  }
+
   // lend a loan to a trader
   lend(borrower: Trader, amount: number): Loan {
     const loan: Loan = new Loan(amount, borrower, this);

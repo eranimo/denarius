@@ -7,6 +7,26 @@ import * as JOBS from './jobs';
 import type { Job } from './jobs';
 import type { Good } from './goods';
 
+export class History {
+  round: number;
+  traders: Array<Object>;
+
+  constructor(sim: Simulation) {
+    this.round = sim.round;
+    this.traders = [];
+
+    for (const trader: Trader of sim.market.traders) {
+      this.traders.push({
+        id: trader.id,
+        money: trader.money,
+        moneyLastRound: trader.moneyLastRound,
+        profitLastRound: trader.money - trader.moneyLastRound,
+        job: trader.job.key,
+        inventory: trader.inventory.export()
+      });
+    }
+  }
+}
 
 
 const SETTINGS: Object = {
@@ -20,8 +40,12 @@ const SETTINGS: Object = {
 export default class Simulation {
   round: number;
   market: Market;
+  history: Array<History>;
+  hook: Function;
+
   constructor() {
     this.setup();
+    this.history = [];
   }
 
   reset() {
@@ -52,7 +76,7 @@ export default class Simulation {
     };
   }
 
-  nextRound() {
+  nextRound(): History {
     this.round += 1;
     const text: string = `Simulation round #${this.round}`;
     console.group(text);
@@ -71,5 +95,18 @@ export default class Simulation {
     console.groupEnd('Traders after trade:');
     console.groupEnd(text);
 
+    const history: History = this.recordHistory();
+
+    if (this.hook) {
+      this.hook(history);
+    }
+
+    return history;
+  }
+
+  recordHistory(): History {
+    const history: History = new History(this);
+    this.history.push(history);
+    return history;
   }
 }

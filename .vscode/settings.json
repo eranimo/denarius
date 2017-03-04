@@ -1,4 +1,8 @@
 // Place your settings in this file to overwrite the default settings
 {
-    "jest.pathToJest": "./node_modules/.bin/jest"
-}
+    "jest.pathToJest": "./node_modules/.bin/jest",
+    "editor.formatOnPaste": true,
+    "editor.minimap.enabled": true,
+    "editor.snippetSuggestions": "top",
+    "eslint.enable": true
+  }

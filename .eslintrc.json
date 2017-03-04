@@ -1,7 +1,9 @@
 {
   "parser": "babel-eslint",
+  "extends": ["eslint:recommended", "plugin:react/recommended"],
   "plugins": [
-    "flowtype"
+    "flowtype",
+    "react"
   ],
   "parserOptions": {
     "ecmaVersion": 6,
@@ -10,8 +12,12 @@
       "jsx": true
     }
   },
+  "env": {
+    "browser": true
+  },
   "rules": {
     "semi": 2,
+    "no-console": 0,
     "flowtype/use-flow-type": 1,
     "flowtype/object-type-delimiter": 2,
     "flowtype/space-before-type-colon": 2,

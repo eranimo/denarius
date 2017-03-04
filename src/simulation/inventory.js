@@ -96,6 +96,14 @@ export default class Inventory {
     return true;
   }
 
+  export(): Array<Object> {
+    const result: Array<Object> = [];
+    for (const [good, amount]: [Good, number] of this.store.entries()) {
+      result.push({ good, amount });
+    }
+    return result;
+  }
+
   debug() {
     console.groupCollapsed('inventory');
     for (const [good, amount]: [Good, number] of this.store.entries()) {

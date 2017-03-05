@@ -8,8 +8,8 @@ export type OrderType = 'buy' | 'sell';
 export default class MarketOrder {
   orderType: OrderType;
   good: Good;
-  amount: number;
-  price: number;
+  amount: number; // how much of a good we are selling or buying
+  price: number; // total value of this order (good unit price * amount)
   trader: Trader;
 
   constructor(orderType: OrderType, good: Good, amount: number, price: number, trader: Trader) {
@@ -18,5 +18,12 @@ export default class MarketOrder {
     this.amount = amount;
     this.price = price;
     this.trader = trader;
+
+    if (amount === 0) {
+      throw Error(`Cannot create a order of quantity zero`);
+    }
+    if (price === 0) {
+      throw Error(`Cannot create a order of price zero`);
+    }
   }
 }

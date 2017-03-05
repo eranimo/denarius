@@ -29,8 +29,8 @@ export default class Market {
 
       // make some fake historical data
       this.history.prices.add(good, [1.0]);
-      this.history.numBuyOrders.add(good, [1.0]);
-      this.history.numSellOrders.add(good, [1.0]);
+      this.history.buyOrderAmount.add(good, [1.0]);
+      this.history.sellOrderAmount.add(good, [1.0]);
       this.history.unitsTraded.add(good, [1.0]);
     }
     for (const job: Job of JOBS) {
@@ -64,21 +64,23 @@ export default class Market {
       while(sortedBuyOrders.length > 0 && sortedSellOrders.length > 0) {
         const buyOrder: MarketOrder = sortedBuyOrders[0];
         const sellOrder: MarketOrder = sortedSellOrders[0];
-        const clearingPrice: number = (buyOrder.price + sellOrder.price) / 2;
+        const unitPrice: number = (buyOrder.price + sellOrder.price) / 2;
         const goodsTraded: number = Math.min(buyOrder.amount, sellOrder.amount);
+        const totalPrice: number = goodsTraded * unitPrice;
 
+        console.dir(`Buyer: #${buyOrder.trader.id},  Seller: #${sellOrder.trader.id},  Good: ${buyOrder.good.displayName},  Quantity: ${goodsTraded}, Unit Price: $${unitPrice},  Total Price: $${totalPrice}`);
 
         this.transferGood(sellOrder.trader, buyOrder.trader, buyOrder.good, goodsTraded);
         // remove money from buyer and give it to seller
-        this.transferMoney(sellOrder.trader, buyOrder.trader, clearingPrice);
+        this.transferMoney(buyOrder.trader, sellOrder.trader, totalPrice);
 
         // update metrics
         buyOrder.trader.successfulTrades++;
         sellOrder.trader.successfulTrades++;
 
         // update price beliefs
-        buyOrder.trader.updatePriceBelief(buyOrder.good, buyOrder.orderType, true, clearingPrice);
-        sellOrder.trader.updatePriceBelief(sellOrder.good, sellOrder.orderType, true, clearingPrice);
+        buyOrder.trader.updatePriceBelief(buyOrder.good, buyOrder.orderType, true, unitPrice);
+        sellOrder.trader.updatePriceBelief(sellOrder.good, sellOrder.orderType, true, unitPrice);
 
         // change amounts
         buyOrder.amount = buyOrder.amount - goodsTraded;
@@ -93,7 +95,7 @@ export default class Market {
           sortedSellOrders.shift();
         }
 
-        moneyTraded += clearingPrice;
+        moneyTraded += totalPrice;
         unitsTraded += goodsTraded;
       }
 
@@ -109,16 +111,36 @@ export default class Market {
       }
 
       // log some stuff for the history books
-      this.history.numBuyOrders.add(good, [totalBuyAmount]);
-      this.history.numSellOrders.add(good, [totalSellAmount]);
+      this.history.buyOrderAmount.add(good, [totalBuyAmount]);
+      this.history.sellOrderAmount.add(good, [totalSellAmount]);
       this.history.unitsTraded.add(good, [unitsTraded]);
 
       if (unitsTraded > 0) {
-        this.history.profit.add(good, [moneyTraded / unitsTraded]);
+        this.history.prices.add(good, [moneyTraded / unitsTraded]);
       } else {
         // no units were traded this round, so use the last round's average price
-        this.history.profit.add(good, [this.history.prices.average(good, 1)]);
+        this.history.prices.add(good, [this.history.prices.average(good, 1)]);
       }
+
+      const jobProfit: Map<Job, Array<number>> = new Map();
+
+      for (const trader: Trader of this.traders) {
+        if (jobProfit.has(trader.job)) {
+          // $FlowFixMe
+          const newArr: Array<number> = jobProfit.get(trader.job);
+          newArr.push(trader.profitLastRound);
+          jobProfit.set(trader.job, newArr);
+        } else {
+          jobProfit.set(trader.job, [trader.profitLastRound]);
+        }
+      }
+
+      for (const [job, profit]: [Job, Array<number>] of jobProfit.entries()) {
+        this.history.profit.add(job, profit);
+      }
+
+      this.buyOrders.set(good, new Set());
+      this.sellOrders.set(good, new Set());
     }
   }
 
@@ -174,15 +196,87 @@ export default class Market {
     }
   }
 
+  // gets the most profitable job at this market
+  mostProfitableJob(dayRange: number = 10): ?Job {
+    let best: number = -Infinity;
+    let bestJob: ?Job = null;
+
+    for (const job: Job of JOBS) {
+      const avgProfit: number = this.history.profit.average(job, dayRange);
+
+      if (avgProfit > best) {
+        bestJob = job;
+        best = avgProfit;
+      }
+    }
+
+    return bestJob;
+  }
+
+  // Get the good with the highest demand/supply ratio over time at this market
+  // minimum: the minimum demand/supply ratio to consider an opportunity
+  // dayRange: number of rounds to look back
+  mostDemandedGood(minimum: number = 1.5, dayRange: number = 10): ?Good {
+    let bestGood: ?Good = null;
+    let bestRatio: number = -Infinity;
+
+    for (const good: Good of GOODS) {
+      let buys: number = this.history.buyOrderAmount.average(good, dayRange);
+      let sells: number = this.history.buyOrderAmount.average(good, dayRange);
+
+      if (buys > 0 || sells > 0) {
+        // if this Good is traded in this Market
+        if (sells === 0 && buys === 0) {
+          // make a fake supply of 0.5 for each unit to avoid
+          // an infinite ratio of supply to demand
+          sells = 0.5;
+        }
+
+        const ratio: number = buys / sells;
+
+        if (ratio > minimum && ratio > bestRatio) {
+          bestRatio = ratio;
+          bestGood = good;
+        }
+      }
+    }
+
+    return bestGood;
+  }
+
+  // get the price of a good at this market last round
+  meanPrice(good: Good): number {
+    return this.history.prices.average(good, 1);
+  }
+
+  demandFor(good: Good): number {
+    return this.history.buyOrderAmount.average(good, 1);
+  }
+
+  supplyFor(good: Good): number {
+    return this.history.sellOrderAmount.average(good, 1);
+  }
+
   simulate() {
     for (const trader: Trader of this.traders) {
       trader.moneyLastRound = trader.money;
       // do their job
       trader.work();
       // perform trades
+      const title: string = `Trader #${trader.id} is trading`;
+      console.groupCollapsed(title);
       trader.trade();
+      console.groupEnd(title);
 
       trader.recordProfit();
     }
+
+    // resolve the orders for this round
+    const title: string = `Resolving orders`;
+    console.groupCollapsed(title);
+    this.resolveOrders();
+    console.groupEnd(title);
+
+    this.history.debug();
   }
 }

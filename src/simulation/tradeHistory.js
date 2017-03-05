@@ -55,11 +55,12 @@ class TradeHistoryItem {
   }
 
   debug() {
-    console.groupCollapsed('TradeHistoryItem');
+    const title: string = `TradeHistoryItem: ${this.name}`;
+    console.groupCollapsed(title);
     for (const [key, value]: [Good, Array<number>] of this.record.entries()) {
       console.log(`${key.key}: ${value.join(', ')}`);
     }
-    console.groupEnd('TradeHistoryItem');
+    console.groupEnd(title);
   }
 
 }
@@ -67,23 +68,31 @@ class TradeHistoryItem {
 // a set of data points for the trade simulation
 export class TradeHistory {
   prices: TradeHistoryItem;
-  numBuyOrders: TradeHistoryItem;
-  numSellOrders: TradeHistoryItem;
+  buyOrderAmount: TradeHistoryItem;
+  sellOrderAmount: TradeHistoryItem;
   unitsTraded: TradeHistoryItem;
   profit: TradeHistoryItem;
 
   constructor() {
     this.prices = new TradeHistoryItem('prices');
-    this.numBuyOrders = new TradeHistoryItem('numBuyOrders');
-    this.numSellOrders = new TradeHistoryItem('numSellOrders');
+    this.buyOrderAmount = new TradeHistoryItem('buyOrderAmount');
+    this.sellOrderAmount = new TradeHistoryItem('sellOrderAmount');
     this.unitsTraded = new TradeHistoryItem('unitsTraded');
     this.profit = new TradeHistoryItem('profit');
   }
 
+  debug() {
+    this.prices.debug();
+    this.buyOrderAmount.debug();
+    this.sellOrderAmount.debug();
+    this.unitsTraded.debug();
+    this.profit.debug();
+  }
+
   register(item: Good) {
     this.prices.register(item);
-    this.numBuyOrders.register(item);
-    this.numSellOrders.register(item);
+    this.buyOrderAmount.register(item);
+    this.sellOrderAmount.register(item);
     this.unitsTraded.register(item);
   }
 }

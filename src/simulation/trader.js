@@ -6,7 +6,7 @@ import { GOODS } from './goods';
 import type { OrderType } from './marketOrder';
 import MarketOrder from './marketOrder';
 import type Market from './market';
-import type { Loan } from './bank'; 
+import type { Loan } from './bank';
 import _ from 'lodash';
 import PriceRange from './priceRange';
 
@@ -133,10 +133,20 @@ export default class Trader {
 
     // send the orders to market
     if (this.market) {
+      let balance: number = 0;
       for (const order: MarketOrder of buyOrders) {
-        this.market.buy(order);
+        console.log(`Trader ${this.id} is buying ${order.amount} units of ${order.good.displayName} for $${order.price} (has $${this.money})`);
+        if (this.money >= balance) {
+          // $FlowFixMe
+          this.market.buy(order);
+          balance += order.price;
+        } else {
+          throw Error(`Trader #${this.id} can't afford ${order.price} (has ${this.money}) balance of ${balance}`);
+        }
       }
       for (const order: MarketOrder of sellOrders) {
+        console.log(`Trader ${this.id} is selling ${order.amount} units of ${order.good.displayName} for $${order.price}`);
+        // $FlowFixMe
         this.market.sell(order);
       }
       return true;
@@ -290,9 +300,9 @@ export default class Trader {
         // all other failure cases
 
         // $FlowFixMe
-        const buys: number = this.market.history.numBuyOrders.average(good, 1);
+        const buys: number = this.market.history.buyOrderAmount.average(good, 1);
         // $FlowFixMe
-        const sells: number = this.market.history.numSellOrders.average(good, 1);
+        const sells: number = this.market.history.sellOrderAmount.average(good, 1);
 
         if (buys + sells > 0) {
           const supplyVsDemand: number = (sells - buys) / (sells + buys);
@@ -330,6 +340,10 @@ export default class Trader {
 
   avergagePastProfit(daysAgo: number): number {
     return _.mean(_.takeRight(this.profit, daysAgo));
+  }
+
+  get profitLastRound(): number {
+    return this.money - this.moneyLastRound;
   }
 
   recordProfit() {

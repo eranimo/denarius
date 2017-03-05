@@ -1,32 +1,9 @@
 // @flow
-import Inventory from './inventory';
 import Trader from './trader';
 import Market from './market';
 import * as GOODS from './goods';
 import * as JOBS from './jobs';
-import type { Job } from './jobs';
-import type { Good } from './goods';
-
-export class History {
-  round: number;
-  traders: Array<Object>;
-
-  constructor(sim: Simulation) {
-    this.round = sim.round;
-    this.traders = [];
-
-    for (const trader: Trader of sim.market.traders) {
-      this.traders.push({
-        id: trader.id,
-        money: trader.money,
-        moneyLastRound: trader.moneyLastRound,
-        profitLastRound: trader.money - trader.moneyLastRound,
-        job: trader.job.key,
-        inventory: trader.inventory.export()
-      });
-    }
-  }
-}
+import History from './history';
 
 
 const SETTINGS: Object = {
@@ -66,14 +43,14 @@ export default class Simulation {
       const trader: Trader = new Trader(JOBS.woodcutter);
       trader.inventory.add(GOODS.food, 5);
       this.market.addTrader(trader);
-    };
+    }
 
     // farmers
     for (let i: number = 0; i < SETTINGS.initialJobs.farmer; i++) {
       const trader: Trader = new Trader(JOBS.farmer);
       trader.inventory.add(GOODS.wood, 5);
       this.market.addTrader(trader);
-    };
+    }
   }
 
   nextRound(): History {
@@ -86,8 +63,6 @@ export default class Simulation {
     }
     console.groupEnd('Traders before trade:');
     this.market.simulate();
-    // resolve the orders for this round
-    this.market.resolveOrders();
     console.groupCollapsed('Traders after trade:');
     for (const trader: Trader of this.market.traders) {
       trader.debug();

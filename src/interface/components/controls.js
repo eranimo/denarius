@@ -2,8 +2,8 @@ import React, { Component, PropTypes } from 'react';
 import { Menu, Header, Button } from 'semantic-ui-react';
 import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { historySelector } from './selectors';
-import { forward, backward, reset } from './actions';
+import { historySelector } from '../selectors';
+import { forward, backward, reset } from '../actions';
 
 
 class Controls extends Component {

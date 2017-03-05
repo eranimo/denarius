@@ -2,7 +2,7 @@
 import React, { Component, PropTypes } from 'react';
 import { Statistic, Table } from 'semantic-ui-react';
 import { connect } from 'react-redux';
-import { historySelector } from './selectors';
+import { historySelector } from '../selectors';
 
 
 function currencyFormat(currency: ?number): string {

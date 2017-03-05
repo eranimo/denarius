@@ -1,11 +1,11 @@
 import { combineReducers } from 'redux';
 import * as reducers from './reducers';
-import Application from './app';
 import { Provider } from 'react-redux';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { createStore } from 'redux';
 import { BrowserRouter } from 'react-router-dom';
+import Application from './components/app';
 
 
 export default function setup() {

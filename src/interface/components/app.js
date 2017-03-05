@@ -1,11 +1,11 @@
 import React, { Component, PropTypes } from 'react';
 import { Container } from 'semantic-ui-react';
+import { connect } from 'react-redux';
+import { Switch, Route } from 'react-router-dom';
+import { forward } from '../actions';
+import Controls from './controls';
 import Market from './market';
 import Trader from './trader';
-import { connect } from 'react-redux';
-import { forward } from './actions';
-import { Switch, Route } from 'react-router-dom';
-import Controls from './controls';
 
 
 class Application extends Component {

@@ -6,6 +6,5 @@ const simulation: Simulation = new Simulation();
 
 window.simulation = simulation;
 
-
 // render the UI
 setup();

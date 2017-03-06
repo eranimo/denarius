@@ -1,26 +1,26 @@
 // @flow
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
 import { Statistic, Table } from 'semantic-ui-react';
 import { connect } from 'react-redux';
-import { historySelector } from '../selectors';
+import type { Good } from '../simulation/goods';
+import { historySelector, historicalGoodPriceSelector } from '../selectors';
+import type { GoodPriceRecord } from '../selectors';
+import GoodPriceChart from './goodPriceChart';
+import { currencyFormat } from '../formatters';
 
 
-function currencyFormat(currency: ?number): string {
-  if (currency === null || typeof currency === 'undefined') {
-    return '';
-  }
-  return currency.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+type props = {
+  history: Object,
+  historicalGoodPrices: Map<Good, Array<GoodPriceRecord>>
 }
-
 
 class Market extends Component {
 
-  static propTypes = {
-    history: PropTypes.object
-  }
+  props: props;
 
   render(): ?Object {
     const history: Object = this.props.history;
+    const historicalGoodPrices: Map<Good, Array<GoodPriceRecord>> = this.props.historicalGoodPrices;
 
     if (!history) return <div>Loading...</div>;
 
@@ -75,10 +75,10 @@ class Market extends Component {
           </Table.Header>
 
           <Table.Body>
-            {history.goods.map((item: Object): Object => {
+            {Array.from(history.goodPrices.entries()).map(([good, item]: [Good, Object]): Object => {
               return (
-                <Table.Row key={item.good.key}>
-                  <Table.Cell>{item.good.displayName}</Table.Cell>
+                <Table.Row key={good.key}>
+                  <Table.Cell>{good.displayName}</Table.Cell>
                   <Table.Cell>{currencyFormat(item.meanPrice)}</Table.Cell>
                   <Table.Cell>{currencyFormat(item.demand)}</Table.Cell>
                   <Table.Cell>{currencyFormat(item.supply)}</Table.Cell>
@@ -87,11 +87,27 @@ class Market extends Component {
             })}
           </Table.Body>
         </Table>
+
+        {Array.from(history.goodPrices.entries()).map(([good]: [Good]): Object => {
+          console.log(historicalGoodPrices);
+          return (
+            <GoodPriceChart
+              key={good.key}
+              good={good}
+              data={historicalGoodPrices ? historicalGoodPrices.get(good) : []}
+            />
+          );
+        })}
       </div>
     );
   }
 }
-const mapStateToProps: Function = historySelector;
+const mapStateToProps: Function = (state: Object): Object => {
+  return {
+    ...historySelector(state),
+    historicalGoodPrices: historicalGoodPriceSelector(30)(state)
+  };
+};
 const MarketConnect: Object = connect(mapStateToProps)(Market);
 
 export default MarketConnect;

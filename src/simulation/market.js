@@ -269,6 +269,8 @@ export default class Market {
       console.groupEnd(title);
 
       trader.recordProfit();
+
+      trader.handleBankruptcy();
     }
 
     // resolve the orders for this round

@@ -28,23 +28,36 @@ class Market extends Component {
 
     return (
       <div>
-        <Statistic.Group>
+        <Statistic.Group size="small">
           <Statistic>
             <Statistic.Value>
               {history.traders.length}
             </Statistic.Value>
             <Statistic.Label>Traders</Statistic.Label>
           </Statistic>
+          {history.mostProfitableJob && <Statistic>
+            <Statistic.Value>
+              {history.mostProfitableJob.displayName}
+            </Statistic.Value>
+            <Statistic.Label>Most Profitable Job</Statistic.Label>
+          </Statistic>}
+          {history.mostDemandedGood && <Statistic>
+            <Statistic.Value>
+              {history.mostDemandedGood.displayName}
+            </Statistic.Value>
+            <Statistic.Label>Most Demanded Good</Statistic.Label>
+          </Statistic>}
         </Statistic.Group>
 
         <h1>Traders</h1>
         <Table celled sortable compact>
           <Table.Header>
             <Table.Row>
-              <Table.HeaderCell>Trader ID</Table.HeaderCell>
-              <Table.HeaderCell>Trader Job</Table.HeaderCell>
-              <Table.HeaderCell>Trader Money</Table.HeaderCell>
-              <Table.HeaderCell>Trader Profit</Table.HeaderCell>
+              <Table.HeaderCell>ID</Table.HeaderCell>
+              <Table.HeaderCell>Job</Table.HeaderCell>
+              <Table.HeaderCell>Bankrupt Times</Table.HeaderCell>
+              <Table.HeaderCell>Money</Table.HeaderCell>
+              <Table.HeaderCell>Profit</Table.HeaderCell>
             </Table.Row>
           </Table.Header>
 
@@ -54,6 +67,7 @@ class Market extends Component {
                 <Table.Row key={trader.id}>
                   <Table.Cell>{trader.id}</Table.Cell>
                   <Table.Cell>{trader.job}</Table.Cell>
+                  <Table.Cell>{trader.bankruptTimes}</Table.Cell>
                   <Table.Cell content={currencyFormat(trader.money)} />
                   <Table.Cell content={currencyFormat(trader.profitLastRound)} />
                 </Table.Row>
@@ -80,8 +94,8 @@ class Market extends Component {
                 <Table.Row key={good.key}>
                   <Table.Cell>{good.displayName}</Table.Cell>
                   <Table.Cell>{currencyFormat(item.meanPrice)}</Table.Cell>
-                  <Table.Cell>{currencyFormat(item.demand)}</Table.Cell>
-                  <Table.Cell>{currencyFormat(item.supply)}</Table.Cell>
+                  <Table.Cell>{item.demand}</Table.Cell>
+                  <Table.Cell>{item.supply}</Table.Cell>
                 </Table.Row>
               );
             })}
@@ -89,7 +103,6 @@ class Market extends Component {
         </Table>
 
         {Array.from(history.goodPrices.entries()).map(([good]: [Good]): Object => {
-          console.log(historicalGoodPrices);
           return (
             <GoodPriceChart
               key={good.key}

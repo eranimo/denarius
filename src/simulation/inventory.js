@@ -40,6 +40,10 @@ export default class Inventory {
     return this.store.get(good) || 0;
   }
 
+  set(good: Good, amount: number) {
+    this.store.set(good, amount);
+  }
+
   // checks if the inventory has the amount of a good
   hasAmount(good: Good, amount: number): boolean {
     return this.get(good) >= amount;

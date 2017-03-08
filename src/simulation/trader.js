@@ -9,7 +9,7 @@ import type Market from './market';
 import type { Loan } from './bank';
 import _ from 'lodash';
 import PriceRange from './priceRange';
-
+import { goodsForJobs } from './jobsGoodsMap';
 
 let currentId: number = 1;
 
@@ -32,6 +32,7 @@ export default class Trader {
   loans: Set<Loan>;
   bankrupt: boolean;
   moneyLastRound: number;
+  bankruptTimes: number;
   market: ?Market;
   failedTrades: number;
   successfulTrades: number;
@@ -51,6 +52,7 @@ export default class Trader {
     this.money = 10;
     this.loans = new Set();
     this.profit = [];
+    this.bankruptTimes = 0;
     this.bankrupt = false;
     this.moneyLastRound = 0;
     this.failedTrades = 0;
@@ -124,6 +126,7 @@ export default class Trader {
             buyOrders.add(order);
           } else {
             this.bankrupt = true;
+            this.lastRound.hasTraded = false;
             return false;
           }
         }
@@ -149,6 +152,7 @@ export default class Trader {
         // $FlowFixMe
         this.market.sell(order);
       }
+      this.lastRound.hasTraded = true;
       return true;
     } else {
       return false;
@@ -336,6 +340,44 @@ export default class Trader {
         priceBelief.high = MIN_PRICE;
       }
     }
+  }
+
+  giveStartInventory() {
+    for (const [good, amount]: [Good, number] of this.job.idealInventory.entries()) {
+      this.inventory.set(good, amount);
+    }
+  }
+
+  handleBankruptcy() {
+    if (this.bankrupt) {
+      this.money = 10;
+      this.decideNewJob();
+      this.bankrupt = false;
+      this.bankruptTimes++;
+      this.giveStartInventory();
+    }
+  }
+
+  decideNewJob(): ?Job {
+    // look for the good most in demand, switch to the job that produces it
+    // if there is no good with a demand ratio above 1.5 ratio, switch to the most profitable job
+    // if that job is your current job, then do nothing
+    if (this.market == null) {
+      return null;
+    }
+    const mostProfitableJob: ?Job = this.market.mostProfitableJob();
+    // $FlowFixMe
+    const mostDemandedGood: ?Good = this.market.mostDemandedGood();
+    let bestJob: Job;
+    if (mostDemandedGood != null) {
+      bestJob = goodsForJobs.get(mostDemandedGood);
+    } else if (mostProfitableJob != null){
+      bestJob = mostProfitableJob;
+    } else {
+      return null;
+    }
+    this.job = bestJob;
+    return bestJob;
   }
 
   avergagePastProfit(daysAgo: number): number {

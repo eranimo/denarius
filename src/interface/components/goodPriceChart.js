@@ -26,8 +26,6 @@ export default class GoodPriceChart extends Component {
   render(): Object {
     const { good, data }: { good: Object, data: Array<GoodPriceRecord> } = this.props;
 
-    console.log(data);
-
     return (
       <div>
         <h2>{good.displayName}</h2>

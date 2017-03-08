@@ -41,14 +41,14 @@ export default class Simulation {
     // woodcutters
     for (let i: number = 0; i < SETTINGS.initialJobs.woodcutter; i++) {
       const trader: Trader = new Trader(JOBS.woodcutter);
-      trader.inventory.add(GOODS.food, 5);
+      trader.giveStartInventory();
       this.market.addTrader(trader);
     }
 
     // farmers
     for (let i: number = 0; i < SETTINGS.initialJobs.farmer; i++) {
       const trader: Trader = new Trader(JOBS.farmer);
-      trader.inventory.add(GOODS.wood, 5);
+      trader.giveStartInventory();
       this.market.addTrader(trader);
     }
   }

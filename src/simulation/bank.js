@@ -11,11 +11,15 @@ export class AccountHolder {
     this.loans = new Set();
   }
 
-  get availableFunds(): ?number {
+  get availableFunds(): number {
     if (this.account != null) {
       return this.account.amount;
     }
-    return null;
+    return 0;
+  }
+
+  set availableFunds(num: number) {
+    throw new Error('Cannot set available funds directly');
   }
 }
 
@@ -181,9 +185,9 @@ export class Bank extends AccountHolder {
   }
 
   // lend a loan to a trader
-  lend(borrower: AccountHolder, amount: number, interest: number): ?Loan {
+  lend(borrower: AccountHolder, amount: number, interestRate: number): ?Loan {
     if (amount >= this.loanableFunds && borrower.account != null) {
-      const loan: Loan = new Loan(amount, borrower, interest, this);
+      const loan: Loan = new Loan(amount, borrower, interestRate, this);
       borrower.account.deposit(amount);
       this.loans.add(loan);
       return loan;
@@ -196,8 +200,8 @@ export class Bank extends AccountHolder {
     return _.sumBy(Array.from(this.loans), (loan: Loan): number => loan.principal);
   }
 
-  // this will grow the reserves
-  simulate() {
+  // accrue interest on deposits and loans
+  calculateInterest() {
     // for all accounts, deposit interest
     for (const account: Account of this.accounts) {
       const interest: number = account.amount * this.savingsInterestRate;

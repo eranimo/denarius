@@ -22,9 +22,9 @@ export default class History {
     for (const trader: Trader of sim.market.traders) {
       this.traders.push({
         id: trader.id,
-        money: trader.money,
-        moneyLastRound: trader.moneyLastRound,
-        profitLastRound: trader.money - trader.moneyLastRound,
+        money: trader.availableFunds,
+        moneyLastRound: trader.lastRound.money,
+        profitLastRound: trader.availableFunds - trader.lastRound.money,
         job: trader.job.key,
         bankruptTimes: trader.bankruptTimes,
         inventory: trader.inventory.export()

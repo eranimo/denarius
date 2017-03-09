@@ -31,7 +31,7 @@ describe('Bank', () => {
     expect(bank.totalDeposits).toBe(10);
     expect(bank.reserves).toBe(1);
 
-    bank.simulate();
+    bank.calculateInterest();
 
     expect(person1.availableFunds).toBeGreaterThan(10);
     expect(bank.totalDeposits).toBeGreaterThan(10);
@@ -62,6 +62,7 @@ describe('Bank', () => {
 
     expect(person.availableFunds).toBe(10);
     expect(bank.totalDeposits).toBe(10);
+    expect(bank.loanableFunds).toBe(9);
     expect(bank.reserves).toBe(1);
 
     const loan: ?Loan = bank.lend(person, 10, 0.05);
@@ -73,7 +74,7 @@ describe('Bank', () => {
       expect(loan.balance).toBe(10);
       expect(loan.interestRate).toBe(0.05);
 
-      bank.simulate();
+      bank.calculateInterest();
 
       expect(loan.balance).toBe(10 + 10 * 0.05);
       loan.repay();

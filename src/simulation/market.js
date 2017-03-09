@@ -156,11 +156,10 @@ export default class Market {
 
   // transfer money from one Trader to another
   transferMoney(fromTrader: Trader, toTrader: Trader, amount: number) {
-    if (fromTrader.money >= amount) {
-      fromTrader.money -= amount;
-      toTrader.money += amount;
+    if (fromTrader.availableFunds >= amount) {
+      fromTrader.account.transferTo(toTrader.account, amount);
     } else {
-      throw new Error(`Trader ${fromTrader.toString()} doesn't have ${amount} money (it has ${fromTrader.money})`);
+      throw new Error(`Trader ${fromTrader.toString()} doesn't have ${amount} money (it has ${fromTrader.availableFunds})`);
     }
   }
 
@@ -259,7 +258,7 @@ export default class Market {
 
   simulate() {
     for (const trader: Trader of this.traders) {
-      trader.moneyLastRound = trader.money;
+      trader.moneyLastRound = trader.availableFunds;
       // do their job
       trader.work();
       // perform trades

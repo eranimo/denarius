@@ -1,6 +1,4 @@
 // @flow
-import type { Job } from './jobs';
-
 
 export type Good = {
   key: string,

@@ -6,10 +6,11 @@ import { GOODS } from './goods';
 import type { OrderType } from './marketOrder';
 import MarketOrder from './marketOrder';
 import type Market from './market';
-import type { Loan } from './bank';
 import _ from 'lodash';
 import PriceRange from './priceRange';
 import { goodsForJobs } from './jobsGoodsMap';
+import { AccountHolder } from './bank';
+
 
 let currentId: number = 1;
 
@@ -23,13 +24,11 @@ function positionInRange(value: number, min: number, max: number): number {
 }
 
 
-export default class Trader {
+export default class Trader extends AccountHolder {
   id: number;
   name: string;
   job: Job;
   inventory: Inventory;
-  money: number;
-  loans: Set<Loan>;
   bankrupt: boolean;
   moneyLastRound: number;
   bankruptTimes: number;
@@ -40,25 +39,25 @@ export default class Trader {
   priceBelief: Map<Good, PriceRange>;
   observedTradingRange: Map<Good, Array<number>>;
   lastRound: {
+    money: number,
     hasWorked: ?bool,
     hasTraded: ?bool
   };
 
   constructor(job: Job, name: string = '') {
+    super();
     this.id = currentId;
     currentId++;
     this.job = job;
     this.name = name;
-    this.money = 10;
-    this.loans = new Set();
     this.profit = [];
     this.bankruptTimes = 0;
     this.bankrupt = false;
-    this.moneyLastRound = 0;
     this.failedTrades = 0;
     this.successfulTrades = 0;
     this.inventory = new Inventory();
     this.lastRound = {
+      money: 0,
       hasWorked: null,
       hasTraded: null,
     };
@@ -122,7 +121,7 @@ export default class Trader {
         const order: ?MarketOrder = this.createBuyOrder(good, Math.abs(amount));
         if (order) {
           totalBuyOrderPrices += order.amount;
-          if (totalBuyOrderPrices <= this.money) {
+          if (totalBuyOrderPrices <= this.availableFunds) {
             buyOrders.add(order);
           } else {
             this.bankrupt = true;
@@ -138,13 +137,13 @@ export default class Trader {
     if (this.market) {
       let balance: number = 0;
       for (const order: MarketOrder of buyOrders) {
-        console.log(`Trader ${this.id} is buying ${order.amount} units of ${order.good.displayName} for $${order.price} (has $${this.money})`);
-        if (this.money >= balance) {
+        console.log(`Trader ${this.id} is buying ${order.amount} units of ${order.good.displayName} for $${order.price} (has $${this.availableFunds})`);
+        if (this.availableFunds >= balance) {
           // $FlowFixMe
           this.market.buy(order);
           balance += order.price;
         } else {
-          throw Error(`Trader #${this.id} can't afford ${order.price} (has ${this.money}) balance of ${balance}`);
+          throw Error(`Trader #${this.id} can't afford ${order.price} (has ${this.availableFunds}) balance of ${balance}`);
         }
       }
       for (const order: MarketOrder of sellOrders) {
@@ -350,7 +349,8 @@ export default class Trader {
 
   handleBankruptcy() {
     if (this.bankrupt) {
-      this.money = 10;
+      // TODO: take out loan
+      this.account.deposit(10);
       this.decideNewJob();
       this.bankrupt = false;
       this.bankruptTimes++;
@@ -385,11 +385,11 @@ export default class Trader {
   }
 
   get profitLastRound(): number {
-    return this.money - this.moneyLastRound;
+    return this.availableFunds - this.lastRound.money;
   }
 
   recordProfit() {
-    const profit: number = this.money - this.moneyLastRound;
+    const profit: number = this.availableFunds - this.lastRound.money;
     this.profit.push(profit);
   }
 
@@ -398,10 +398,10 @@ export default class Trader {
   }
 
   debug() {
-    const changeInMoney: number = _.round(this.money - this.moneyLastRound, 2);
+    const changeInMoney: number = _.round(this.availableFunds - this.lastRound.money, 2);
     const totalTrades: number = (this.successfulTrades + this.failedTrades);
     const success: number = _.round(this.successfulTrades / totalTrades * 100, 2);
-    const str: string = `Trader #${this.id} (Job: ${this.job.key}, Money: ${this.money} (Δ ${changeInMoney}), Bankrupt: ${this.bankrupt ? 'Yes' : 'No'}, Successful Trade Percent: ${success}%)`;
+    const str: string = `Trader #${this.id} (Job: ${this.job.key}, Money: ${this.availableFunds} (Δ ${changeInMoney}), Bankrupt: ${this.bankrupt ? 'Yes' : 'No'}, Successful Trade Percent: ${success}%)`;
     console.groupCollapsed(str);
     this.inventory.debug();
     console.groupEnd(str);

@@ -1,21 +1,26 @@
 // @flow
 import Trader from '../src/simulation/trader';
 import Market from '../src/simulation/market';
-import type { Job } from '../src/simulation/jobs';
+import { Bank } from '../src/simulation/bank';
+// import type { Job } from '../src/simulation/jobs';
 import * as GOODS from '../src/simulation/goods';
 import * as JOBS from '../src/simulation/jobs';
 
 
 let farmer: Trader;
+let bank: Bank;
 let woodcutter: Trader;
 let market: Market;
 
 market = new Market();
+bank = new Bank(100);
 farmer = new Trader(JOBS.farmer, 'farmer');
 woodcutter = new Trader(JOBS.woodcutter, 'woodcutter');
+bank.createAccount(farmer, 10);
+bank.createAccount(woodcutter, 10);
 
 test('farmer initial state', () => {
-  expect(farmer.money).toBe(10);
+  expect(farmer.availableFunds).toBe(10);
   expect(farmer.failedTrades).toBe(0);
   expect(farmer.successfulTrades).toBe(0);
 

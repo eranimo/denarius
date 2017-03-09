@@ -1,15 +1,19 @@
 // @flow
 import Trader from './trader';
 import Market from './market';
-import * as GOODS from './goods';
+// import * as GOODS from './goods';
 import * as JOBS from './jobs';
 import History from './history';
+import { Bank } from './bank';
 
 
 const SETTINGS: Object = {
   initialJobs: {
     woodcutter: 5,
     farmer: 5
+  },
+  bank: {
+    startingFunds: 100
   }
 };
 
@@ -18,6 +22,7 @@ export default class Simulation {
   round: number;
   market: Market;
   history: Array<History>;
+  bank: Bank;
   hook: Function;
 
   constructor() {
@@ -34,6 +39,9 @@ export default class Simulation {
     // start time
     this.round = 0;
 
+    // make a bank
+    this.bank = new Bank(SETTINGS.bank.startingFunds);
+
     // make a market
     this.market = new Market();
 
@@ -42,6 +50,7 @@ export default class Simulation {
     for (let i: number = 0; i < SETTINGS.initialJobs.woodcutter; i++) {
       const trader: Trader = new Trader(JOBS.woodcutter);
       trader.giveStartInventory();
+      this.bank.createAccount(trader, 10);
       this.market.addTrader(trader);
     }
 
@@ -49,6 +58,7 @@ export default class Simulation {
     for (let i: number = 0; i < SETTINGS.initialJobs.farmer; i++) {
       const trader: Trader = new Trader(JOBS.farmer);
       trader.giveStartInventory();
+      this.bank.createAccount(trader, 10);
       this.market.addTrader(trader);
     }
   }

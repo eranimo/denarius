@@ -21,6 +21,18 @@ export class AccountHolder {
   set availableFunds(num: number) {
     throw new Error('Cannot set available funds directly');
   }
+
+  // ratio of the amount of all withdraws compared to amount of total deposits
+  get accountRatio(): number {
+    return this.account.withdraws / this.account.deposits;
+  }
+
+  borrowFunds(amount: number): ?Loan {
+    if (this.bank) {
+      return this.bank.lend(this, amount, this.bank.calculateInterestRateFor(this));
+    }
+    return null;
+  }
 }
 
 export class Loan {
@@ -49,9 +61,23 @@ export class Loan {
     this.isRepayed = false;
   }
 
+  get currentPrincipal(): number {
+    return Math.max(0, this.principal - this.payments);
+  }
+
   calculatePayment(): number {
     if (this.borrower.availableFunds) {
-      return this.borrower.availableFunds * 0.25;
+      // percent of their total funds to pay loan with
+      let percent: number = 0.25;
+
+      if (this.balance > this.borrower.availableFunds) { // if we can pay it back in full
+        percent = 0.25; // then pay a quarter of our funds
+      } else if (this.borrower.accountRatio < 2) { // if we're poor
+        percent = 0.05;
+      } else { // we're doing ok, pay more
+        percent = 0.15;
+      }
+      return this.borrower.availableFunds * percent;
     }
     return 0;
   }
@@ -95,14 +121,19 @@ export class Loan {
 export class Account {
   owner: AccountHolder;
   amount: number;
+  deposits: number;
+  withdraws: number;
 
   constructor(owner: AccountHolder) {
     this.owner = owner;
     this.amount = 0;
+    this.deposits = 0;
+    this.withdraws = 0;
   }
 
   // deposit
   deposit(num: number) {
+    this.deposits += num;
     this.amount += num;
   }
 
@@ -115,6 +146,7 @@ export class Account {
   // returns boolean on success or failure
   // failure occurs when funds are depleted
   transferTo(account: Account, amount: number): boolean {
+    this.withdraws += amount;
     if (this.has(amount)) {
       account.amount += amount;
       this.amount -= amount;
@@ -127,6 +159,7 @@ export class Account {
   // returns boolean on success or failure
   // failure occurs when funds are depleted
   withdraw(num: number): boolean {
+    this.withdraws += num;
     if (this.has(num)) {
       this.amount -= num;
       return true;
@@ -156,6 +189,7 @@ export class Bank extends AccountHolder {
     const account: Account = new Account(owner, this);
     owner.account = account;
     account.deposit(startingFunds);
+    owner.bank = this;
     this.accounts.add(account);
   }
 
@@ -180,19 +214,36 @@ export class Bank extends AccountHolder {
     return this.totalDeposits * RESERVE_RATIO;
   }
 
+  get liabilities(): number {
+    let amount: number = 0;
+    for (const loan: Loan of this.loans) {
+      amount += loan.currentPrincipal;
+    }
+    return amount;
+  }
+
   get loanableFunds(): number {
     return this.totalDeposits - this.reserves;
   }
 
+  calculateInterestRateFor(borrower: AccountHolder): number {
+    if (borrower.accountRatio > 1) {
+      // more deposits than withdraws
+      return 0.03;
+    }
+    return 0.05;
+  }
+
   // lend a loan to a trader
   lend(borrower: AccountHolder, amount: number, interestRate: number): ?Loan {
-    if (amount >= this.loanableFunds && borrower.account != null) {
+    if (amount <= this.loanableFunds && borrower.account != null) {
       const loan: Loan = new Loan(amount, borrower, interestRate, this);
       borrower.account.deposit(amount);
       this.loans.add(loan);
+      borrower.loans.add(loan);
       return loan;
     }
-    return null;
+    throw new Error(`Bank is out of available funds, can not lend to ${borrower.toString()}. Needs ${amount} but has ${this.loanableFunds}`);
   }
 
   // get the total amount of credit this bank is responsible for
@@ -201,7 +252,7 @@ export class Bank extends AccountHolder {
   }
 
   // accrue interest on deposits and loans
-  calculateInterest() {
+  accrueAndChargeInterest() {
     // for all accounts, deposit interest
     for (const account: Account of this.accounts) {
       const interest: number = account.amount * this.savingsInterestRate;
@@ -210,6 +261,15 @@ export class Bank extends AccountHolder {
     // for all loans, collect interest
     for (const loan: Loan of this.loans) {
       loan.accrueInterest();
+    }
+  }
+
+  closeLoans() {
+    for (const loan: Loan of this.loans) {
+      if (loan.balance === 0) {
+        this.loans.delete(loan);
+        loan.borrower.loans.delete(loan);
+      }
     }
   }
 }

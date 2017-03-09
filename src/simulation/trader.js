@@ -2,6 +2,7 @@
 import Inventory from './inventory';
 import type { Job } from './jobs';
 import type { Good } from './goods';
+import type { Loan } from './bank';
 import { GOODS } from './goods';
 import type { OrderType } from './marketOrder';
 import MarketOrder from './marketOrder';
@@ -30,7 +31,6 @@ export default class Trader extends AccountHolder {
   job: Job;
   inventory: Inventory;
   bankrupt: boolean;
-  moneyLastRound: number;
   bankruptTimes: number;
   market: ?Market;
   failedTrades: number;
@@ -350,7 +350,10 @@ export default class Trader extends AccountHolder {
   handleBankruptcy() {
     if (this.bankrupt) {
       // TODO: take out loan
-      this.account.deposit(10);
+      const loan: ?Loan = this.borrowFunds(10);
+      if (loan == null) {
+        throw new Error(`Trader #${this.id} failed to take out a loan`);
+      }
       this.decideNewJob();
       this.bankrupt = false;
       this.bankruptTimes++;

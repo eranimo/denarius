@@ -258,7 +258,7 @@ export default class Market {
 
   simulate() {
     for (const trader: Trader of this.traders) {
-      trader.moneyLastRound = trader.availableFunds;
+      trader.lastRound.money = trader.availableFunds;
       // do their job
       trader.work();
       // perform trades

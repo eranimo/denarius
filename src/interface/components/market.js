@@ -7,6 +7,7 @@ import { historySelector, historicalGoodPriceSelector } from '../selectors';
 import type { GoodPriceRecord } from '../selectors';
 import GoodPriceChart from './goodPriceChart';
 import { currencyFormat } from '../formatters';
+import _ from 'lodash';
 
 
 type props = {
@@ -49,13 +50,37 @@ class Market extends Component {
           </Statistic>}
         </Statistic.Group>
 
+        <Statistic.Group size="small">
+          {<Statistic>
+            <Statistic.Value>
+              {currencyFormat(history.bank.capital)}
+            </Statistic.Value>
+            <Statistic.Label>Bank Capital</Statistic.Label>
+          </Statistic>}
+          {<Statistic>
+            <Statistic.Value>
+              {currencyFormat(history.bank.totalDeposits)}
+            </Statistic.Value>
+            <Statistic.Label>Bank Total Deposits</Statistic.Label>
+          </Statistic>}
+          {<Statistic>
+            <Statistic.Value>
+              {currencyFormat(history.bank.liabilities)}
+            </Statistic.Value>
+            <Statistic.Label>Bank Liabilities</Statistic.Label>
+          </Statistic>}
+        </Statistic.Group>
+
+
         <h1>Traders</h1>
         <Table celled sortable compact>
           <Table.Header>
             <Table.Row>
               <Table.HeaderCell>ID</Table.HeaderCell>
               <Table.HeaderCell>Job</Table.HeaderCell>
-              <Table.HeaderCell>Bankrupt Times</Table.HeaderCell>
+              <Table.HeaderCell># Bankrupt</Table.HeaderCell>
+              <Table.HeaderCell>Account Ratio</Table.HeaderCell>
+              <Table.HeaderCell># Loans</Table.HeaderCell>
               <Table.HeaderCell>Money</Table.HeaderCell>
               <Table.HeaderCell>Profit</Table.HeaderCell>
             </Table.Row>
@@ -68,6 +93,20 @@ class Market extends Component {
                   <Table.Cell>{trader.id}</Table.Cell>
                   <Table.Cell>{trader.job}</Table.Cell>
                   <Table.Cell>{trader.bankruptTimes}</Table.Cell>
+                  <Table.Cell>{_.round(trader.accountRatio, 2)}</Table.Cell>
+                  <Table.Cell>
+                    {trader.loans.length > 0
+                      ? <div>
+                          {trader.loans.map((loan: Object, index: number): Object => {
+                            return (
+                              <div key={index}>
+                                {currencyFormat(loan.balance)} @ {loan.interestRate} ({loan.repayments} payments)
+                              </div>
+                            );
+                          })}
+                        </div>
+                      : 'None'}
+                  </Table.Cell>
                   <Table.Cell content={currencyFormat(trader.money)} />
                   <Table.Cell content={currencyFormat(trader.profitLastRound)} />
                 </Table.Row>

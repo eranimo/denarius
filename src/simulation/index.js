@@ -5,6 +5,7 @@ import Market from './market';
 import * as JOBS from './jobs';
 import History from './history';
 import { Bank } from './bank';
+import type { Loan } from './bank';
 
 
 const SETTINGS: Object = {
@@ -79,6 +80,15 @@ export default class Simulation {
     }
     console.groupEnd('Traders after trade:');
     console.groupEnd(text);
+
+    this.bank.accrueAndChargeInterest();
+    this.bank.closeLoans();
+
+    for (const trader: Trader of this.market.traders) {
+      for (const loan: Loan of trader.loans) {
+        loan.repay();
+      }
+    }
 
     const history: History = this.recordHistory();
 

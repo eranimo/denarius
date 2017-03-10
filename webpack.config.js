@@ -10,7 +10,8 @@ module.exports = function(env) {
     devtool: "source-map",
     output: {
       filename: '[name].js',
-      path: path.resolve(__dirname, 'dist')
+      path: path.resolve(__dirname, 'dist'),
+      publicPath: path.resolve(__dirname, 'dist', 'assets')
     },
     module: {
       rules: [
@@ -42,7 +43,10 @@ module.exports = function(env) {
       template: 'src/index.html'
     })],
     devServer: {
-      stats: 'errors-only'
+      stats: 'errors-only',
+      historyApiFallback: {
+        index: path.resolve(__dirname, 'dist', 'assets')
+      }
     }
   };
 };

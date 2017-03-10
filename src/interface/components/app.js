@@ -26,9 +26,8 @@ class Application extends Component {
       <Container>
         <Controls />
         <Switch>
-          <Route exact path="/" component={Market}>
-            <Route path="/trader/:id" component={Trader} />
-          </Route>
+          <Route exact path="/" component={Market} />
+          <Route path="/trader/:id" component={Trader} />
           <Route>
             404: Page not found
           </Route>

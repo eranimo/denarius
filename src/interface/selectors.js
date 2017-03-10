@@ -33,6 +33,25 @@ export const historySelector: Function = createSelector(
   }
 );
 
+export type MoneyRecord = {
+  round: number,
+  money: number
+};
+
+export const historicalTraderMoneySelector: Function = (traderId: number, roundsBack: number): Function => createSelector(
+  timeSelector,
+  roundSelector(roundsBack),
+  (time: Object, rounds: Array<History>): Array<MoneyRecord> => {
+    const records: Array<MoneyRecord> = [];
+    for (const history: History of rounds) {
+      records.push({
+        round: history.round,
+        money: _.find(history.traders, ['id', parseInt(traderId, 10)]).money
+      });
+    }
+    return records;
+  }
+);
 
 export type GoodPriceRecord = {
   round: number,

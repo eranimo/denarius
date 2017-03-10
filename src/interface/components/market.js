@@ -5,9 +5,10 @@ import { connect } from 'react-redux';
 import type { Good } from '../simulation/goods';
 import { historySelector, historicalGoodPriceSelector } from '../selectors';
 import type { GoodPriceRecord } from '../selectors';
-import GoodPriceChart from './goodPriceChart';
+import { GoodPriceChart } from './charts';
 import { currencyFormat } from '../formatters';
 import _ from 'lodash';
+import { Link } from 'react-router-dom';
 
 
 type props = {
@@ -90,7 +91,11 @@ class Market extends Component {
             {history.traders.map((trader: Object): Object => {
               return (
                 <Table.Row key={trader.id}>
-                  <Table.Cell>{trader.id}</Table.Cell>
+                  <Table.Cell>
+                    <Link to={`/trader/${trader.id}`}>
+                      {trader.id}
+                    </Link>
+                  </Table.Cell>
                   <Table.Cell>{trader.job}</Table.Cell>
                   <Table.Cell>{trader.bankruptTimes}</Table.Cell>
                   <Table.Cell>{_.round(trader.accountRatio, 2)}</Table.Cell>

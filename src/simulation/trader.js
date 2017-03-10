@@ -379,8 +379,11 @@ export default class Trader extends AccountHolder {
     } else {
       return null;
     }
-    this.job = bestJob;
-    return bestJob;
+    if (bestJob != null) {
+      this.job = bestJob;
+      return bestJob;
+    }
+    return null;
   }
 
   avergagePastProfit(daysAgo: number): number {

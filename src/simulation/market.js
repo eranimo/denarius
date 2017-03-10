@@ -221,7 +221,7 @@ export default class Market {
 
     for (const good: Good of GOODS) {
       let buys: number = this.history.buyOrderAmount.average(good, dayRange);
-      let sells: number = this.history.buyOrderAmount.average(good, dayRange);
+      let sells: number = this.history.sellOrderAmount.average(good, dayRange);
 
       if (buys > 0 || sells > 0) {
         // if this Good is traded in this Market

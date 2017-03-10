@@ -18,5 +18,11 @@ export const food: Good = {
   displayName: 'Food'
 };
 
+export const tools: Good = {
+  key: 'tools',
+  color: 'silver',
+  displayName: 'Tools'
+};
 
-export const GOODS: Array<Good> = [wood, food];
+
+export const GOODS: Array<Good> = [wood, food, tools];

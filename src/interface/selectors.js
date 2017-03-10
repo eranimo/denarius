@@ -35,7 +35,8 @@ export const historySelector: Function = createSelector(
 
 export type MoneyRecord = {
   round: number,
-  money: number
+  money: number,
+  liabilities: number
 };
 
 export const historicalTraderMoneySelector: Function = (traderId: number, roundsBack: number): Function => createSelector(
@@ -44,9 +45,11 @@ export const historicalTraderMoneySelector: Function = (traderId: number, rounds
   (time: Object, rounds: Array<History>): Array<MoneyRecord> => {
     const records: Array<MoneyRecord> = [];
     for (const history: History of rounds) {
+      const trader: Object = _.find(history.traders, ['id', parseInt(traderId, 10)]);
       records.push({
         round: history.round,
-        money: _.find(history.traders, ['id', parseInt(traderId, 10)]).money
+        money: trader.money,
+        liabilities: trader.liabilities
       });
     }
     return records;

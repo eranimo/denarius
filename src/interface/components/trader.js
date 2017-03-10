@@ -42,11 +42,11 @@ class Trader extends Component {
     return (
       <div>
         <Breadcrumb>
-          <Breadcrumb.Section link>
-            <Link to={'/'}>
+          <Link to={'/'}>
+            <Breadcrumb.Section link>
               Market
-            </Link>
-          </Breadcrumb.Section>
+            </Breadcrumb.Section>
+          </Link>
           <Breadcrumb.Divider />
           <Breadcrumb.Section active>Trader #{trader.id}</Breadcrumb.Section>
         </Breadcrumb>
@@ -60,6 +60,10 @@ class Trader extends Component {
             <Table.Row>
               <Table.Cell>Money</Table.Cell>
               <Table.Cell>{currencyFormat(trader.money)} ({currencyFormat(trader.profitLastRound)})</Table.Cell>
+            </Table.Row>
+            <Table.Row>
+              <Table.Cell>Liabilities (loans)</Table.Cell>
+              <Table.Cell>{currencyFormat(trader.liabilities)}</Table.Cell>
             </Table.Row>
           </Table.Body>
         </Table>

@@ -40,6 +40,7 @@ export default class History {
       this.traders.push({
         id: trader.id,
         money: trader.availableFunds,
+        liabilities: trader.liabilities,
         moneyLastRound: trader.lastRound.money,
         profitLastRound: trader.availableFunds - trader.lastRound.money,
         job: trader.job.key,

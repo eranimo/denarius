@@ -22,6 +22,22 @@ export class AccountHolder {
     throw new Error('Cannot set available funds directly');
   }
 
+  get assets(): number {
+    return this.availableFunds;
+  }
+
+  get liabilities(): number {
+    let amount: number = 0;
+    for (const loan: Loan of this.loans) {
+      amount += loan.currentPrincipal;
+    }
+    return amount;
+  }
+
+  get netWorth(): number {
+    return this.assets - this.liabilities;
+  }
+
   // ratio of the amount of all withdraws compared to amount of total deposits
   get accountRatio(): number {
     return this.account.withdraws / this.account.deposits;
@@ -173,7 +189,6 @@ A bank is an institution that lends and holds money
 */
 const RESERVE_RATIO: number = 1 / 10;
 export class Bank extends AccountHolder {
-  loans: Set<Loan>;
   account: Account; // the bank's account
   accounts: Set<Account>;
 
@@ -182,7 +197,6 @@ export class Bank extends AccountHolder {
     this.accounts = new Set();
     this.account = new Account(this);
     this.account.deposit(startingFunds);
-    this.loans = new Set();
   }
 
   createAccount(owner: AccountHolder, startingFunds: number = 0) {
@@ -212,14 +226,6 @@ export class Bank extends AccountHolder {
 
   get reserves(): number {
     return this.totalDeposits * RESERVE_RATIO;
-  }
-
-  get liabilities(): number {
-    let amount: number = 0;
-    for (const loan: Loan of this.loans) {
-      amount += loan.currentPrincipal;
-    }
-    return amount;
   }
 
   get loanableFunds(): number {

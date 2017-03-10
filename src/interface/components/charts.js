@@ -67,14 +67,15 @@ export class TraderMoneyChart extends Component {
           data={data}
           margin={{top: 20, right: 60, left: 20, bottom: 5}}>
           <XAxis label="Round" dataKey="round" />
-          <YAxis label="Money" tickFormatter={currencyFormat} />
+          <YAxis label="$" tickFormatter={currencyFormat} />
           <CartesianGrid strokeDasharray="3 3"/>
           <Tooltip
             formatter={currencyFormat}
             labelFormatter={(label: string): string => `Round #${label}`}
           />
           <Legend />
-          <Line name="Money" type="monotone" dataKey="money" stroke={'#333'} activeDot={{r: 5}}/>
+          <Line name="Money" type="monotone" dataKey="money" stroke={`#333`} activeDot={{r: 5}}/>
+          <Line name="Liabilities" type="monotone" dataKey="liabilities" stroke={'red'} activeDot={{r: 5}}/>
         </LineChart>
       </div>
     );

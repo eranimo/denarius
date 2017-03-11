@@ -1,6 +1,6 @@
 // @flow
 import React, { Component } from 'react';
-import { Breadcrumb, Table } from 'semantic-ui-react';
+import { Breadcrumb, Table, List } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 import _ from 'lodash';
 import { historySelector, historicalTraderMoneySelector } from '../selectors';
@@ -65,8 +65,23 @@ class Trader extends Component {
               <Table.Cell>Liabilities (loans)</Table.Cell>
               <Table.Cell>{currencyFormat(trader.liabilities)}</Table.Cell>
             </Table.Row>
+            <Table.Row>
+              <Table.Cell>Inventory</Table.Cell>
+              <Table.Cell>
+                <List>
+                  {trader.inventory.map((inventory: Object, index: number): Object => {
+                    return (
+                      <List.Item key={index}>
+                        {inventory.good.displayName} - <b>{inventory.amount}</b>
+                      </List.Item>
+                    );
+                  })}
+                </List>
+              </Table.Cell>
+            </Table.Row>
           </Table.Body>
         </Table>
+
 
         <TraderMoneyChart data={this.props.historicalMoney} />
       </div>

@@ -64,13 +64,13 @@ export const blacksmith: Job = {
   displayName: 'Blacksmith',
   color: 'silver',
   idealInventory: new Map([
-    [GOODS.wood, 5]
+    [GOODS.wood, 6]
   ]),
   requiredGoods: new Map([
-    [GOODS.wood, 2]
+    [GOODS.wood, 4]
   ]),
   workFunc(inventory: Inventory): Inventory {
-    inventory.subtract(GOODS.wood, 2);
+    inventory.subtract(GOODS.wood, 4);
     inventory.add(GOODS.tools, 1);
     return inventory;
   }

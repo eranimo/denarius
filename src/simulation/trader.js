@@ -229,7 +229,7 @@ export default class Trader extends AccountHolder {
   // determins how much of a good do we have over the amount that we need
   // i.e. the amount we can safely get rid of
   surplusOfGood(good: Good): number {
-    return Math.min(0, this.inventory.get(good) - this.idealAmountOfGood(good));
+    return Math.max(0, Math.abs(this.inventory.get(good) - this.idealAmountOfGood(good)));
   }
 
   // determine how much of a good to buy

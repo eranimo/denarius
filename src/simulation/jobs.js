@@ -23,14 +23,14 @@ export const woodcutter: Job = {
     [GOODS.tools, 2]
   ]),
   requiredGoods: new Map([
-    [GOODS.food, 3],
+    [GOODS.food, 2],
     [GOODS.tools, 1]
   ]),
   workFunc(inventory: Inventory): Inventory {
     if (_.random(10) === 0) {
       inventory.subtract(GOODS.tools, 1);
     }
-    inventory.subtract(GOODS.food, 3);
+    inventory.subtract(GOODS.food, 2);
     inventory.add(GOODS.wood, 1);
     return inventory;
   }

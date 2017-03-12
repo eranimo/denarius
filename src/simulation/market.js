@@ -263,12 +263,14 @@ export default class Market {
   }
 
   simulate() {
-    const overTitle: string = `Traders trading`;
+    const overTitle: string = `Traders working and trading`;
     console.groupCollapsed(overTitle);
     for (const trader: Trader of this.traders) {
       trader.lastRound.money = trader.availableFunds;
       // do their job
+      console.groupCollapsed(`Trader #${trader.id} working`);
       trader.work();
+      console.groupEnd(`Trader #${trader.id} working`);
       // perform trades
       const title: string = `Trader #${trader.id} is trading`;
       console.groupCollapsed(title);

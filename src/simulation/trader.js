@@ -38,6 +38,7 @@ export default class Trader extends AccountHolder {
   profit: Array<number>;
   priceBelief: Map<Good, PriceRange>;
   observedTradingRange: Map<Good, Array<number>>;
+  idleRounds: number;
   lastRound: {
     money: number,
     hasWorked: ?bool,
@@ -53,6 +54,7 @@ export default class Trader extends AccountHolder {
     this.profit = [];
     this.bankruptTimes = 0;
     this.bankrupt = false;
+    this.idleRounds = 0;
     this.failedTrades = 0;
     this.successfulTrades = 0;
     this.inventory = new Inventory();
@@ -89,8 +91,21 @@ export default class Trader extends AccountHolder {
       // perform the job
       this.job.workFunc(this.inventory);
       this.lastRound.hasWorked = true;
+      console.log(`Trader #${this.id} worked`);
+      this.idleRounds = 0;
     } else {
+      console.log(`Trader #${this.id} did not work (${this.idleRounds} idle rounds)`);
       this.lastRound.hasWorked = false;
+      this.idleRounds++;
+    }
+
+    if (this.idleRounds >= 5) {
+      const job: ?Job = this.decideNewJob();
+      if (job != null) {
+        this.idleRounds = 0;
+        console.log(`Trader #${this.id} switched to ${job.displayName} due to not being able to work`);
+        this.job = job;
+      }
     }
   }
 
@@ -355,7 +370,11 @@ export default class Trader extends AccountHolder {
       if (loan == null) {
         throw new Error(`Trader #${this.id} failed to take out a loan`);
       }
-      this.decideNewJob();
+      const job: ?Job = this.decideNewJob();
+      if (job != null) {
+        console.log(`Trader #${this.id} switched to ${job.displayName} due to bankrupcy`);
+        this.job = job;
+      }
       this.bankrupt = false;
       this.bankruptTimes++;
       this.giveStartInventory();
@@ -397,16 +416,16 @@ export default class Trader extends AccountHolder {
       let percent: number = 0.25;
 
       if (loan.balance > this.availableFunds) { // if we can pay it back in full
-        percent = 0.25; // then pay a quarter of our funds
+        percent = 0.50; // then pay a quarter of our funds
       } else if (this.accountRatio < 2) { // if we're poor
-        percent = 0.05;
+        percent = 0.1;
       } else { // we're doing ok, pay more
-        percent = 0.15;
+        percent = 0.25;
       }
       return this.profitLastRound * percent;
     }
     // if we have negative income, pay a very small amount
-    return this.availableFunds * 0.05;
+    return this.availableFunds * 0.15;
   }
 
   avergagePastProfit(daysAgo: number): number {

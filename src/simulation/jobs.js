@@ -37,7 +37,7 @@ export const woodcutter: Job = {
     [GOODS.tools, 1]
   ]),
   workFunc(inventory: Inventory): Inventory {
-    if (_.random(10) === 0) {
+    if (_.random(5) === 0) {
       inventory.subtract(GOODS.tools, 1);
     }
     inventory.subtract(GOODS.bread, 2);
@@ -61,7 +61,7 @@ export const farmer: Job = {
     [GOODS.tools, 1]
   ]),
   workFunc(inventory: Inventory): Inventory {
-    if (_.random(10) === 0) {
+    if (_.random(5) === 0) {
       inventory.subtract(GOODS.tools, 1);
     }
     inventory.subtract(GOODS.wood, 1);

@@ -11,10 +11,10 @@ import type { Loan } from './bank';
 
 const SETTINGS: Object = {
   initialJobs: {
-    woodcutter: 5,
-    farmer: 5,
-    baker: 3,
-    blacksmith: 5,
+    woodcutter: 1,
+    farmer: 1,
+    baker: 1,
+    blacksmith: 1,
   },
   bank: {
     startingFunds: 100

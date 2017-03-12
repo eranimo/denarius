@@ -23,6 +23,7 @@ export default class MarketOrder {
       throw Error(`Cannot create a order of quantity zero`);
     }
     if (price === 0) {
+      console.trace();
       throw Error(`Cannot create a order of price zero`);
     }
   }

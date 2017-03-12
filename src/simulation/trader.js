@@ -160,21 +160,21 @@ export default class Trader extends AccountHolder {
 
   // creates a sell order at the price and quantity that makes sense for this Trader
   createSellOrder(good: Good, limit: number): ?MarketOrder {
-    const price: number = this.determinePriceOf(good);
+    const unitPrice: number = this.determinePriceOf(good);
     const ideal: number = this.determineSellQuantity(good);
     const quantityToSell: number = limit > ideal ? limit : ideal; // can't sell more than the limit
     if (quantityToSell > 0) {
-      return new MarketOrder('sell', good, quantityToSell, price, this);
+      return new MarketOrder('sell', good, quantityToSell, unitPrice, this);
     }
   }
 
   // creates a buy order at the price and quantity that makes sense for this Trader
   createBuyOrder(good: Good, limit: number): ?MarketOrder {
-    const price: number = this.determinePriceOf(good);
+    const unitPrice: number = this.determinePriceOf(good);
     const ideal: number = this.determineBuyQuantity(good);
     const quantityToBuy: number = limit > ideal ? limit : ideal; // can't buy more than the limit
-    if (quantityToBuy > 0) {
-      return new MarketOrder('buy', good, quantityToBuy, price, this);
+    if (quantityToBuy > 0 && unitPrice > 0 && (unitPrice * quantityToBuy) <= this.availableFunds) {
+      return new MarketOrder('buy', good, quantityToBuy, unitPrice, this);
     }
   }
 

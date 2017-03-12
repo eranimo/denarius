@@ -88,7 +88,7 @@ export const baker: Job = {
       inventory.subtract(GOODS.tools, 1);
     }
     inventory.subtract(GOODS.grain, 2);
-    inventory.add(GOODS.bread, 3);
+    inventory.add(GOODS.bread, 2);
     return inventory;
   }
 };
@@ -104,11 +104,11 @@ export const blacksmith: Job = {
   ]),
   requiredGoods: new Map([
     [GOODS.wood, 4],
-    [GOODS.bread, 1]
+    [GOODS.bread, 2]
   ]),
   workFunc(inventory: Inventory): Inventory {
     inventory.subtract(GOODS.wood, 4);
-    inventory.subtract(GOODS.bread, 1);
+    inventory.subtract(GOODS.bread, 2);
     inventory.add(GOODS.tools, 1);
     return inventory;
   }

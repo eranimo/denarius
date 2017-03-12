@@ -63,7 +63,7 @@ export default class Simulation {
   nextRound(): History {
     this.round += 1;
     const text: string = `Simulation round #${this.round}`;
-    console.group(text);
+    console.groupCollapsed(text);
     console.groupCollapsed('Traders before trade:');
     for (const trader: Trader of this.market.traders) {
       trader.debug();

@@ -3,10 +3,11 @@ var HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = function(env) {
   return {
-    entry: {
-      app: './src/index.js',
-      theme: './node_modules/semantic-ui/dist/semantic.min.css'
-    },
+    entry: [
+      './src/sim.js',
+      './src/ui.js',
+      './node_modules/semantic-ui/dist/semantic.min.css'
+    ],
     devtool: "source-map",
     output: {
       filename: '[name].js',

@@ -51,6 +51,7 @@ class Market extends Component {
           </Statistic>}
         </Statistic.Group>
 
+        <h2>Bank</h2>
         <Statistic.Group size="small">
           {<Statistic>
             <Statistic.Value>

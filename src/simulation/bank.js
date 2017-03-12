@@ -49,6 +49,23 @@ export class AccountHolder {
     }
     return null;
   }
+
+  calculatePayment(loan: Loan): number {
+    if (this.availableFunds) {
+      // percent of their total funds to pay loan with
+      let percent: number = 0.25;
+
+      if (loan.balance > this.availableFunds) { // if we can pay it back in full
+        percent = 0.25; // then pay a quarter of our funds
+      } else if (this.accountRatio < 2) { // if we're poor
+        percent = 0.05;
+      } else { // we're doing ok, pay more
+        percent = 0.15;
+      }
+      return this.availableFunds * percent;
+    }
+    return 0;
+  }
 }
 
 export class Loan {
@@ -81,23 +98,6 @@ export class Loan {
     return Math.max(0, this.principal - this.payments);
   }
 
-  calculatePayment(): number {
-    if (this.borrower.availableFunds) {
-      // percent of their total funds to pay loan with
-      let percent: number = 0.25;
-
-      if (this.balance > this.borrower.availableFunds) { // if we can pay it back in full
-        percent = 0.25; // then pay a quarter of our funds
-      } else if (this.borrower.accountRatio < 2) { // if we're poor
-        percent = 0.05;
-      } else { // we're doing ok, pay more
-        percent = 0.15;
-      }
-      return this.borrower.availableFunds * percent;
-    }
-    return 0;
-  }
-
   accrueInterest() {
     const interest: number = this.balance * this.interestRate;
     this.balance += interest;
@@ -113,7 +113,7 @@ export class Loan {
     }
 
     const funds: number = this.borrower.availableFunds;
-    let payment: number = this.calculatePayment();
+    let payment: number = this.borrower.calculatePayment(this);
     if (payment <= funds) {
       if (payment > this.balance) {
         payment = this.balance;

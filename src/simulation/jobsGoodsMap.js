@@ -6,6 +6,6 @@ import { GOODS } from './goods';
 
 export const goodsForJobs: Map<Job, Good> = new Map([
   [GOODS.wood, JOBS.woodcutter],
-  [GOODS.food, JOBS.farmer],
+  [GOODS.grain, JOBS.farmer],
   [GOODS.tools, JOBS.blacksmith],
 ]);

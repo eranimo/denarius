@@ -14,23 +14,33 @@ export type Job = {
   workFunc: (inventory: Inventory) => Inventory
 }
 
+/*
+bread, lumber, tools -> grain
+bread, tools -> iron_ore
+bread, tools, timber -> lumber
+bread, tools -> timber
+bread, iron, lumber -> tools
+bread, iron_ore, tools -> iron
+grain -> bread
+*/
+
 export const woodcutter: Job = {
   key: 'woodcutter',
   displayName: 'Woodcutter',
   color: 'brown',
   idealInventory: new Map([
-    [GOODS.food, 5],
+    [GOODS.bread, 4],
     [GOODS.tools, 2]
   ]),
   requiredGoods: new Map([
-    [GOODS.food, 2],
+    [GOODS.bread, 2],
     [GOODS.tools, 1]
   ]),
   workFunc(inventory: Inventory): Inventory {
     if (_.random(10) === 0) {
       inventory.subtract(GOODS.tools, 1);
     }
-    inventory.subtract(GOODS.food, 2);
+    inventory.subtract(GOODS.bread, 2);
     inventory.add(GOODS.wood, 1);
     return inventory;
   }
@@ -41,19 +51,44 @@ export const farmer: Job = {
   displayName: 'Farmer',
   color: 'green',
   idealInventory: new Map([
-    [GOODS.wood, 5],
+    [GOODS.wood, 2],
+    [GOODS.bread, 2],
     [GOODS.tools, 2]
   ]),
   requiredGoods: new Map([
-    [GOODS.wood, 2],
+    [GOODS.wood, 1],
+    [GOODS.bread, 1],
     [GOODS.tools, 1]
   ]),
   workFunc(inventory: Inventory): Inventory {
     if (_.random(10) === 0) {
       inventory.subtract(GOODS.tools, 1);
     }
-    inventory.subtract(GOODS.wood, 2);
-    inventory.add(GOODS.food, 1);
+    inventory.subtract(GOODS.wood, 1);
+    inventory.subtract(GOODS.bread, 1);
+    inventory.add(GOODS.grain, 1);
+    return inventory;
+  }
+};
+
+export const baker: Job = {
+  key: 'baker',
+  displayName: 'Baker',
+  color: 'yellow',
+  idealInventory: new Map([
+    [GOODS.grain, 5],
+    [GOODS.tools, 2]
+  ]),
+  requiredGoods: new Map([
+    [GOODS.grain, 2],
+    [GOODS.tools, 1]
+  ]),
+  workFunc(inventory: Inventory): Inventory {
+    if (_.random(15) === 0) {
+      inventory.subtract(GOODS.tools, 1);
+    }
+    inventory.subtract(GOODS.grain, 2);
+    inventory.add(GOODS.bread, 3);
     return inventory;
   }
 };
@@ -64,17 +99,20 @@ export const blacksmith: Job = {
   displayName: 'Blacksmith',
   color: 'silver',
   idealInventory: new Map([
-    [GOODS.wood, 6]
+    [GOODS.wood, 6],
+    [GOODS.bread, 4]
   ]),
   requiredGoods: new Map([
-    [GOODS.wood, 4]
+    [GOODS.wood, 4],
+    [GOODS.bread, 1]
   ]),
   workFunc(inventory: Inventory): Inventory {
     inventory.subtract(GOODS.wood, 4);
+    inventory.subtract(GOODS.bread, 1);
     inventory.add(GOODS.tools, 1);
     return inventory;
   }
 };
 
 
-export const JOBS: Array<Job> = [woodcutter, farmer, blacksmith];
+export const JOBS: Array<Job> = [woodcutter, farmer, baker, blacksmith];

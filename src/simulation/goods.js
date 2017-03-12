@@ -12,10 +12,16 @@ export const wood: Good = {
   displayName: 'Wood'
 };
 
-export const food: Good = {
-  key: 'food',
+export const grain: Good = {
+  key: 'grain',
   color: 'green',
-  displayName: 'Food'
+  displayName: 'Grain'
+};
+
+export const bread: Good = {
+  key: 'bread',
+  color: 'yellow',
+  displayName: 'Bread'
 };
 
 export const tools: Good = {
@@ -25,4 +31,4 @@ export const tools: Good = {
 };
 
 
-export const GOODS: Array<Good> = [wood, food, tools];
+export const GOODS: Array<Good> = [wood, grain, bread, tools];

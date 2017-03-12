@@ -386,6 +386,28 @@ export default class Trader extends AccountHolder {
     return null;
   }
 
+  // calculate the payment as a percent of income
+  calculatePayment(loan: Loan): number {
+    if (!this.availableFunds) {
+      return 0;
+    }
+    if (this.profitLastRound > 0) {
+      // percent of their total funds to pay loan with
+      let percent: number = 0.25;
+
+      if (loan.balance > this.availableFunds) { // if we can pay it back in full
+        percent = 0.25; // then pay a quarter of our funds
+      } else if (this.accountRatio < 2) { // if we're poor
+        percent = 0.05;
+      } else { // we're doing ok, pay more
+        percent = 0.15;
+      }
+      return this.profitLastRound * percent;
+    }
+    // if we have negative income, pay a very small amount
+    return this.availableFunds * 0.05;
+  }
+
   avergagePastProfit(daysAgo: number): number {
     return _.mean(_.takeRight(this.profit, daysAgo));
   }

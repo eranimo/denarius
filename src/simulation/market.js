@@ -68,10 +68,16 @@ export default class Market {
         const goodsTraded: number = Math.min(buyOrder.amount, sellOrder.amount);
         const totalPrice: number = goodsTraded * unitPrice;
 
-        console.dir(`Buyer: #${buyOrder.trader.id},  Seller: #${sellOrder.trader.id},  Good: ${buyOrder.good.displayName},  Quantity: ${goodsTraded}, Unit Price: $${unitPrice},  Total Price: $${totalPrice}`);
+        console.dir(`Buyer: #${buyOrder.trader.id},  Seller: #${sellOrder.trader.id},  Good: ${buyOrder.good.displayName},  Quantity: ${goodsTraded}, Unit Price: $${unitPrice},  Total Price: $${totalPrice}, Buyer has $${buyOrder.trader.availableFunds}`);
 
-        this.transferGood(sellOrder.trader, buyOrder.trader, buyOrder.good, goodsTraded);
+        // if the buyer doesn't have the correct amount of money, borrow it
+        if (!buyOrder.trader.account.has(totalPrice)) {
+          const difference: number = totalPrice - buyOrder.trader.availableFunds;
+          buyOrder.trader.borrowFunds(difference);
+        }
+
         // remove money from buyer and give it to seller
+        this.transferGood(sellOrder.trader, buyOrder.trader, buyOrder.good, goodsTraded);
         this.transferMoney(buyOrder.trader, sellOrder.trader, totalPrice);
 
         // update metrics
@@ -257,6 +263,8 @@ export default class Market {
   }
 
   simulate() {
+    const overTitle: string = `Traders trading`;
+    console.groupCollapsed(overTitle);
     for (const trader: Trader of this.traders) {
       trader.lastRound.money = trader.availableFunds;
       // do their job
@@ -271,6 +279,7 @@ export default class Market {
 
       trader.handleBankruptcy();
     }
+    console.groupEnd(overTitle);
 
     // resolve the orders for this round
     const title: string = `Resolving orders`;

@@ -138,14 +138,15 @@ export default class Trader extends AccountHolder {
       let balance: number = 0;
       for (const order: MarketOrder of buyOrders) {
         console.log(`Trader ${this.id} is buying ${order.amount} units of ${order.good.displayName} for $${order.price} (has $${this.availableFunds})`);
+        balance += order.price * order.amount;
         if (this.availableFunds >= balance) {
           // $FlowFixMe
           this.market.buy(order);
-          balance += order.price;
         } else {
-          throw Error(`Trader #${this.id} can't afford ${order.price} (has ${this.availableFunds}) balance of ${balance}`);
+          console.log(`Trader #${this.id} can't afford ${order.price} (has ${this.availableFunds}) balance of ${balance}`);
         }
       }
+      console.log(`Trader #${this.id} total buy amount: $${balance}`);
       for (const order: MarketOrder of sellOrders) {
         console.log(`Trader ${this.id} is selling ${order.amount} units of ${order.good.displayName} for $${order.price}`);
         // $FlowFixMe
@@ -163,7 +164,7 @@ export default class Trader extends AccountHolder {
     const unitPrice: number = this.determinePriceOf(good);
     const ideal: number = this.determineSellQuantity(good);
     const quantityToSell: number = limit > ideal ? limit : ideal; // can't sell more than the limit
-    if (quantityToSell > 0) {
+    if (quantityToSell > 0 && unitPrice > 0) {
       return new MarketOrder('sell', good, quantityToSell, unitPrice, this);
     }
   }

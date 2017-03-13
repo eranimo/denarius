@@ -79,6 +79,12 @@ class Trader extends Component {
                 </List>
               </Table.Cell>
             </Table.Row>
+            <Table.Row>
+              <Table.Cell>Last Round</Table.Cell>
+              <Table.Cell>
+                Worked: {trader.justWorked ? 'Yes' : 'No'} Traded: {trader.justTraded ? 'Yes' : 'No'}
+              </Table.Cell>
+            </Table.Row>
           </Table.Body>
         </Table>
 

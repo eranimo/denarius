@@ -1,6 +1,7 @@
 export const FORWARD: string = 'FORWARD';
 export const BACKWARD: string = 'BACKWARD';
 export const RESET: string = 'RESET';
+export const GO_TO_ROUND: string = 'GO_TO_ROUND';
 
 
 type ReduxAction = {
@@ -22,5 +23,12 @@ export function backward(): ReduxAction {
 export function reset(): ReduxAction {
   return {
     type: RESET
+  };
+}
+
+export function goToRound(round: number): ReduxAction {
+  return {
+    type: GO_TO_ROUND,
+    payload: { round }
   };
 }

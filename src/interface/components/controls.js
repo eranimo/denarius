@@ -3,32 +3,38 @@ import { Menu, Header, Button } from 'semantic-ui-react';
 import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { historySelector } from '../selectors';
-import { forward, backward, reset } from '../actions';
+import { forward, backward, reset, goToRound } from '../actions';
 
 
 class Controls extends Component {
   static propTypes = {
     currentRound: PropTypes.number.isRequired,
+    lastRound: PropTypes.number.isRequired,
     canGoBackward: PropTypes.bool.isRequired,
     canGoForward: PropTypes.bool.isRequired,
     reset: PropTypes.func.isRequired,
     forward: PropTypes.func.isRequired,
     backward: PropTypes.func.isRequired,
+    goToRound: PropTypes.func.isRequired,
   }
 
   render(): Object {
     const {
       currentRound,
+      lastRound,
       reset,
       forward,
       backward,
+      goToRound,
       canGoBackward,
       canGoForward
     }: {
       currentRound: number,
+      lastRound: number,
       reset: Function,
       forward: Function,
       backward: Function,
+      goToRound: Function,
       canGoBackward: boolean,
       canGoForward: boolean
     } = this.props;
@@ -62,6 +68,21 @@ class Controls extends Component {
                 }}
               />
             </Menu.Item>
+
+            <Menu.Item>
+              <Button
+                basic
+                icon="write"
+                compact
+                onClick={() => {
+                  const num: number = parseInt(window.prompt('Enter round to go to'), 10);
+                  if (num <= currentRound) {
+                    goToRound(num);
+                  }
+                }}
+              />
+            </Menu.Item>
+
             <Menu.Item>
               <Button
                 basic
@@ -73,7 +94,7 @@ class Controls extends Component {
             </Menu.Item>
 
             <Menu.Item>
-              {currentRound}
+              {currentRound} / {lastRound}
             </Menu.Item>
 
             <Menu.Item>
@@ -111,7 +132,7 @@ class Controls extends Component {
   }
 }
 const mapStateToProps: Function = historySelector;
-const mapDispatchToProps: Object = { backward, forward, reset };
+const mapDispatchToProps: Object = { backward, forward, reset, goToRound };
 const ControlsConnect: Object = connect(mapStateToProps, mapDispatchToProps)(Controls);
 
 export default ControlsConnect;

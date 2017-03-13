@@ -1,5 +1,5 @@
 import type { History } from '../simulation/index';
-import { FORWARD, BACKWARD, RESET } from './actions';
+import { FORWARD, BACKWARD, RESET, GO_TO_ROUND } from './actions';
 
 
 const initialState: Object = {
@@ -35,6 +35,15 @@ export function time(state: Object = initialState, action: Object): Object {
       };
     } else {
       throw Error('Cannot go backwards before round 1');
+    }
+  } else if (action.type === GO_TO_ROUND) {
+    if (action.payload.round <= state.lastRound && action.payload.round > 0) {
+      return {
+        ...state,
+        currentRound: action.payload.round
+      };
+    } else {
+      return state;
     }
   } else if (action.type === RESET) {
     window.simulation.reset();

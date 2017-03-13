@@ -25,6 +25,7 @@ export const historySelector: Function = createSelector(
   timeSelector,
   (time: Object): Object => {
     return {
+      lastRound: time.lastRound,
       currentRound: time.currentRound,
       canGoBackward: time.currentRound - 1 > 0,
       canGoForward: true,

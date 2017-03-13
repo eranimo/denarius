@@ -96,7 +96,7 @@ class Trader extends Component {
                   {trader.priceBelief.map((belief: Object, index: number): Object => {
                     return (
                       <List.Item key={index}>
-                        {belief.good} - {currencyFormat(belief.price)}
+                        {belief.good.displayName} - {currencyFormat(belief.price)} (market: {currencyFormat(history.goodPrices.get(belief.good).meanPrice)})
                       </List.Item>
                     );
                   })}

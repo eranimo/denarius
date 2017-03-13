@@ -33,6 +33,14 @@ class Controls extends Component {
       canGoForward: boolean
     } = this.props;
 
+    function jumpForward(num: number): Function {
+      return () => {
+        for (let i: number = 0; i < num; i++) {
+          forward();
+        }
+      };
+    }
+
     return (
       <div>
         <Header as="h1">
@@ -76,6 +84,25 @@ class Controls extends Component {
                 disabled={!canGoForward}
                 onClick={forward}
               />
+            </Menu.Item>
+
+            <Menu.Item>
+              <Button.Group basic compact>
+                <Button
+                  style={{fontWeight: 'bold'}}
+                  disabled={!canGoForward}
+                  onClick={jumpForward(10)}
+                >
+                  x10
+                </Button>
+                <Button
+                  style={{fontWeight: 'bold'}}
+                  disabled={!canGoForward}
+                  onClick={jumpForward(25)}
+                >
+                  x25
+                </Button>
+              </Button.Group>
             </Menu.Item>
           </Menu.Menu>
         </Menu>

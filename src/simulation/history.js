@@ -31,7 +31,7 @@ export default class History {
       let priceBelief: Array<Object> = [];
       GOODS.forEach((good: Good): Object => {
         priceBelief.push({
-          good: good.key,
+          good: good,
           price: trader.priceFor(good)
         });
       });

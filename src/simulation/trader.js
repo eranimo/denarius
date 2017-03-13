@@ -287,7 +287,7 @@ export default class Trader extends AccountHolder {
       }
     }
 
-    const publicMeanPrice: number = this.market.avgHistoricalPrice(good, 1);
+    const publicMeanPrice: number = this.market.meanPrice(good);
     // $FlowFixMe
     const priceBelief: PriceRange = this.priceBelief.get(good);
     const meanPrice: number = priceBelief.mean();
@@ -327,6 +327,7 @@ export default class Trader extends AccountHolder {
       } else {
         // all other failure cases
 
+        // sum of buy and sell order quantity for a good
         // $FlowFixMe
         const buys: number = this.market.history.buyOrderAmount.average(good, 1);
         // $FlowFixMe

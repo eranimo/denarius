@@ -260,6 +260,15 @@ export default class Trader extends AccountHolder {
     return this.job.idealInventory.get(good) || 0;
   }
 
+  priceFor(good: Good): number {
+    const priceBelief: ?PriceRange = this.priceBelief.get(good);
+    if (!priceBelief) {
+      throw new Error('Price belief not set');
+    }
+    const meanPrice: number = priceBelief.mean();
+    return meanPrice;
+  }
+
   updatePriceBelief(good: Good, orderType: OrderType, isSuccessful: bool, clearingPrice: ?number) {
     if (!this.observedTradingRange || !this.market || !this.priceBelief) {
       return;

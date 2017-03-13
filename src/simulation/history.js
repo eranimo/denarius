@@ -28,6 +28,13 @@ export default class History {
 
     for (const trader: Trader of sim.market.traders) {
       let loans: Array<Object> = [];
+      let priceBelief: Array<Object> = [];
+      GOODS.forEach((good: Good): Object => {
+        priceBelief.push({
+          good: good.key,
+          price: trader.priceFor(good)
+        });
+      });
       for (const loan: Loan of trader.loans) {
         loans.push({
           balance: loan.balance,
@@ -49,7 +56,8 @@ export default class History {
         accountRatio: trader.accountRatio,
         bankruptTimes: trader.bankruptTimes,
         inventory: trader.inventory.export(),
-        loans: loans
+        loans: loans,
+        priceBelief
       });
     }
 

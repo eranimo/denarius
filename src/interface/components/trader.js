@@ -82,7 +82,25 @@ class Trader extends Component {
             <Table.Row>
               <Table.Cell>Last Round</Table.Cell>
               <Table.Cell>
-                Worked: {trader.justWorked ? 'Yes' : 'No'} Traded: {trader.justTraded ? 'Yes' : 'No'}
+                <List>
+                  <List.Item>Worked: <b>{trader.justWorked ? 'Yes' : 'No'}</b></List.Item>
+                  <List.Item>Traded: <b>{trader.justTraded ? 'Yes' : 'No'}</b></List.Item>
+                </List>
+              </Table.Cell>
+            </Table.Row>
+
+            <Table.Row>
+              <Table.Cell>Price Belief</Table.Cell>
+              <Table.Cell>
+                <List>
+                  {trader.priceBelief.map((belief: Object, index: number): Object => {
+                    return (
+                      <List.Item key={index}>
+                        {belief.good} - {currencyFormat(belief.price)}
+                      </List.Item>
+                    );
+                  })}
+                </List>
               </Table.Cell>
             </Table.Row>
           </Table.Body>

@@ -157,7 +157,7 @@ class Trader extends Component {
                   <Table.Cell>{currencyFormat(belief.price, 3)}</Table.Cell>
                   <Table.Cell>{currencyFormat(belief.low, 3)}</Table.Cell>
                   <Table.Cell>{currencyFormat(belief.high, 3)}</Table.Cell>
-                  <Table.Cell>{currencyFormat(history.goodPrices.get(belief.good).meanPrice)})</Table.Cell>
+                  <Table.Cell>{currencyFormat(history.goodPrices.get(belief.good).meanPrice)}</Table.Cell>
                 </Table.Row>
               );
             })}

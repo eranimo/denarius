@@ -52,6 +52,8 @@ export default class History {
         liabilities: trader.liabilities,
         justWorked: trader.lastRound.hasWorked,
         justTraded: trader.lastRound.hasTraded,
+        failedTrades: trader.failedTrades,
+        successfulTrades: trader.successfulTrades,
         idleRounds: trader.idleRounds,
         moneyLastRound: trader.lastRound.money,
         profitLastRound: trader.availableFunds - trader.lastRound.money,
@@ -59,6 +61,10 @@ export default class History {
         accountRatio: trader.accountRatio,
         bankruptTimes: trader.bankruptTimes,
         inventory: trader.inventory.export(),
+        thisRoundOrders: {
+          buy: Array.from(trader.thisRoundOrders.buy).map((order: any): any => order.export()),
+          sell: Array.from(trader.thisRoundOrders.sell).map((order: any): any => order.export())
+        },
         loans: loans,
         priceBelief
       });

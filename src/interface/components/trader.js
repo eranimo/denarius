@@ -20,6 +20,36 @@ class Trader extends Component {
 
   props: props;
 
+  renderOrderTable(orders: Array<Object>): Object {
+    const sortedOrders: Array<Object> = _.sortBy(orders, (i: Object): Object => i.good.displayName);
+    return (
+      <Table celled compact>
+        <Table.Header>
+          <Table.Row>
+            <Table.HeaderCell>Order #</Table.HeaderCell>
+            <Table.HeaderCell>Good</Table.HeaderCell>
+            <Table.HeaderCell>Unit Price</Table.HeaderCell>
+            <Table.HeaderCell>Total Price</Table.HeaderCell>
+            <Table.HeaderCell>Amount</Table.HeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {sortedOrders.map((order: Object, index: number): Object => {
+            return (
+              <Table.Row key={index}>
+                <Table.Cell>{index + 1}</Table.Cell>
+                <Table.Cell>{order.good.displayName}</Table.Cell>
+                <Table.Cell>{currencyFormat(order.price, 3)}</Table.Cell>
+                <Table.Cell>{currencyFormat(order.price * order.amount, 3)}</Table.Cell>
+                <Table.Cell>{order.amount}</Table.Cell>
+              </Table.Row>
+            );
+          })}
+        </Table.Body>
+      </Table>
+    );
+  }
+
   render(): ?Object {
     const history: Object = this.props.history;
 
@@ -92,6 +122,16 @@ class Trader extends Component {
                 </List>
               </Table.Cell>
             </Table.Row>
+            <Table.Row>
+              <Table.Cell># Trades</Table.Cell>
+              <Table.Cell>
+                <List>
+                  <List.Item>Total: <b>{trader.failedTrades + trader.successfulTrades}</b></List.Item>
+                  <List.Item>Worked: <b>{trader.failedTrades}</b></List.Item>
+                  <List.Item>Traded: <b>{trader.successfulTrades}</b></List.Item>
+                </List>
+              </Table.Cell>
+            </Table.Row>
           </Table.Body>
         </Table>
 
@@ -123,6 +163,12 @@ class Trader extends Component {
             })}
           </Table.Body>
         </Table>
+
+        <h2>Orders</h2>
+        <h3>Buy</h3>
+        {this.renderOrderTable(trader.thisRoundOrders.buy)}
+        <h3>Sell</h3>
+        {this.renderOrderTable(trader.thisRoundOrders.sell)}
       </div>
     );
   }

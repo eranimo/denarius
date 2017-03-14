@@ -44,6 +44,10 @@ export default class Trader extends AccountHolder {
     hasWorked: ?bool,
     hasTraded: ?bool
   };
+  thisRoundOrders: {
+    buy: Set<MarketOrder>,
+    sell: Set<MarketOrder>
+  };
 
   constructor(job: Job, name: string = '') {
     super();
@@ -54,10 +58,14 @@ export default class Trader extends AccountHolder {
     this.profit = [];
     this.bankruptTimes = 0;
     this.bankrupt = false;
-    this.idleRounds = 0;
+    this.idleRounds = 0; // TODO: this should consider trading to be not idle
     this.failedTrades = 0;
     this.successfulTrades = 0;
     this.inventory = new Inventory();
+    this.thisRoundOrders = {
+      buy: new Set(),
+      sell: new Set()
+    };
     this.lastRound = {
       money: 0,
       hasWorked: null,
@@ -127,6 +135,10 @@ export default class Trader extends AccountHolder {
   trade(): boolean {
     const buyOrders: Set<MarketOrder> = new Set();
     const sellOrders: Set<MarketOrder> = new Set();
+
+    this.thisRoundOrders.buy = new Set();
+    this.thisRoundOrders.sell = new Set();
+
     // let totalBuyOrderPrices: number = 0;
 
     // create buy orders for goods required to do work that aren't in the inventory
@@ -159,6 +171,7 @@ export default class Trader extends AccountHolder {
         if (this.availableFunds >= balance) {
           // $FlowFixMe
           this.market.buy(order);
+          this.thisRoundOrders.buy.add(order);
         } else {
           console.log(`Trader #${this.id} can't afford ${order.price} (has ${this.availableFunds}) balance of ${balance}`);
         }
@@ -166,10 +179,12 @@ export default class Trader extends AccountHolder {
       console.log(`Trader #${this.id} total buy amount: $${balance}`);
       for (const order: MarketOrder of sellOrders) {
         console.log(`Trader ${this.id} is selling ${order.amount} units of ${order.good.displayName} for $${order.price}`);
+        this.thisRoundOrders.sell.add(order);
         // $FlowFixMe
         this.market.sell(order);
       }
       this.lastRound.hasTraded = true;
+
       return true;
     } else {
       return false;

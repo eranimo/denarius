@@ -92,6 +92,9 @@ export default class Market {
         buyOrder.amount = buyOrder.amount - goodsTraded;
         sellOrder.amount = sellOrder.amount - goodsTraded;
 
+        buyOrder.finalPrice = unitPrice;
+        sellOrder.finalPrice = unitPrice;
+
         // throw out (deny) all other orders
         if (buyOrder.amount === 0) {
           sortedBuyOrders.shift();

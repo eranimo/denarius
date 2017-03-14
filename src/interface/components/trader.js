@@ -28,20 +28,44 @@ class Trader extends Component {
           <Table.Row>
             <Table.HeaderCell>Order #</Table.HeaderCell>
             <Table.HeaderCell>Good</Table.HeaderCell>
-            <Table.HeaderCell>Unit Price</Table.HeaderCell>
-            <Table.HeaderCell>Total Price</Table.HeaderCell>
-            <Table.HeaderCell>Amount</Table.HeaderCell>
+            <Table.HeaderCell>My Unit Price</Table.HeaderCell>
+            <Table.HeaderCell>∑ My Unit Price</Table.HeaderCell>
+            <Table.HeaderCell>Final Unit Price</Table.HeaderCell>
+            <Table.HeaderCell>∑ Final Unit Price</Table.HeaderCell>
+            <Table.HeaderCell>Order Quantity</Table.HeaderCell>
+            <Table.HeaderCell>Quantity Transfered</Table.HeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
           {sortedOrders.map((order: Object, index: number): Object => {
             return (
               <Table.Row key={index}>
-                <Table.Cell>{index + 1}</Table.Cell>
-                <Table.Cell>{order.good.displayName}</Table.Cell>
-                <Table.Cell>{currencyFormat(order.price, 3)}</Table.Cell>
-                <Table.Cell>{currencyFormat(order.price * order.amount, 3)}</Table.Cell>
-                <Table.Cell>{order.amount}</Table.Cell>
+                <Table.Cell>
+                  {index + 1}
+                </Table.Cell>
+                <Table.Cell>
+                  {order.good.displayName}
+                </Table.Cell>
+                <Table.Cell>
+                  {currencyFormat(order.price, 3)}
+                </Table.Cell>
+                <Table.Cell>
+                  {currencyFormat(order.price * order.amount, 3)}
+                </Table.Cell>
+                <Table.Cell>
+                  {currencyFormat(order.finalPrice, 3)}
+                </Table.Cell>
+                <Table.Cell>
+                  {order.finalPrice
+                    ? currencyFormat(order.finalPrice * order.amount, 3)
+                    : ''}
+                </Table.Cell>
+                <Table.Cell>
+                  {order.amount}
+                </Table.Cell>
+                <Table.Cell>
+                  {order.amountReceived}
+                </Table.Cell>
               </Table.Row>
             );
           })}

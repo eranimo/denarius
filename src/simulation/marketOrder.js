@@ -12,6 +12,7 @@ export default class MarketOrder {
   originalAmount: number;
   price: number; // total value of this order (good unit price * amount)
   trader: Trader;
+  finalPrice: ?number;
 
   constructor(orderType: OrderType, good: Good, amount: number, price: number, trader: Trader) {
     this.orderType = orderType;
@@ -20,6 +21,7 @@ export default class MarketOrder {
     this.amount = amount;
     this.price = price;
     this.trader = trader;
+    this.finalPrice = null;
 
     if (amount === 0) {
       throw Error(`Cannot create a order of quantity zero`);
@@ -36,8 +38,10 @@ export default class MarketOrder {
       orderType: this.orderType,
       good: this.good,
       amount: this.originalAmount,
+      amountReceived: this.originalAmount - this.amount,
       price: this.price,
-      trader: this.trader.id
+      trader: this.trader.id,
+      finalPrice: this.finalPrice,
     };
   }
 }

@@ -92,26 +92,37 @@ class Trader extends Component {
                 </List>
               </Table.Cell>
             </Table.Row>
-
-            <Table.Row>
-              <Table.Cell>Price Belief</Table.Cell>
-              <Table.Cell>
-                <List>
-                  {trader.priceBelief.map((belief: Object, index: number): Object => {
-                    return (
-                      <List.Item key={index}>
-                        {belief.good.displayName} - {currencyFormat(belief.price)} (market: {currencyFormat(history.goodPrices.get(belief.good).meanPrice)})
-                      </List.Item>
-                    );
-                  })}
-                </List>
-              </Table.Cell>
-            </Table.Row>
           </Table.Body>
         </Table>
 
 
         <TraderMoneyChart data={this.props.historicalMoney} />
+
+        <h2>Price Belief</h2>
+        <Table celled compact>
+          <Table.Header>
+            <Table.Row>
+              <Table.HeaderCell>Good</Table.HeaderCell>
+              <Table.HeaderCell>My Price</Table.HeaderCell>
+              <Table.HeaderCell>Low Range</Table.HeaderCell>
+              <Table.HeaderCell>High Range</Table.HeaderCell>
+              <Table.HeaderCell>Market Price</Table.HeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {trader.priceBelief.map((belief: Object, index: number): Object => {
+              return (
+                <Table.Row key={index}>
+                  <Table.Cell>{belief.good.displayName}</Table.Cell>
+                  <Table.Cell>{currencyFormat(belief.price, 3)}</Table.Cell>
+                  <Table.Cell>{currencyFormat(belief.low, 3)}</Table.Cell>
+                  <Table.Cell>{currencyFormat(belief.high, 3)}</Table.Cell>
+                  <Table.Cell>{currencyFormat(history.goodPrices.get(belief.good).meanPrice)})</Table.Cell>
+                </Table.Row>
+              );
+            })}
+          </Table.Body>
+        </Table>
       </div>
     );
   }

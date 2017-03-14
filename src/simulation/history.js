@@ -32,7 +32,9 @@ export default class History {
       GOODS.forEach((good: Good): Object => {
         priceBelief.push({
           good: good,
-          price: trader.priceFor(good)
+          price: trader.priceFor(good),
+          low: trader.priceBelief.get(good).low,
+          high: trader.priceBelief.get(good).high
         });
       });
       for (const loan: Loan of trader.loans) {

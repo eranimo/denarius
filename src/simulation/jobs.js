@@ -33,15 +33,38 @@ export const woodcutter: Job = {
     [GOODS.tools, 2]
   ]),
   requiredGoods: new Map([
-    [GOODS.bread, 2],
+    [GOODS.bread, 1],
     [GOODS.tools, 1]
   ]),
   workFunc(inventory: Inventory): Inventory {
     if (_.random(5) === 0) {
       inventory.subtract(GOODS.tools, 1);
     }
-    inventory.subtract(GOODS.bread, 2);
+    inventory.subtract(GOODS.bread, 1);
     inventory.add(GOODS.wood, 1);
+    return inventory;
+  }
+};
+
+export const miller: Job = {
+  key: 'miller',
+  displayName: 'Miner',
+  color: 'maroon',
+  idealInventory: new Map([
+    [GOODS.wood, 3],
+    [GOODS.tools, 2]
+  ]),
+  requiredGoods: new Map([
+    [GOODS.wood, 2],
+    [GOODS.tools, 1]
+  ]),
+  workFunc(inventory: Inventory): Inventory {
+    inventory.subtract(GOODS.bread, 1);
+    if (_.random(5) === 0) {
+      inventory.subtract(GOODS.tools, 1);
+    }
+    inventory.subtract(GOODS.wood, 2);
+    inventory.add(GOODS.lumber, 2);
     return inventory;
   }
 };
@@ -51,12 +74,10 @@ export const farmer: Job = {
   displayName: 'Farmer',
   color: 'green',
   idealInventory: new Map([
-    [GOODS.wood, 2],
     [GOODS.bread, 2],
     [GOODS.tools, 2]
   ]),
   requiredGoods: new Map([
-    [GOODS.wood, 1],
     [GOODS.bread, 1],
     [GOODS.tools, 1]
   ]),
@@ -64,9 +85,8 @@ export const farmer: Job = {
     if (_.random(5) === 0) {
       inventory.subtract(GOODS.tools, 1);
     }
-    inventory.subtract(GOODS.wood, 1);
     inventory.subtract(GOODS.bread, 1);
-    inventory.add(GOODS.grain, 1);
+    inventory.add(GOODS.grain, 2);
     return inventory;
   }
 };
@@ -77,17 +97,17 @@ export const baker: Job = {
   color: 'yellow',
   idealInventory: new Map([
     [GOODS.grain, 5],
-    [GOODS.tools, 2]
+    [GOODS.tools, 1]
   ]),
   requiredGoods: new Map([
-    [GOODS.grain, 2],
+    [GOODS.grain, 3],
     [GOODS.tools, 1]
   ]),
   workFunc(inventory: Inventory): Inventory {
-    if (_.random(15) === 0) {
+    if (_.random(30) === 0) {
       inventory.subtract(GOODS.tools, 1);
     }
-    inventory.subtract(GOODS.grain, 2);
+    inventory.subtract(GOODS.grain, 3);
     inventory.add(GOODS.bread, 2);
     return inventory;
   }
@@ -99,20 +119,68 @@ export const blacksmith: Job = {
   displayName: 'Blacksmith',
   color: 'silver',
   idealInventory: new Map([
-    [GOODS.wood, 6],
-    [GOODS.bread, 4]
-  ]),
-  requiredGoods: new Map([
-    [GOODS.wood, 4],
+    [GOODS.lumber, 2],
+    [GOODS.iron, 2],
     [GOODS.bread, 2]
   ]),
+  requiredGoods: new Map([
+    [GOODS.lumber, 2],
+    [GOODS.iron, 2],
+    [GOODS.bread, 1]
+  ]),
   workFunc(inventory: Inventory): Inventory {
-    inventory.subtract(GOODS.wood, 4);
-    inventory.subtract(GOODS.bread, 2);
+    inventory.subtract(GOODS.lumber, 2);
+    inventory.subtract(GOODS.iron, 2);
+    inventory.subtract(GOODS.bread, 1);
     inventory.add(GOODS.tools, 1);
     return inventory;
   }
 };
 
+export const miner: Job = {
+  key: 'miner',
+  displayName: 'Miner',
+  color: 'grey',
+  idealInventory: new Map([
+    [GOODS.bread, 3],
+    [GOODS.tools, 2]
+  ]),
+  requiredGoods: new Map([
+    [GOODS.bread, 1],
+    [GOODS.tools, 1]
+  ]),
+  workFunc(inventory: Inventory): Inventory {
+    inventory.subtract(GOODS.bread, 1);
+    if (_.random(5) === 0) {
+      inventory.subtract(GOODS.tools, 1);
+    }
+    inventory.add(GOODS.iron_ore, 1);
+    return inventory;
+  }
+};
 
-export const JOBS: Array<Job> = [woodcutter, farmer, baker, blacksmith];
+export const smelter: Job = {
+  key: 'smelter',
+  displayName: 'Smelter',
+  color: 'darkgrey',
+  idealInventory: new Map([
+    [GOODS.iron_ore, 3],
+    [GOODS.tools, 2]
+  ]),
+  requiredGoods: new Map([
+    [GOODS.iron_ore, 2],
+    [GOODS.tools, 1]
+  ]),
+  workFunc(inventory: Inventory): Inventory {
+    inventory.subtract(GOODS.bread, 1);
+    if (_.random(5) === 0) {
+      inventory.subtract(GOODS.tools, 1);
+    }
+    inventory.subtract(GOODS.iron_ore, 2);
+    inventory.add(GOODS.iron, 2);
+    return inventory;
+  }
+};
+
+
+export const JOBS: Array<Job> = [woodcutter, farmer, baker, blacksmith, miller, smelter, miner];

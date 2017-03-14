@@ -10,11 +10,15 @@ import type { Loan } from './bank';
 
 
 const SETTINGS: Object = {
+  initialFunds: 25,
   initialJobs: {
     woodcutter: 5,
     farmer: 5,
     baker: 5,
     blacksmith: 5,
+    miner: 5,
+    smelter: 5,
+    miller: 5,
   },
   bank: {
     startingFunds: 100
@@ -54,7 +58,7 @@ export default class Simulation {
       for (let i: number = 0; i < SETTINGS.initialJobs[job]; i++) {
         const trader: Trader = new Trader(JOBS[job]);
         trader.giveStartInventory();
-        this.bank.createAccount(trader, 10);
+        this.bank.createAccount(trader, SETTINGS.initialFunds);
         this.market.addTrader(trader);
       }
     });

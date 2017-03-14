@@ -76,9 +76,7 @@ class Controls extends Component {
                 compact
                 onClick={() => {
                   const num: number = parseInt(window.prompt('Enter round to go to'), 10);
-                  if (num <= currentRound) {
-                    goToRound(num);
-                  }
+                  goToRound(num);
                 }}
               />
             </Menu.Item>

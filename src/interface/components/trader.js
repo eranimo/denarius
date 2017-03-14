@@ -29,9 +29,9 @@ class Trader extends Component {
             <Table.HeaderCell>Order #</Table.HeaderCell>
             <Table.HeaderCell>Good</Table.HeaderCell>
             <Table.HeaderCell>My Unit Price</Table.HeaderCell>
-            <Table.HeaderCell>∑ My Unit Price</Table.HeaderCell>
+            <Table.HeaderCell>∑ Price</Table.HeaderCell>
             <Table.HeaderCell>Final Unit Price</Table.HeaderCell>
-            <Table.HeaderCell>∑ Final Unit Price</Table.HeaderCell>
+            <Table.HeaderCell>∑ Final Price</Table.HeaderCell>
             <Table.HeaderCell>Order Quantity</Table.HeaderCell>
             <Table.HeaderCell>Quantity Transfered</Table.HeaderCell>
           </Table.Row>
@@ -151,8 +151,8 @@ class Trader extends Component {
               <Table.Cell>
                 <List>
                   <List.Item>Total: <b>{trader.failedTrades + trader.successfulTrades}</b></List.Item>
-                  <List.Item>Worked: <b>{trader.failedTrades}</b></List.Item>
-                  <List.Item>Traded: <b>{trader.successfulTrades}</b></List.Item>
+                  <List.Item>Failed: <b>{trader.failedTrades}</b></List.Item>
+                  <List.Item>Success: <b>{trader.successfulTrades}</b></List.Item>
                 </List>
               </Table.Cell>
             </Table.Row>

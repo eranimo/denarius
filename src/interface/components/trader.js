@@ -62,6 +62,10 @@ class Trader extends Component {
               <Table.Cell>{currencyFormat(trader.money)} ({currencyFormat(trader.profitLastRound)})</Table.Cell>
             </Table.Row>
             <Table.Row>
+              <Table.Cell>Idle Rounds</Table.Cell>
+              <Table.Cell>{trader.idleRounds}</Table.Cell>
+            </Table.Row>
+            <Table.Row>
               <Table.Cell>Liabilities (loans)</Table.Cell>
               <Table.Cell>{currencyFormat(trader.liabilities)}</Table.Cell>
             </Table.Row>

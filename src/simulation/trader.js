@@ -105,7 +105,14 @@ export default class Trader extends AccountHolder {
         this.idleRounds = 0;
         console.log(`Trader #${this.id} switched to ${job.displayName} due to not being able to work`);
         this.job = job;
+      } else {
+        throw new Error(`Cannot switch to null job`);
       }
+    }
+
+
+    if (this.availableFunds < 1 && this.profitLastRound < 1) {
+      this.borrowFunds(30);
     }
   }
 
@@ -120,7 +127,7 @@ export default class Trader extends AccountHolder {
   trade(): boolean {
     const buyOrders: Set<MarketOrder> = new Set();
     const sellOrders: Set<MarketOrder> = new Set();
-    let totalBuyOrderPrices: number = 0;
+    // let totalBuyOrderPrices: number = 0;
 
     // create buy orders for goods required to do work that aren't in the inventory
     const idealDifference: Map<Good, number> = this.goodsToTrade();
@@ -135,14 +142,9 @@ export default class Trader extends AccountHolder {
         // deficit: create buy order
         const order: ?MarketOrder = this.createBuyOrder(good, Math.abs(amount));
         if (order) {
-          totalBuyOrderPrices += order.amount;
-          if (totalBuyOrderPrices <= this.availableFunds) {
-            buyOrders.add(order);
-          } else {
-            this.bankrupt = true;
-            this.lastRound.hasTraded = false;
-            return false;
-          }
+          // totalBuyOrderPrices += order.amount;
+          // if (totalBuyOrderPrices <= this.availableFunds) {
+          buyOrders.add(order);
         }
       }
     }
@@ -401,19 +403,13 @@ export default class Trader extends AccountHolder {
     const mostProfitableJob: ?Job = this.market.mostProfitableJob();
     // $FlowFixMe
     const mostDemandedGood: ?Good = this.market.mostDemandedGood();
-    let bestJob: Job;
     if (mostDemandedGood != null) {
-      bestJob = goodsForJobs.get(mostDemandedGood);
+      return goodsForJobs.get(mostDemandedGood);
     } else if (mostProfitableJob != null){
-      bestJob = mostProfitableJob;
+      return mostProfitableJob;
     } else {
-      return null;
+      throw new Error('Cannot happen');
     }
-    if (bestJob != null) {
-      this.job = bestJob;
-      return bestJob;
-    }
-    return null;
   }
 
   // calculate the payment as a percent of income

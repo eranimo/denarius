@@ -50,6 +50,7 @@ export default class History {
         liabilities: trader.liabilities,
         justWorked: trader.lastRound.hasWorked,
         justTraded: trader.lastRound.hasTraded,
+        idleRounds: trader.idleRounds,
         moneyLastRound: trader.lastRound.money,
         profitLastRound: trader.availableFunds - trader.lastRound.money,
         job: trader.job.key,

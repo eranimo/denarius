@@ -44,6 +44,7 @@ module.exports = function(env) {
       template: 'src/index.html'
     })],
     devServer: {
+      port: 8999,
       stats: 'errors-only',
       historyApiFallback: {
         index: path.resolve(__dirname, 'dist', 'assets')

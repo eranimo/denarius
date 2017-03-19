@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import { Statistic, Table } from 'semantic-ui-react';
 import { connect } from 'react-redux';
-import type { Good } from '../simulation/goods';
+import type { Good } from '../../simulation/goods';
 import { historySelector, historicalGoodPriceSelector } from '../selectors';
 import type { GoodPriceRecord } from '../selectors';
 import { GoodPriceChart } from './charts';

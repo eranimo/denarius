@@ -2,9 +2,9 @@
 
 let idMap: Map<string, number> = new Map();
 
-// $FlowFixMe
 export const HasID: Function =
   (base: Function): Function =>
+  // $FlowFixMe
     class extends base {
       id: number;
 

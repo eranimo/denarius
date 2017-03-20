@@ -73,6 +73,7 @@ export default class Trader extends AccountHolder {
     };
   }
 
+  // NOTE: also in worker
   moveToMarket(market: Market) {
     this.market = market;
     this.priceBelief = new Map();
@@ -90,7 +91,7 @@ export default class Trader extends AccountHolder {
     }
   }
 
-  // do their job
+  // NOTE: also in worker
   work() {
     // subtract Goods required to do job
     if (this.inventory.hasGoods(this.job.requiredGoods)) {
@@ -273,6 +274,7 @@ export default class Trader extends AccountHolder {
     return this.idealAmountOfGood(good) - this.inventory.get(good);
   }
 
+  // NOTE: also in worker
   idealAmountOfGood(good: Good): number {
     return this.job.idealInventory.get(good) || 0;
   }
@@ -384,6 +386,7 @@ export default class Trader extends AccountHolder {
     }
   }
 
+  // NOTE: also in worker
   giveStartInventory() {
     for (const [good, amount]: [Good, number] of this.job.idealInventory.entries()) {
       this.inventory.set(good, amount);
@@ -408,6 +411,7 @@ export default class Trader extends AccountHolder {
     }
   }
 
+  // NOTE: also in worker
   decideNewJob(): ?Job {
     // look for the good most in demand, switch to the job that produces it
     // if there is no good with a demand ratio above 1.5 ratio, switch to the most profitable job

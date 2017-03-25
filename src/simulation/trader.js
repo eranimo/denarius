@@ -41,8 +41,8 @@ export default class Trader extends AccountHolder {
   idleRounds: number;
   lastRound: {
     money: number,
-    hasWorked: ?bool,
-    hasTraded: ?bool
+    hasWorked: ?boolean,
+    hasTraded: ?boolean
   };
   thisRoundOrders: {
     buy: Set<MarketOrder>,
@@ -288,7 +288,7 @@ export default class Trader extends AccountHolder {
     return meanPrice;
   }
 
-  updatePriceBelief(good: Good, orderType: OrderType, isSuccessful: bool, clearingPrice: ?number) {
+  updatePriceBelief(good: Good, orderType: OrderType, isSuccessful: boolean, clearingPrice: ?number) {
     if (!this.observedTradingRange || !this.market || !this.priceBelief) {
       return;
     }

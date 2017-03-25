@@ -42,17 +42,6 @@ export default class Worker extends HasID(AccountHolder) {
       this.workedLastRound = false;
       this.idleRounds++;
     }
-
-    if (this.idleRounds >= 5) {
-      const job: ?Job = this.decideNewJob();
-      if (job != null) {
-        this.idleRounds = 0;
-        console.log(`Trader #${this.id} switched to ${job.displayName} due to not being able to work`);
-        this.job = job;
-      } else {
-        throw new Error(`Cannot switch to null job`);
-      }
-    }
   }
 
   idealAmountOfGood(good: Good): number {
@@ -62,24 +51,6 @@ export default class Worker extends HasID(AccountHolder) {
   giveStartInventory() {
     for (const [good, amount]: [Good, number] of this.job.idealInventory.entries()) {
       this.inventory.set(good, amount);
-    }
-  }
-
-  decideNewJob(): ?Job {
-    // look for the good most in demand, switch to the job that produces it
-    // if there is no good with a demand ratio above 1.5 ratio, switch to the most profitable job
-    // if that job is your current job, then do nothing
-    if (this.market == null) {
-      return null;
-    }
-    const mostProfitableJob: ?Job = this.market.mostProfitableJob();
-    const mostDemandedGood: ?Good = this.market.mostDemandedGood();
-    if (mostDemandedGood != null) {
-      return goodsForJobs.get(mostDemandedGood);
-    } else if (mostProfitableJob != null){
-      return mostProfitableJob;
-    } else {
-      throw new Error('Cannot happen');
     }
   }
 }

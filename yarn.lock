@@ -2172,10 +2172,6 @@ es5-ext@^0.10.7, es5-ext@^0.10.8, es5-ext@~0.10.11, es5-ext@~0.10.2, es5-ext@~0.
     es6-iterator "2"
     es6-symbol "~3.1"
 
-es6-class-mixin@^1.0.5:
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/es6-class-mixin/-/es6-class-mixin-1.0.5.tgz#083236cb7074fc468ea6e8dcfabee1cd595f35f7"
-
 es6-iterator@2:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/es6-iterator/-/es6-iterator-2.0.0.tgz#bd968567d61635e33c0b80727613c9cb4b096bac"
@@ -5113,6 +5109,10 @@ orchestrator@^0.3.0:
 ordered-read-streams@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/ordered-read-streams/-/ordered-read-streams-0.1.0.tgz#fd565a9af8eb4473ba69b6ed8a34352cb552f126"
+
+ordered-set@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/ordered-set/-/ordered-set-1.0.0.tgz#3b3a699e6e6a85595f7790b6462d42bb4551ec58"
 
 original@>=0.0.5:
   version "1.0.0"

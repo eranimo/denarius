@@ -207,11 +207,11 @@ describe('ValuedInventory', () => {
     expect(inventory.recordsOf(GOODS.wood)).toBe(1);
   });
 
-  test('merge', () => {
+  test('moveTo', () => {
     inventory.add(GOODS.wood, 10, 0.75);
     const two: ValuedInventory = new ValuedInventory();
     expect(inventory.amountOf(GOODS.wood)).toBe(10);
-    inventory.move(two, GOODS.wood, 1);
+    inventory.moveTo(two, GOODS.wood, 1);
     expect(inventory.amountOf(GOODS.wood)).toBe(9);
     expect(two.amountOf(GOODS.wood)).toBe(1);
   });

@@ -230,7 +230,7 @@ export class ValuedInventory {
     throw new NoGoodsError(good, amount);
   }
 
-  move(inventory: ValuedInventory, good: Good, amount: number, order: string = 'asc') {
+  moveTo(inventory: ValuedInventory, good: Good, amount: number, order: string = 'asc') {
     if (this.has(good, amount)) {
       const records: InventorySet = inventory.storeFor(good);
       const goods: InventorySet = this.take(good, amount, order);

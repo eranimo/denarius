@@ -145,6 +145,12 @@ export class InventorySet {
     this.store.add(item);
   }
 
+  merge(set: InventorySet) {
+    for (const record: InventoryRecord of set.entries()) {
+      this.add(record);
+    }
+  }
+
   delete(item: InventoryRecord) {
     this.store.delete(item);
   }
@@ -182,7 +188,7 @@ export class ValuedInventory {
     Object.freeze(this);
   }
 
-  add(good: Good, amount: number, cost: number) {
+  add(good: Good, amount: number, cost: number = 0) {
     const records: InventorySet = this.storeFor(good);
     const newRecord: InventoryRecord = new InventoryRecord(good, amount, cost);
     records.add(newRecord);
@@ -196,6 +202,10 @@ export class ValuedInventory {
       return records.totalAmount >= amount;
     }
     return records.totalAmount > 0;
+  }
+
+  hasAmount(good: Good, amount: number): boolean {
+    return this.has(good, amount);
   }
 
   amountOf(good: Good): number {
@@ -212,9 +222,19 @@ export class ValuedInventory {
     return records;
   }
 
-  remove(good: Good, amount: ?number) {
-    if (this.has(good, amount)) {
+  remove(good: Good, amount: number) {
+    if (this.hasAmount(good, amount)) {
       this.take(good, amount);
+      return;
+    }
+    throw new NoGoodsError(good, amount);
+  }
+
+  move(inventory: ValuedInventory, good: Good, amount: number, order: string = 'asc') {
+    if (this.has(good, amount)) {
+      const records: InventorySet = inventory.storeFor(good);
+      const goods: InventorySet = this.take(good, amount, order);
+      records.merge(goods);
       return;
     }
     throw new NoGoodsError(good, amount);
@@ -224,30 +244,46 @@ export class ValuedInventory {
   // with a number: get a number of goods in the inventory
   // sorted by record cost in ascending order
   // will return an empty InventorySet if no goods are in the inventory for that type
-  take(good: Good, amount: ?number, order: string = 'asc'): InventorySet {
+  take(good: Good, amount: number, order: string = 'asc'): InventorySet {
     const records: InventorySet = this.storeFor(good);
     if (!this.has(good, amount)) {
       return new InventorySet();
     }
     // $FlowFixMe
     const sortedRecords: Array<InventoryRecord> = orderBy(records.entries(), ['cost'], [order]);
-    if (amount) {
-      let newSet: InventorySet = new InventorySet();
-      let left: number = amount; // amount left to take
-      while (left > 0 && sortedRecords.length > 0) {
-        const first: InventoryRecord = sortedRecords.shift();
+    let newSet: InventorySet = new InventorySet();
+    let left: number = amount; // amount left to take
+    // console.log(`\n\n\nTaking ${amount} of ${this.amountOf(good)}`);
+    while (left > 0 && sortedRecords.length > 0) {
+      const first: InventoryRecord = sortedRecords.shift();
+      let take: number;
+      let transfered: number;
+      // console.log(`\tLeft before: ${left}`);
+      // console.log(`\tAmount: ${first.amount}`);
+      if (left <= first.amount) {
+        // we need 2, we have 5: so take 2 and 0 is left
+        take = first.amount - left;
+        transfered = first.amount - take;
         first.amount -= left;
-        newSet.add(first);
-
-        if (left <= first.amount) {
-          left = 0; // we need 2, we have 5
-        } else {
-          left -= left; // we have 5, we need 2
-        }
+        left = 0;
+      } else { // left > first.amount
+        // we need 5, we have 2: so take 2 and 3 is left
+        take = first.amount;
+        transfered = first.amount - take;
+        first.amount = 0;
+        left -= take;
       }
-      return newSet;
+      // console.log(`\tTake: ${take}`);
+      // console.log(`\tLeft after: ${left}\n\n\n`);
+      newSet.add(new InventoryRecord(good, transfered, first.unitCost));
     }
-    return new InventorySet(...sortedRecords);
+
+    for (const record: InventoryRecord of records.entries()) {
+      if (record.amount === 0) {
+        records.delete(record);
+      }
+    }
+    return newSet;
   }
 
 

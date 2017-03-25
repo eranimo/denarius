@@ -161,11 +161,14 @@ describe('ValuedInventory', () => {
   test('take', () => {
     inventory.add(GOODS.wood, 10, 0.75);
     expect(inventory.totalCost).toBe(10 * 0.75);
-    const wood: InventorySet = inventory.take(GOODS.wood, 5);
-    expect(wood.totalCost).toBe(5 * 0.75);
+    const wood: InventorySet = inventory.take(GOODS.wood, 6);
+    expect(inventory.hasAmount(GOODS.wood, 10)).toBe(false);
+    expect(inventory.hasAmount(GOODS.wood, 4)).toBe(true);
+    expect(wood.totalAmount).toBe(6);
+    expect(wood.totalCost).toBe(6 * 0.75);
   });
 
-  test('remove one record, delete half', () => {
+  test('remove with one record, delete half', () => {
     inventory.add(GOODS.wood, 10, 0.75);
     expect(inventory.amountOf(GOODS.wood)).toBe(10);
     expect(inventory.has(GOODS.wood, 10)).toBe(true);
@@ -176,7 +179,7 @@ describe('ValuedInventory', () => {
     expect(inventory.totalCost).toBe(5 * 0.75);
   });
 
-  test('remove two records, delete half of one', () => {
+  test('remove with two records, delete half of one', () => {
     inventory.add(GOODS.wood, 10, 0.75);
     inventory.add(GOODS.wood, 10, 0.10);
     expect(inventory.amountOf(GOODS.wood)).toBe(20);
@@ -185,12 +188,31 @@ describe('ValuedInventory', () => {
     expect(inventory.recordsOf(GOODS.wood)).toBe(2);
   });
 
-  test('remove two records, delete one and one half', () => {
+  test('remove with two records, delete one and one half', () => {
     inventory.add(GOODS.wood, 10, 0.75);
     inventory.add(GOODS.wood, 10, 0.10);
     expect(inventory.amountOf(GOODS.wood)).toBe(20);
     inventory.remove(GOODS.wood, 15);
     expect(inventory.amountOf(GOODS.wood)).toBe(5);
-    expect(inventory.recordsOf(GOODS.wood)).toBe(2);
+    expect(inventory.recordsOf(GOODS.wood)).toBe(1);
+  });
+
+  test('remove with three records, delete two and one half', () => {
+    inventory.add(GOODS.wood, 10, 0.75);
+    inventory.add(GOODS.wood, 10, 0.15);
+    inventory.add(GOODS.wood, 10, 0.10);
+    expect(inventory.amountOf(GOODS.wood)).toBe(30);
+    inventory.remove(GOODS.wood, 25);
+    expect(inventory.amountOf(GOODS.wood)).toBe(5);
+    expect(inventory.recordsOf(GOODS.wood)).toBe(1);
+  });
+
+  test('merge', () => {
+    inventory.add(GOODS.wood, 10, 0.75);
+    const two: ValuedInventory = new ValuedInventory();
+    expect(inventory.amountOf(GOODS.wood)).toBe(10);
+    inventory.move(two, GOODS.wood, 1);
+    expect(inventory.amountOf(GOODS.wood)).toBe(9);
+    expect(two.amountOf(GOODS.wood)).toBe(1);
   });
 });

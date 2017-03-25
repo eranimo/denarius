@@ -1,6 +1,10 @@
 {
   "parser": "babel-eslint",
-  "extends": ["eslint:recommended", "plugin:react/recommended"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:flowtype/recommended"
+  ],
   "plugins": [
     "flowtype",
     "react"
@@ -17,9 +21,13 @@
     "es6": true,
     "browser": true
   },
+  "settings": {
+    "onlyFilesWithFlowAnnotation": true
+  },
   "rules": {
     "semi": 2,
     "no-console": 0,
+    "no-unused-vars": 1,
     "flowtype/use-flow-type": 1,
     "flowtype/object-type-delimiter": 2,
     "flowtype/space-before-type-colon": 2,

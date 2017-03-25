@@ -1,9 +1,10 @@
 // @flow
 import type { Good } from './goods';
-import _ from 'lodash';
+import { orderBy } from 'lodash';
+import BetterSet from './ds/set';
 
 
-export default class Inventory {
+class Inventory {
   store: Map<Good, number>;
 
   constructor() {
@@ -116,3 +117,165 @@ export default class Inventory {
     console.groupEnd('inventory');
   }
 }
+
+export class InventoryRecord {
+  good: Good;
+  amount: number;
+  unitCost: number;
+
+  constructor(good: Good, amount: number, unitCost: number) {
+    this.good = good;
+    this.amount = amount;
+    this.unitCost = unitCost;
+  }
+
+  get cost(): number {
+    return this.unitCost * this.amount;
+  }
+}
+
+export class InventorySet {
+  store: BetterSet<InventoryRecord>;
+
+  constructor(...data: Array<InventoryRecord>) {
+    this.store = new BetterSet(data);
+  }
+
+  add(item: InventoryRecord) {
+    this.store.add(item);
+  }
+
+  delete(item: InventoryRecord) {
+    this.store.delete(item);
+  }
+
+  get totalAmount(): number {
+    return this.store.sumBy((item: InventoryRecord): number => item.amount);
+  }
+
+  get totalCost(): number {
+    return this.store.sumBy((item: InventoryRecord): number => item.cost);
+  }
+
+  entries(): Array<InventoryRecord> {
+    return Array.from(this.store);
+  }
+}
+
+class NoGoodsError extends Error {
+  message: string;
+
+  constructor(good: Good, amount: ?number) {
+    super();
+    this.name = 'NoGoodsError';
+    this.message = `Inventory doesn't have ${amount || 'any'} of type ${good.displayName}`;
+  }
+}
+
+export class ValuedInventory {
+  // a store of goods kept in descending order of cost (highest cost first)
+  store: Map<Good, InventorySet>;
+
+  constructor() {
+    this.store = new Map();
+
+    Object.freeze(this);
+  }
+
+  add(good: Good, amount: number, cost: number) {
+    const records: InventorySet = this.storeFor(good);
+    const newRecord: InventoryRecord = new InventoryRecord(good, amount, cost);
+    records.add(newRecord);
+  }
+
+  // without a number: does the inventory have goods of a type?
+  // with a number: does the inventory have the given amount of goods?
+  has(good: Good, amount: ?number): boolean {
+    const records: InventorySet = this.storeFor(good);
+    if (amount) {
+      return records.totalAmount >= amount;
+    }
+    return records.totalAmount > 0;
+  }
+
+  amountOf(good: Good): number {
+    const records: InventorySet = this.storeFor(good);
+    return records.totalAmount;
+  }
+
+  storeFor(good: Good): InventorySet {
+    let records: ?InventorySet = this.store.get(good);
+    if (!records) {
+      records = new InventorySet();
+      this.store.set(good, records);
+    }
+    return records;
+  }
+
+  remove(good: Good, amount: ?number) {
+    if (this.has(good, amount)) {
+      this.take(good, amount);
+      return;
+    }
+    throw new NoGoodsError(good, amount);
+  }
+
+  // without a number: return all goods of a type in the inventory
+  // with a number: get a number of goods in the inventory
+  // sorted by record cost in ascending order
+  // will return an empty InventorySet if no goods are in the inventory for that type
+  take(good: Good, amount: ?number, order: string = 'asc'): InventorySet {
+    const records: InventorySet = this.storeFor(good);
+    if (!this.has(good, amount)) {
+      return new InventorySet();
+    }
+    // $FlowFixMe
+    const sortedRecords: Array<InventoryRecord> = orderBy(records.entries(), ['cost'], [order]);
+    if (amount) {
+      let newSet: InventorySet = new InventorySet();
+      let left: number = amount; // amount left to take
+      while (left > 0 && sortedRecords.length > 0) {
+        const first: InventoryRecord = sortedRecords.shift();
+        first.amount -= left;
+        newSet.add(first);
+
+        if (left <= first.amount) {
+          left = 0; // we need 2, we have 5
+        } else {
+          left -= left; // we have 5, we need 2
+        }
+      }
+      return newSet;
+    }
+    return new InventorySet(...sortedRecords);
+  }
+
+
+  totalCostOfGood(good: Good): number {
+    const records: InventorySet = this.storeFor(good);
+    if (!records) {
+      return 0;
+    }
+    return records.totalCost;
+  }
+
+  recordsOf(good: Good): number {
+    const records: InventorySet = this.storeFor(good);
+    if (!records) {
+      return 0;
+    }
+    return records.store.size;
+  }
+
+  get totalCost(): number {
+    let totalAmount: number = 0;
+    for (const good: Good of this.store.keys()) {
+      totalAmount += this.totalCostOfGood(good);
+    }
+    return totalAmount;
+  }
+
+}
+
+
+export default Inventory;

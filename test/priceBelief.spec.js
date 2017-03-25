@@ -65,8 +65,4 @@ describe('PriceBelief', () => {
     console.log(woodPriceBelief);
   });
 
-  test('trader failed trade, public price higher than own price', () => {
-
-  });
-
 });

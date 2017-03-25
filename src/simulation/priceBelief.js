@@ -79,11 +79,11 @@ export default class PriceBelief {
 
     // how different the public mean price is from the price belief
     const deltaToMeanPrice: number = meanPrice - publicMeanPrice;
-    console.log(
-      'publicMeanPrice', publicMeanPrice,
-      '\nmeanPrice', meanPrice,
-      '\ndeltaToMeanPrice', deltaToMeanPrice
-    );
+    // console.log(
+    //   'publicMeanPrice', publicMeanPrice,
+    //   '\nmeanPrice', meanPrice,
+    //   '\ndeltaToMeanPrice', deltaToMeanPrice
+    // );
 
     if (isSuccessful) {
       if (orderType === 'buy' && deltaToMeanPrice > SIGNIFICANT) {
@@ -95,8 +95,12 @@ export default class PriceBelief {
       }
 
       // increase the belief's certainty
-      priceBelief.low += wobble * meanPrice;
-      priceBelief.high -= wobble * meanPrice;
+      const newLow: number = priceBelief.low + (wobble * meanPrice);
+      const newHigh: number = priceBelief.high - (wobble * meanPrice);
+      if (newHigh > newLow) {
+        priceBelief.low = newLow;
+        priceBelief.high = newHigh;
+      }
     } else { // failed order
 
       // shift towards mean price
@@ -150,6 +154,10 @@ export default class PriceBelief {
         priceBelief.low = MIN_PRICE;
       } else if (priceBelief.high < MIN_PRICE) {
         priceBelief.high = MIN_PRICE;
+      }
+
+      if (priceBelief.high < priceBelief.low) {
+        throw new Error('Price belief high must be higher than low');
       }
     }
   }

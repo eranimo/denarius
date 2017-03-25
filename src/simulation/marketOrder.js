@@ -1,6 +1,6 @@
 // @flow
 import type { Good } from './goods';
-import type Trader from './trader';
+// import type Trader from './trader';
 
 
 export type OrderType = 'buy' | 'sell';
@@ -11,10 +11,10 @@ export default class MarketOrder {
   amount: number; // how much of a good we are selling or buying
   originalAmount: number;
   price: number; // total value of this order (good unit price * amount)
-  trader: Trader;
+  trader: any;
   finalPrice: ?number;
 
-  constructor(orderType: OrderType, good: Good, amount: number, price: number, trader: Trader) {
+  constructor(orderType: OrderType, good: Good, amount: number, price: number, trader: any) {
     this.orderType = orderType;
     this.good = good;
     this.originalAmount = amount;

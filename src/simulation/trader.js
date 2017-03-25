@@ -1,5 +1,5 @@
 // @flow
-import Inventory from './inventory';
+import Inventory, { ValuedInventory } from './inventory';
 import type { Job } from './jobs';
 import type { Good } from './goods';
 import type { Loan } from './bank';
@@ -11,7 +11,8 @@ import _ from 'lodash';
 import PriceRange from './priceRange';
 import { goodsForJobs } from './jobsGoodsMap';
 import { AccountHolder } from './bank';
-
+import PriceBelief from './priceBelief';
+import { HasID } from './mixins';
 
 let currentId: number = 1;
 
@@ -22,6 +23,88 @@ function positionInRange(value: number, min: number, max: number): number {
   min = 0;
   value = value / (max - min);
   return _.clamp(value, 0, 1);
+}
+
+
+export class NewTrader extends HasID(AccountHolder) {
+  marketPrices: Map<Market, PriceBelief>;
+  inventory: ValuedInventory;
+  market: Market;
+  buyingList: Map<Good, number>;
+  buyOrders: Set<MarketOrder>;
+  sellOrders: Set<MarketOrder>;
+
+  constructor(market: Market) {
+    super();
+    this.marketPrices = new Map();
+    this.goToMarket(market);
+    this.inventory = new ValuedInventory();
+    this.buyingList = new Map();
+
+    this.buyOrders = new Set();
+    this.sellOrders = new Set();
+  }
+
+  goToMarket(market: Market) {
+    if (!this.marketPrices.has(market)) {
+      this.marketPrices.set(market, new PriceBelief(market, this));
+    }
+    this.market = market;
+  }
+
+
+  // $FlowFixMe
+  get priceBelief(): PriceBelief {
+    return this.marketPrices.get(this.market);
+  }
+
+  // set the amount of goods that this trader will try to have every turn
+  setDesire(good: Good, amount: number) {
+    if (this.buyingList.has(good)) {
+      this.buyingList.set(good, this.buyingList.get(good) + amount);
+    } else {
+      this.buyingList.set(good, amount);
+    }
+  }
+
+  amountRequired(good: Good): number {
+    return this.buyingList.get(good) || 0;
+  }
+
+  amountToBuy(good: Good): number {
+    return Math.max(0, this.amountRequired(good) - this.inventory.amountOf(good));
+  }
+
+  amountToSell(good: Good): number {
+    const amount: number = this.amountRequired(good) - this.inventory.amountOf(good);
+    if (amount < 0) { // surplus
+      return Math.abs(amount);
+    }
+    return 0;
+  }
+
+  trade() {
+    this.buyOrders = new Set();
+    this.sellOrders = new Set();
+
+    for (const good: Good of GOODS) {
+      const buyAmount: number = this.amountToBuy(good);
+      const sellAmount: number = this.amountToSell(good);
+      const price: number = this.priceBelief.randomPriceFor(good);
+
+      if (buyAmount > 0) {
+        const order: MarketOrder = new MarketOrder('buy', good, buyAmount, price, this);
+        this.buyOrders.add(order);
+        this.market.buy(order);
+      }
+
+      if (sellAmount > 0) {
+        const order: MarketOrder = new MarketOrder('buy', good, sellAmount, price, this);
+        this.sellOrders.add(order);
+        this.market.sell(order);
+      }
+    }
+  }
 }
 
 
@@ -212,6 +295,7 @@ export default class Trader extends AccountHolder {
     }
   }
 
+  // NOTE: also in PriceBelief
   determinePriceOf(good: Good): number {
     const priceBelief: ?PriceRange = this.priceBelief.get(good);
     if (priceBelief) {
@@ -221,6 +305,7 @@ export default class Trader extends AccountHolder {
   }
 
   // Gets the lowest and highst price of a Good this trader has seen
+  // NOTE: also in PriceBelief
   tradingRangeExtremes(good: Good): PriceRange {
     const tradingRange: ?Array<number> = this.observedTradingRange.get(good);
     if (!tradingRange) {
@@ -279,6 +364,7 @@ export default class Trader extends AccountHolder {
     return this.job.idealInventory.get(good) || 0;
   }
 
+  // NOTE: also in PriceBelief
   priceFor(good: Good): number {
     const priceBelief: ?PriceRange = this.priceBelief.get(good);
     if (!priceBelief) {
@@ -288,6 +374,7 @@ export default class Trader extends AccountHolder {
     return meanPrice;
   }
 
+  // NOTE: also in PriceBelief
   updatePriceBelief(good: Good, orderType: OrderType, isSuccessful: boolean, clearingPrice: ?number) {
     if (!this.observedTradingRange || !this.market || !this.priceBelief) {
       return;

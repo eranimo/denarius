@@ -1,5 +1,5 @@
 // @flow
-import Trader from './trader';
+import { NewTrader } from './trader';
 import MarketOrder from './marketOrder';
 import { GOODS } from './goods';
 import { JOBS } from './jobs';
@@ -10,7 +10,7 @@ import { TradeHistory } from './tradeHistory';
 
 
 export default class Market {
-  traders: Set<Trader>;
+  traders: Set<NewTrader>;
   buyOrders: Map<Good, Set<MarketOrder>>;
   sellOrders: Map<Good, Set<MarketOrder>>;
   history: TradeHistory;
@@ -68,7 +68,7 @@ export default class Market {
         const goodsTraded: number = Math.min(buyOrder.amount, sellOrder.amount);
         const totalPrice: number = goodsTraded * unitPrice;
 
-        console.dir(`Buyer: #${buyOrder.trader.id},  Seller: #${sellOrder.trader.id},  Good: ${buyOrder.good.displayName},  Quantity: ${goodsTraded}, Unit Price: $${unitPrice},  Total Price: $${totalPrice}, Buyer has $${buyOrder.trader.availableFunds}`);
+        // console.log(`Buyer: #${buyOrder.trader.id},  Seller: #${sellOrder.trader.id},  Good: ${buyOrder.good.displayName},  Quantity: ${goodsTraded}, Unit Price: $${unitPrice},  Total Price: $${totalPrice}, Buyer has $${buyOrder.trader.availableFunds}`);
 
         // if the buyer doesn't have the correct amount of money, borrow it
         if (!buyOrder.trader.account.has(totalPrice)) {
@@ -85,8 +85,8 @@ export default class Market {
         sellOrder.trader.successfulTrades++;
 
         // update price beliefs
-        buyOrder.trader.updatePriceBelief(buyOrder.good, buyOrder.orderType, true, unitPrice);
-        sellOrder.trader.updatePriceBelief(sellOrder.good, sellOrder.orderType, true, unitPrice);
+        buyOrder.trader.priceBelief.update(buyOrder.good, buyOrder.orderType, true, unitPrice);
+        sellOrder.trader.priceBelief.update(sellOrder.good, sellOrder.orderType, true, unitPrice);
 
         // change amounts
         buyOrder.amount = buyOrder.amount - goodsTraded;
@@ -111,12 +111,12 @@ export default class Market {
       // record failure
       for (const leftoverSellOrder: MarketOrder of sortedSellOrders) {
         leftoverSellOrder.trader.failedTrades++;
-        leftoverSellOrder.trader.updatePriceBelief(leftoverSellOrder.good, leftoverSellOrder.orderType, false);
+        leftoverSellOrder.trader.priceBelief.update(leftoverSellOrder.good, leftoverSellOrder.orderType, false);
       }
 
       for (const leftoverBuyOrder: MarketOrder of sortedBuyOrders) {
         leftoverBuyOrder.trader.failedTrades++;
-        leftoverBuyOrder.trader.updatePriceBelief(leftoverBuyOrder.good, leftoverBuyOrder.orderType, false);
+        leftoverBuyOrder.trader.priceBelief.update(leftoverBuyOrder.good, leftoverBuyOrder.orderType, false);
       }
 
       // log some stuff for the history books
@@ -131,44 +131,44 @@ export default class Market {
         this.history.prices.add(good, [this.history.prices.average(good, 1)]);
       }
 
-      const jobProfit: Map<Job, Array<number>> = new Map();
 
-      for (const trader: Trader of this.traders) {
-        if (jobProfit.has(trader.job)) {
-          // $FlowFixMe
-          const newArr: Array<number> = jobProfit.get(trader.job);
-          newArr.push(trader.profitLastRound);
-          jobProfit.set(trader.job, newArr);
-        } else {
-          jobProfit.set(trader.job, [trader.profitLastRound]);
-        }
-      }
+      // TODO: track the most profitable good
+      // const profit: Map<Good, Array<number>> = new Map();
 
-      for (const [job, profit]: [Job, Array<number>] of jobProfit.entries()) {
-        this.history.profit.add(job, profit);
-      }
+      // for (const trader: NewTrader of this.traders) {
+      //   if (profit.has(trader.job)) {
+      //     const newArr: Array<number> = profit.get(trader.job);
+      //     newArr.push(trader.profitLastRound);
+      //     profit.set(trader.job, newArr);
+      //   } else {
+      //     profit.set(trader.job, [trader.profitLastRound]);
+      //   }
+      // }
+
+      // for (const [job, profit]: [Job, Array<number>] of profit.entries()) {
+      //   this.history.profit.add(job, profit);
+      // }
 
       this.buyOrders.set(good, new Set());
       this.sellOrders.set(good, new Set());
     }
   }
 
-  // transfer a good from one Trader to another
-  transferGood(fromTrader: Trader, toTrader: Trader, good: Good, amount: number) {
+  // transfer a good from one NewTrader to another
+  transferGood(fromTrader: NewTrader, toTrader: NewTrader, good: Good, amount: number) {
     if (fromTrader.inventory.hasAmount(good, amount)) {
-      toTrader.inventory.subtract(good, amount);
-      toTrader.inventory.add(good, amount);
+      fromTrader.inventory.moveTo(toTrader.inventory, good, amount);
     } else {
-      throw new Error(`Trader ${fromTrader.toString()} doesn't have ${amount} '${good.displayName}' goods (it has ${fromTrader.inventory.get(good)})`);
+      throw new Error(`NewTrader ${fromTrader.toString()} doesn't have ${amount} '${good.displayName}' goods (it has ${fromTrader.inventory.amountOf(good)})`);
     }
   }
 
-  // transfer money from one Trader to another
-  transferMoney(fromTrader: Trader, toTrader: Trader, amount: number) {
+  // transfer money from one NewTrader to another
+  transferMoney(fromTrader: NewTrader, toTrader: NewTrader, amount: number) {
     if (fromTrader.availableFunds >= amount) {
       fromTrader.account.transferTo(toTrader.account, amount);
     } else {
-      throw new Error(`Trader ${fromTrader.toString()} doesn't have ${amount} money (it has ${fromTrader.availableFunds})`);
+      throw new Error(`NewTrader ${fromTrader.toString()} doesn't have ${amount} money (it has ${fromTrader.availableFunds})`);
     }
   }
 
@@ -176,14 +176,9 @@ export default class Market {
     return this.history.prices.average(good, dayRange);
   }
 
-  addTrader(trader: Trader) {
-    trader.moveToMarket(this);
+  addTrader(trader: NewTrader) {
+    trader.goToMarket(this);
     this.traders.add(trader);
-  }
-
-  removeTrader(trader: Trader) {
-    trader.market = undefined;
-    this.traders.delete(trader);
   }
 
   buy(order: MarketOrder) {
@@ -204,21 +199,21 @@ export default class Market {
     }
   }
 
-  // gets the most profitable job at this market
-  mostProfitableJob(dayRange: number = 10): ?Job {
-    let best: number = -Infinity;
-    let bestJob: ?Job = null;
+  // gets the most good sold at this market
+  mostProfitableGood(dayRange: number = 10): ?Job {
+    // let best: number = -Infinity;
+    let bestGood: ?Job = null;
+    //
+    // for (const job: Job of JOBS) {
+    //   const avgProfit: number = this.history.profit.average(job, dayRange);
+    //
+    //   if (avgProfit > best) {
+    //     bestGood = job;
+    //     best = avgProfit;
+    //   }
+    // }
 
-    for (const job: Job of JOBS) {
-      const avgProfit: number = this.history.profit.average(job, dayRange);
-
-      if (avgProfit > best) {
-        bestJob = job;
-        best = avgProfit;
-      }
-    }
-
-    return bestJob;
+    return bestGood;
   }
 
   // Get the good with the highest demand/supply ratio over time at this market
@@ -265,17 +260,18 @@ export default class Market {
     return this.history.sellOrderAmount.average(good, 1);
   }
 
+  /*
   simulate() {
     const overTitle: string = `Traders working and trading`;
     console.groupCollapsed(overTitle);
-    for (const trader: Trader of this.traders) {
+    for (const trader: NewTrader of this.traders) {
       trader.lastRound.money = trader.availableFunds;
       // do their job
-      console.groupCollapsed(`Trader #${trader.id} working`);
+      console.groupCollapsed(`NewTrader #${trader.id} working`);
       trader.work();
-      console.groupEnd(`Trader #${trader.id} working`);
+      console.groupEnd(`NewTrader #${trader.id} working`);
       // perform trades
-      const title: string = `Trader #${trader.id} is trading`;
+      const title: string = `NewTrader #${trader.id} is trading`;
       console.groupCollapsed(title);
       trader.trade();
       console.groupEnd(title);
@@ -294,4 +290,5 @@ export default class Market {
 
     this.history.debug();
   }
+  */
 }

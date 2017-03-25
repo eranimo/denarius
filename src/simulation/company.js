@@ -3,7 +3,7 @@ import { HasID } from './mixins';
 import type Worker from './worker';
 import type Product from './products';
 import type Market from './market';
-import Inventory from './inventory';
+import { ValuedInventory } from './inventory';
 
 
 /*
@@ -63,12 +63,12 @@ class Office {
 export default class Company extends HasID() {
   workers: Set<Worker>;
   products: Set<Product>;
-  inventory: Inventory;
+  inventory: ValuedInventory;
 
 
   constructor(origin: Market) {
     super();
-    this.inventory = new Inventory();
+    this.inventory = new ValuedInventory();
     this.workers = new Set();
     this.traders = new Set();
     this.products = new Set();
@@ -84,9 +84,9 @@ export default class Company extends HasID() {
 
   evaluateProducts() {
     if (this.products.size > 0) {
-      for (const product: Product of this.products) {
-
-      }
+      // for (const product: Product of this.products) {
+      //
+      // }
     }
   }
 

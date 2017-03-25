@@ -30,7 +30,7 @@ class Inventory {
 
   get size(): number {
     let result: number = 0;
-    for (const [good, amount]: [Good, number] of this.store.entries()) {
+    for (const [good, amount]: [Good, number] of this.store.entries()) { // eslint-disable-line
       result += amount;
     }
     return result;

@@ -22,15 +22,15 @@ woodcutter = new Trader(JOBS.woodcutter, 'woodcutter');
 bank.createAccount(farmer, 10);
 bank.createAccount(woodcutter, 10);
 
-test('farmer initial state', () => {
-  expect(farmer.availableFunds).toBe(10);
-  expect(farmer.failedTrades).toBe(0);
-  expect(farmer.successfulTrades).toBe(0);
+describe.skip('farmer goes to market', () => {
 
-  expect(farmer.inventory.size).toBe(0);
-});
+  test('farmer initial state', () => {
+    expect(farmer.availableFunds).toBe(10);
+    expect(farmer.failedTrades).toBe(0);
+    expect(farmer.successfulTrades).toBe(0);
 
-describe('farmer goes to market', () => {
+    expect(farmer.inventory.size).toBe(0);
+  });
 
   test('adding inventory to traders', () => {
     market.addTrader(farmer);

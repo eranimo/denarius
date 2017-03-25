@@ -17,7 +17,7 @@ Bank *has a* Account
 AccountHolder *has a* Account
 */
 
-describe('Bank', () => {
+describe.skip('Bank', () => {
   const INITIAL_FUNDS: number = 100;
 
 

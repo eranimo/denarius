@@ -325,8 +325,12 @@ export default class Trader extends AccountHolder {
       }
 
       // increase the belief's certainty
-      priceBelief.low += wobble * meanPrice;
-      priceBelief.high -= wobble * meanPrice;
+      const newLow: number = priceBelief.low + (wobble * meanPrice);
+      const newHigh: number = priceBelief.high - (wobble * meanPrice);
+      if (newHigh > newLow) {
+        priceBelief.low = newLow;
+        priceBelief.high = newHigh;
+      }
     } else { // failed order
 
       // shift towards mean price
@@ -339,7 +343,7 @@ export default class Trader extends AccountHolder {
 
       if (orderType === 'buy' && stock < LOW_INVENTORY * ideal) {
         // if we're buying and inventory is too low: we're desperate to buy
-        wobble *= 2;
+        wobble *= 5;
       } else if (orderType === 'sell' && stock > HIGH_INVENTORY * ideal) {
         // if we're selling and inventory is too high: we're desperate to sell
         wobble *= 2;
@@ -382,6 +386,10 @@ export default class Trader extends AccountHolder {
         priceBelief.low = MIN_PRICE;
       } else if (priceBelief.high < MIN_PRICE) {
         priceBelief.high = MIN_PRICE;
+      }
+
+      if (priceBelief.high < priceBelief.low) {
+        throw new Error('Price belief high must be higher than low');
       }
     }
   }

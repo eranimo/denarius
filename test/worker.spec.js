@@ -12,12 +12,14 @@ describe('Worker', () => {
     expect(worker.inventory.get(GOODS.bread)).toBe(2);
     expect(worker.inventory.get(GOODS.tools)).toBe(2);
     expect(worker.inventory.get(GOODS.grain)).toBe(0);
-    const size: number = worker.inventory.size;
+    expect(worker.inventory.size).toBe(4);
+    expect(worker.idleRounds).toBe(0);
     expect(worker.workedLastRound).toBe(false);
     worker.work();
+    expect(worker.idleRounds).toBe(0);
     expect(worker.inventory.get(GOODS.bread)).toBe(1);
     expect(worker.inventory.get(GOODS.grain)).toBe(2);
     expect(worker.workedLastRound).toBe(true);
-    expect(worker.inventory.size).toBeGreaterThan(size);
+    expect(worker.inventory.size >= 4).toBe(true);
   });
 });

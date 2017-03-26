@@ -1,10 +1,10 @@
 // @flow
 import { HasID } from './mixins';
 import type Worker from './worker';
-import type Product from './products';
+import type Product from './product';
 import type Market from './market';
 import { ValuedInventory } from './inventory';
-
+import { AccountHolder } from './bank';
 
 /*
 Overview:
@@ -55,31 +55,23 @@ trade():
       run trade function for trader
 */
 
-class Office {
-  market: Market;
-  company: Company;
-}
-
-export default class Company extends HasID() {
+export default class Company extends HasID(AccountHolder) {
   workers: Set<Worker>;
   products: Set<Product>;
   inventory: ValuedInventory;
+  market: Market;
+  bankrupt: boolean;
 
 
-  constructor(origin: Market) {
+  constructor(market: Market) {
     super();
     this.inventory = new ValuedInventory();
     this.workers = new Set();
     this.traders = new Set();
     this.products = new Set();
     this.offices = new Set();
-
-    this.addOffice(origin);
-  }
-
-  addOffice(market: Market) {
-    const office: Office = new Office(market, this);
-    this.offices.add(office);
+    this.market = market;
+    this.bankrupt = false;
   }
 
   evaluateProducts() {
@@ -91,7 +83,13 @@ export default class Company extends HasID() {
   }
 
   produce() {
+    for (const worker: Worker of this.workers) {
+      // give goods required to work
+      // work
+      // transfer resources to company
+      worker.work();
 
+    }
   }
 
   trade() {
@@ -100,6 +98,10 @@ export default class Company extends HasID() {
 
   simulate() {
     this.evaluateProducts();
+
+    if (this.availableFunds === 0) {
+      this.bankrupt = true;
+    }
   }
 
 

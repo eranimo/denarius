@@ -1,5 +1,4 @@
 // @flow
-
 export type Good = {
   key: string,
   color: string,

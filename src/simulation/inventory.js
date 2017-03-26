@@ -204,6 +204,15 @@ export class ValuedInventory {
     return records.totalAmount > 0;
   }
 
+  hasAmounts(multi: Map<Good, number>): boolean {
+    for (const [good, amount]: [Good, number] of multi.entries()) {
+      if (!this.hasAmount(good, amount)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   hasAmount(good: Good, amount: number): boolean {
     return this.has(good, amount);
   }

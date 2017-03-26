@@ -215,4 +215,15 @@ describe('ValuedInventory', () => {
     expect(inventory.amountOf(GOODS.wood)).toBe(9);
     expect(two.amountOf(GOODS.wood)).toBe(1);
   });
+
+  test('hasAmountMap', () => {
+    inventory.add(GOODS.wood, 10, 0.75);
+
+    expect(inventory.hasAmounts(new Map([
+      [GOODS.wood, 2]
+    ]))).toBe(true);
+    expect(inventory.hasAmounts(new Map([
+      [GOODS.wood, 20]
+    ]))).toBe(false);
+  });
 });

@@ -249,6 +249,16 @@ export class ValuedInventory {
     throw new NoGoodsError(good, amount);
   }
 
+  moveToMulti(inventory: ValuedInventory, multi: Map<Good, number>, order: string = 'asc') {
+    if (this.hasAmounts(multi)) {
+      for (const [good, amount]: [Good, number] of multi.entries()) {
+        this.moveTo(inventory, good, amount, order);
+      }
+      return;
+    }
+    throw new Error(`Inventory does not have those goods`);
+  }
+
   // without a number: return all goods of a type in the inventory
   // with a number: get a number of goods in the inventory
   // sorted by record cost in ascending order

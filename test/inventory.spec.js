@@ -216,6 +216,20 @@ describe('ValuedInventory', () => {
     expect(two.amountOf(GOODS.wood)).toBe(1);
   });
 
+  test('moveToMulti', () => {
+    inventory.add(GOODS.wood, 10, 0.75);
+    inventory.add(GOODS.bread, 10, 0.75);
+    const two: ValuedInventory = new ValuedInventory();
+    inventory.moveToMulti(two, new Map([
+      [GOODS.wood, 1],
+      [GOODS.bread, 1]
+    ]));
+    expect(inventory.amountOf(GOODS.wood)).toBe(9);
+    expect(inventory.amountOf(GOODS.bread)).toBe(9);
+    expect(two.amountOf(GOODS.wood)).toBe(1);
+    expect(two.amountOf(GOODS.bread)).toBe(1);
+  });
+
   test('hasAmountMap', () => {
     inventory.add(GOODS.wood, 10, 0.75);
 

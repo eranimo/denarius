@@ -1,5 +1,5 @@
 // @flow
-import { NewTrader } from './trader';
+import Trader  from './trader';
 import MarketOrder from './marketOrder';
 import { GOODS } from './goods';
 import { JOBS } from './jobs';
@@ -9,13 +9,17 @@ import _ from 'lodash';
 import { TradeHistory } from './tradeHistory';
 
 
+type MarketOptions = {
+  randomStartPrices: boolean,
+}
+
 export default class Market {
-  traders: Set<NewTrader>;
+  traders: Set<Trader>;
   buyOrders: Map<Good, Set<MarketOrder>>;
   sellOrders: Map<Good, Set<MarketOrder>>;
   history: TradeHistory;
 
-  constructor() {
+  constructor({ randomStartPrices = false }: MarketOptions = {}) {
     this.traders = new Set();
     this.buyOrders = new Map();
     this.sellOrders = new Map();
@@ -28,7 +32,11 @@ export default class Market {
       this.history.register(good);
 
       // make some fake historical data
-      this.history.prices.add(good, [1.0]);
+      if (randomStartPrices) {
+        this.history.prices.add(good, [_.random(0.5, 1)]);
+      } else {
+        this.history.prices.add(good, [1.0]);
+      }
       this.history.buyOrderAmount.add(good, [1.0]);
       this.history.sellOrderAmount.add(good, [1.0]);
       this.history.unitsTraded.add(good, [1.0]);

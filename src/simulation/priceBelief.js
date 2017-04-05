@@ -5,16 +5,16 @@ import { GOODS } from './goods';
 import PriceRange from './priceRange';
 import { min, max } from 'lodash';
 import type { OrderType } from './marketOrder';
-import type { NewTrader } from './trader';
+import type Trader from './trader';
 
 
 export default class PriceBelief {
   prices: Map<Good, PriceRange>;
   market: Market;
   observedTradingRange: Map<Good, Array<number>>;
-  trader: NewTrader;
+  trader: Trader;
 
-  constructor(market: Market, trader: NewTrader) {
+  constructor(market: Market, trader: Trader) {
     this.market = market;
     this.prices = new Map();
     this.trader = trader;

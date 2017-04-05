@@ -4,120 +4,6 @@ import { orderBy } from 'lodash';
 import BetterSet from './ds/set';
 
 
-class Inventory {
-  store: Map<Good, number>;
-
-  constructor() {
-    this.store = new Map();
-  }
-
-  add(good: Good, amount: number) {
-    if (!this.store.has(good)) {
-      this.store.set(good, amount);
-    } else {
-      this.store.set(good, this.store.get(good) + amount);
-    }
-  }
-
-  subtract(good: Good, amount: number): boolean {
-    if (this.hasAmount(good, amount)) {
-      this.store.set(good, this.get(good) - amount);
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  get size(): number {
-    let result: number = 0;
-    for (const [good, amount]: [Good, number] of this.store.entries()) { // eslint-disable-line
-      result += amount;
-    }
-    return result;
-  }
-
-  // gets the amount of a good in an inventory, 0 otherwise
-  get(good: Good): number {
-    return this.store.get(good) || 0;
-  }
-
-  set(good: Good, amount: number) {
-    this.store.set(good, amount);
-  }
-
-  // checks if the inventory has the amount of a good
-  hasAmount(good: Good, amount: number): boolean {
-    return this.get(good) >= amount;
-  }
-
-  // returns the difference of this inventory and a map of goods
-  // if positive, we have a deficit
-  // if negative, we have a surplus
-  difference(goodMap: Map<Good, number>): Map<Good, number> {
-    let result: Map<Good, number> = new Map;
-    for (const [myGood, myAmount]: [Good, number] of this.store.entries()) {
-      if (goodMap.has(myGood)) {
-        for (const [theirGood, theirAmount]: [Good, number] of goodMap.entries()) {
-          if (myGood == theirGood) {
-            result.set(myGood, myAmount - theirAmount);
-          }
-        }
-      } else {
-        result.set(myGood, myAmount);
-      }
-    }
-    return result;
-  }
-
-  // does this inventory have these goods?
-  hasGoods(goodMap: Map<Good, number>): boolean {
-    for (const [good, amount]: [Good, number] of goodMap.entries()) {
-      const result: boolean = this.hasAmount(good, amount);
-      if (!result) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  // takes a map of goods
-  takeGoods(goodMap: Map<Good, number>): boolean {
-    if (this.hasGoods(goodMap) === false) {
-      return false;
-    }
-
-    for (const [good, amount]: [Good, number] of goodMap.entries()) {
-      this.subtract(good, amount);
-    }
-
-    return true;
-  }
-
-  giveGoods(goodMap: Map<Good, number>): boolean {
-    for (const [good, amount]: [Good, number] of goodMap.entries()) {
-      this.add(good, amount);
-    }
-
-    return true;
-  }
-
-  export(): Array<Object> {
-    const result: Array<Object> = [];
-    for (const [good, amount]: [Good, number] of this.store.entries()) {
-      result.push({ good, amount });
-    }
-    return result;
-  }
-
-  debug() {
-    console.groupCollapsed('inventory');
-    for (const [good, amount]: [Good, number] of this.store.entries()) {
-      console.log(`${good.key}: ${amount}`);
-    }
-    console.groupEnd('inventory');
-  }
-}
-
 export class InventoryRecord {
   good: Good;
   amount: number;
@@ -178,7 +64,7 @@ class NoGoodsError extends Error {
   }
 }
 
-export class ValuedInventory {
+export default class Inventory {
   // a store of goods kept in descending order of cost (highest cost first)
   store: Map<Good, InventorySet>;
 
@@ -192,6 +78,13 @@ export class ValuedInventory {
     const records: InventorySet = this.storeFor(good);
     const newRecord: InventoryRecord = new InventoryRecord(good, amount, cost);
     records.add(newRecord);
+  }
+
+  // TODO: with cost
+  addMulti(multi: Map<Good, number>) {
+    for (const [good, amount]: [Good, number] of multi.entries()) {
+      this.add(good, amount);
+    }
   }
 
   // without a number: does the inventory have goods of a type?
@@ -239,7 +132,21 @@ export class ValuedInventory {
     throw new NoGoodsError(good, amount);
   }
 
-  moveTo(inventory: ValuedInventory, good: Good, amount: number, order: string = 'asc') {
+  removeMulti(multi: Map<Good, number>) {
+    if (this.hasAmounts(multi)) {
+      for (const [good, amount]: [Good, number] of multi.entries()) {
+        this.take(good, amount);
+      }
+    }
+    throw new Error('Missing goods to delete');
+  }
+
+  moveTo(
+    inventory: Inventory,
+    good: Good,
+    amount: number = this.amountOf(good),
+    order: string = 'asc'
+  ) {
     if (this.has(good, amount)) {
       const records: InventorySet = inventory.storeFor(good);
       const goods: InventorySet = this.take(good, amount, order);
@@ -249,7 +156,11 @@ export class ValuedInventory {
     throw new NoGoodsError(good, amount);
   }
 
-  moveToMulti(inventory: ValuedInventory, multi: Map<Good, number>, order: string = 'asc') {
+  moveToMulti(
+    inventory: Inventory,
+    multi: Map<Good, number>,
+    order: string = 'asc'
+  ) {
     if (this.hasAmounts(multi)) {
       for (const [good, amount]: [Good, number] of multi.entries()) {
         this.moveTo(inventory, good, amount, order);
@@ -323,14 +234,20 @@ export class ValuedInventory {
   }
 
   get totalCost(): number {
-    let totalAmount: number = 0;
+    let cost: number = 0;
     for (const good: Good of this.store.keys()) {
-      totalAmount += this.totalCostOfGood(good);
+      cost += this.totalCostOfGood(good);
     }
-    return totalAmount;
+    return cost;
+  }
+
+  get size(): number {
+    let num: number = 0;
+    for (const good: Good of this.store.keys()) {
+      const records: InventorySet = this.storeFor(good);
+      num += records.totalAmount;
+    }
+    return num;
   }
 
 }
-
-
-export default Inventory;

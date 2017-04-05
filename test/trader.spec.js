@@ -1,22 +1,22 @@
 // @flow
-import { NewTrader } from '../src/simulation/trader';
+import Trader from '../src/simulation/trader';
 import Market from '../src/simulation/market';
 import { Bank } from '../src/simulation/bank';
 import * as GOODS from '../src/simulation/goods';
 
 
-describe('NewTrader', () => {
+describe('Trader', () => {
   const market: Market = new Market();
   const bank: Bank = new Bank(100);
 
-  let t1: NewTrader;
-  let t2: NewTrader;
-  let t3: NewTrader;
+  let t1: Trader;
+  let t2: Trader;
+  let t3: Trader;
 
   beforeEach(() => {
-    t1 = new NewTrader(market);
-    t2 = new NewTrader(market);
-    t3 = new NewTrader(market);
+    t1 = new Trader(market);
+    t2 = new Trader(market);
+    t3 = new Trader(market);
 
     bank.createAccount(t1, 100);
     bank.createAccount(t2, 100);

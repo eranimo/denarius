@@ -3,6 +3,7 @@ import type { Good } from './goods';
 import type Trader from './trader';
 import type Market from './market';
 import type Company from './company';
+import type Producer from './producer';
 import { blueprintFor } from './production';
 import { takeRight, mean } from 'lodash';
 
@@ -10,6 +11,7 @@ import { takeRight, mean } from 'lodash';
 /*
 
 A Product is a record of a Good being sold by a Company at multiple Markets
+A Product can be produced in one Market and traded in another Market
 
 
 METHODS:
@@ -23,19 +25,25 @@ costOfProduction
 export default class Product {
   good: Good;
   company: Company;
-  price: number;
+  workers: Set<Producer>;
   assignedTrader: Trader;
   marketsTraded: Set<Market>;
+  marketsProduced: Set<Market>;
   profitHistory: Array<number>;
 
-  constructor(good: Good, market: Market, company: Company, trader: Trader) {
+  constructor(good: Good, company: Company, assignedTrader: Trader) {
     this.good = good;
     this.marketsTraded = new Set();
-    this.marketsTraded.add(market);
-    this.price = this.valueAt(market);
+    this.marketsProduced = new Set();
     this.company = company;
-    this.assignedTrader = trader;
+    this.assignedTrader = assignedTrader;
     this.profitHistory = [];
+    this.workers = new Set();
+  }
+
+  assignWorker(producer: Producer) {
+    producer.product = this;
+    this.workers.add(producer);
   }
 
   // value of a good at a market
@@ -48,7 +56,7 @@ export default class Product {
   }
 
   // the cost of all the required goods at a market
-  costAt(market: Market): number {
+  priceAt(market: Market): number {
     const reqs: Map<Good, number> = this.requiredGoods;
     let cost: number = 0;
     for (const [good, amount]: [Good, number] of reqs) {
@@ -65,5 +73,17 @@ export default class Product {
   meanProfit(roundsBack: number = 5): number {
     return mean(takeRight(this.profitHistory, roundsBack));
   }
+
+  laborCostAt(market: Market): number {
+    let cost: number = 0;
+    for (const producer: Producer of this.workers) {
+      for (const [good, amount]: [Good, number] of producer.lifeNeeds) {
+        cost += amount * market.meanPrice(good);
+      }
+    }
+    return cost;
+  }
+
+
 
 }

@@ -1,32 +1,39 @@
 // @flow
 import { HasID } from './mixins';
-import type Worker from './worker';
+import type { Good } from './goods';
+import type Producer from './producer';
 import type Product from './product';
 import type Market from './market';
-import { ValuedInventory } from './inventory';
+import Inventory from './inventory';
 import { AccountHolder } from './bank';
+import { isRawGood, blueprintFor } from './production';
 
 /*
 Overview:
 
+A company produces multiple products (goods) at several markets
+  produced by many workers
+  sold by many Traders
+
 inherits HasID
 
-- A Company has Worker employees
-  - must have at least 1 Worker
-  - workers get payed a wage every round
-  - Workers product on Products
+- [x] A Company has Producer employees
+  - [ ] must have at least 1 Producer
+  - [ ] workers get payed a wage every round
+  - [x] Workers produce Products
+  - [ ] a producer is limited to working on one product at a time
 
-- A Company has Trader employees
-  - traders get payed a wage every round
-  - must have at least 1 Trader
+- [x] A Company has Trader employees
+  - [ ] traders get payed a wage every round
+  - [ ] must have at least 1 Trader
 
-- A Company has Inventory
+- [x] A Company has Inventory
 
-- Products are Goods that are sold at Markets
-  - must have at least 1 Product
-  - a Product is traded at a Market by a Trader
-  - a Product may be sold at multiple Markets by the same Trader
-  - Product price is set by Trader assigned to that Product
+- [x] Products are Goods that are sold at Markets
+  - [ ] must have at least 1 Product
+  - [ ] a Product is traded at a Market by a Trader
+  - [ ] a Product may be sold at multiple Markets by the same Trader
+  - [ ] Product price is set by Trader assigned to that Product
 
 METHODS:
 
@@ -41,8 +48,8 @@ decideProduct():
 
 // create new product. Ran every round
 produce():
-  for each worker:
-    run work function for worker
+  for each producer:
+    run work function for producer
     transfer good to company inventory
 
 // trade products at markets with offices
@@ -56,44 +63,82 @@ trade():
 */
 
 export default class Company extends HasID(AccountHolder) {
-  workers: Set<Worker>;
+  workers: Set<Producer>;
   products: Set<Product>;
-  inventory: ValuedInventory;
+  inventory: Inventory;
   market: Market;
   bankrupt: boolean;
+  lastRound: Object;
 
 
   constructor(market: Market) {
     super();
-    this.inventory = new ValuedInventory();
+    this.inventory = new Inventory();
     this.workers = new Set();
     this.traders = new Set();
     this.products = new Set();
     this.offices = new Set();
     this.market = market;
     this.bankrupt = false;
+    this.lastRound = {
+      idleWorkers: 0,
+    };
   }
 
   evaluateProducts() {
-    if (this.products.size > 0) {
-      // for (const product: Product of this.products) {
-      //
-      // }
+    /*
+    if we don't have products, evaluate markets
+      for every good in the market, determine the cost to produce that good
+        include:
+          market price for each requirement
+          price for life needs of each worker
+
+
+    */
+  }
+
+  // give the required goods to produce all products this company has
+  giveRequiredGoods() {
+    for (const product: Product of this.products) {
+      if (!isRawGood(product.good)) {
+        const reqs: Map<Good, number> = blueprintFor(product.good);
+        for (const [good, amount]: [Good, number] of reqs.entries()) {
+          this.inventory.add(good, amount);
+        }
+      }
     }
   }
 
   produce() {
-    for (const worker: Worker of this.workers) {
-      // give goods required to work
-      // work
-      // transfer resources to company
-      worker.work();
+    this.lastRound = {
+      idleWorkers: 0,
+    };
+    for (const product: Product of this.products) {
+      for (const producer: Producer of product.workers) {
 
+        // if we have goods for this producer
+        if (this.inventory.hasAmounts(producer.workRequirements)) {
+          // give goods required to work
+          this.inventory.moveToMulti(producer.inventory, producer.workRequirements);
+
+          // work
+          producer.work();
+
+          // transfer output goods to company inventory
+          producer.inventory.moveTo(this.inventory, producer.job.output);
+        } else {
+          // producer can't work
+          this.lastRound.idleWorkers++;
+        }
+      }
     }
   }
 
   trade() {
+    for (const product: Product of this.products) {
+      const trader: Trader = product.assignedTrader;
 
+    }
   }
 
   simulate() {
@@ -102,6 +147,16 @@ export default class Company extends HasID(AccountHolder) {
     if (this.availableFunds === 0) {
       this.bankrupt = true;
     }
+  }
+
+  costOfLabor(): number {
+    let cost: number = 0;
+    for (const product: Product of this.products) {
+      for (const market: Market of product.marketsTraded) {
+        cost += product.laborCostAt(market);
+      }
+    }
+    return cost;
   }
 
 

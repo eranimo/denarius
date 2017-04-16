@@ -22,7 +22,10 @@ export class State<T> {
   }
 }
 
-
+/*
+A simple state machine without events
+States may transition by calling enter() in the state's update() function
+*/
 export class StateMachine<T> {
   states: Map<string, State<T>>;
   current: State<T>;

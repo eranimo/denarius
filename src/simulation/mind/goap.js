@@ -22,6 +22,7 @@ Types:
 */
 
 export type Condition = (state: Object) => boolean;
+export type Comparator = (oldState: Object, newState: Object) => boolean;
 export type Effect = (state: Object) => Object;
 
 export class Action {
@@ -46,6 +47,10 @@ export class Action {
   effect(state: Object): Object { // eslint-disable-line
     throw new NotImplementedError();
   }
+
+  toString(): string {
+    return `[Action: ${this.constructor.name}]`;
+  }
 }
 
 export class Agent {
@@ -69,12 +74,27 @@ export class Node {
   action: ?Action;
   cost: number;
   state: Object;
+  children: Array<Node>;
 
   constructor(parentNode: ?Node, action: ?Action, cost: number, state: Object) {
+    this.children = [];
     this.parentNode = parentNode;
+    if (this.parentNode != null) {
+      this.parentNode.children.push(this);
+    }
     this.action = action;
     this.cost = cost;
     this.state = state;
+  }
+
+  toString(): string {
+    return `[Node: action: ${this.action ? this.action.constructor.name : 'none'} cost: ${this.cost} children: ${this.children.length} state: ${JSON.stringify(this.state)}]`;
+  }
+
+  graph(indent: string = '  '): string {
+    return `${indent}${this.toString()} -> \n` + this.children.map((child: Node): string => {
+      return child.graph(indent + '  ');
+    }).join('');
   }
 }
 
@@ -88,7 +108,7 @@ export class Plan {
     this.totalCost = totalCost;
   }
 
-  static formulate(agent: Agent, goal: Condition): ?Plan {
+  static formulate(agent: Agent, goal: Condition, progress: ?Comparator): ?Plan {
     const root: Node = new Node(null, null, 0, agent.state);
 
     let leaves: Array<Node> = [];
@@ -101,14 +121,20 @@ export class Plan {
           const currentState: Object = action.effect(Object.assign({}, parentNode.state));
           const node: Node = new Node(parentNode, action, parentNode.cost + action.cost(currentState), currentState);
 
-          if (goal(currentState)) {
-            // goal has been reached
+          if (goal(currentState)) { // goal has been reached
+            // console.log('goal', action.toString());
             leaves.push(node);
             foundOne = true;
-          } else {
+          } else if (progress && progress(parentNode.state, currentState)) {
+            // console.log('progress', action.toString());
+            const result: boolean = buildGraph(node, leaves, actions, goal);
+            if (result) {
+              foundOne = true;
+            }
+          } else { // this action doesn't achieve the goal
+            // console.log('nope', action.toString());
             actions.delete(action);
             const found: boolean = buildGraph(node, leaves, actions, goal);
-
             if (found) {
               foundOne = true;
             }
@@ -118,8 +144,11 @@ export class Plan {
       return foundOne;
     }
 
+
     const found: boolean = buildGraph(root, leaves, agent.actions, goal);
-    if (!found) {
+    // console.log('found', found);
+    // console.log(root.graph());
+    if (found !== true) {
       return null;
     }
 
@@ -128,20 +157,23 @@ export class Plan {
       return a.cost - b.cost;
     });
 
+
     const cheapest: Node = leaves[0];
     const sequence: Array<Action> = [];
     let node: ?Node = cheapest;
     let totalCost: number = 0;
 
     while(node) {
+      // console.log('node', node);
       if (node.action) {
-        // totalCost += node.action.cost(agent);
+        totalCost += node.action.cost(agent);
+        // $FlowFixMe
         sequence.unshift(node.action);
       }
 
       node = node.parentNode;
     }
-
+    // console.log('sequence', sequence);
     const plan: Plan = new Plan(sequence, totalCost);
     agent.currentPlan = plan;
     return plan;

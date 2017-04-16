@@ -1,5 +1,5 @@
 // @flow
-import type { Condition } from '../../src/simulation/mind/goap';
+import type { Condition, Comparator } from '../../src/simulation/mind/goap';
 import {
   Action,
   Agent,
@@ -77,7 +77,7 @@ class Woodcutter extends Agent {
 }
 
 
-describe('Plan', () => {
+describe('Woodcutter Plan', () => {
   let woodcutter: Woodcutter;
 
   // best way to get ore is to CollectBranches
@@ -95,6 +95,7 @@ describe('Plan', () => {
 
     expect(plan.sequence.length).toBe(1);
     expect(plan.sequence[0]).toBeInstanceOf(CollectBranches);
+    expect(plan.totalCost).toBe(8);
   });
 
   // best way to get ore is to GetAxe -> ChopLog
@@ -111,7 +112,57 @@ describe('Plan', () => {
     }
 
     expect(plan.sequence.length).toBe(2);
+    expect(plan.totalCost).toBe(6);
     expect(plan.sequence[0]).toBeInstanceOf(GetAxe);
     expect(plan.sequence[1]).toBeInstanceOf(ChopLog);
+  });
+});
+
+
+class MineOre extends Action {
+  cost(): number {
+    return 1;
+  }
+
+  precondition(): boolean {
+    return true;
+  }
+
+  effect(state: Object): Object {
+    state.numOre++;
+    return state;
+  }
+}
+
+const mineFiveOre: Condition = (state: Object): boolean => state.numOre >= 5;
+const oreIncreasing: Comparator = (oldState: Object, newState: Object): boolean => newState.numOre > oldState.numOre;
+
+class Miner extends Agent {
+  constructor() {
+    super();
+    this.state = {
+      numOre: 0
+    };
+
+    this.addAction(new MineOre());
+  }
+
+  plan(): ?Plan {
+    return Plan.formulate(this, mineFiveOre, oreIncreasing);
+  }
+}
+
+describe('Miner Plan', () => {
+  it('plan to mine 5 more', () => {
+    const miner: Miner = new Miner();
+
+    expect(miner.state.numOre).toBe(0);
+    const plan: ?Plan = miner.plan();
+    expect(plan).not.toBe(null);
+    if (!plan) {
+      return;
+    }
+    expect(plan.sequence.length).toBe(5);
+    expect(plan.totalCost).toBe(5);
   });
 });

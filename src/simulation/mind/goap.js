@@ -1,5 +1,5 @@
 // @flow
-
+import { NotImplementedError } from '../errors';
 
 /*
 GOAP Planning
@@ -20,13 +20,6 @@ Types:
   - Condition: a function of the state
   - Effect: a modifier for the state
 */
-
-export class NotImplementedError extends Error {
-  constructor() {
-    super();
-    this.message = 'This method must be implemented by the extending class';
-  }
-}
 
 export type Condition = (state: Object) => boolean;
 export type Effect = (state: Object) => Object;

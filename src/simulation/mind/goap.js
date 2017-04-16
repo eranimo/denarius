@@ -58,6 +58,7 @@ export class Action {
 export class Agent {
   actions: Set<Action>;
   state: Object;
+  currentPlan: Plan;
 
   constructor() {
     this.actions = new Set();
@@ -148,6 +149,8 @@ export class Plan {
       node = node.parentNode;
     }
 
-    return new Plan(sequence, totalCost);
+    const plan: Plan = new Plan(sequence, totalCost);
+    agent.currentPlan = plan;
+    return plan;
   }
 }

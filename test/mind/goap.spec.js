@@ -66,9 +66,9 @@ class Woodcutter extends Agent {
     GetAxe -> CollectBranches (total: 10)
     CollectBranches (total: 8)
     */
-    this.addAction(new ChopLog(this));
-    this.addAction(new GetAxe(this));
-    this.addAction(new CollectBranches(this));
+    this.addAction(new ChopLog());
+    this.addAction(new GetAxe());
+    this.addAction(new CollectBranches());
   }
 
   plan(): ?Plan {

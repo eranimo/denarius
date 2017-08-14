@@ -4,6 +4,7 @@ import { AccountHolder } from './bank';
 import * as GOODS from './goods';
 import type { Good } from './goods';
 import Inventory from './inventory';
+import { HasLogic } from './logic';
 
 
 /*
@@ -13,7 +14,7 @@ import Inventory from './inventory';
   A person has a required amount of goods each round
 
 */
-export default class Person extends HasID(AccountHolder) {
+export default class Person extends HasLogic(HasID(AccountHolder)) {
   lifeNeedsSatisfied: boolean;
   hungerRounds: number;
   inventory: Inventory;

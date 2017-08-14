@@ -5,22 +5,21 @@ import Inventory from './inventory';
 import PriceRange from './priceRange';
 import { blueprintFor, isRawGood } from './production';
 import type Company from './company';
-import Trader from './trader';
+import Logic from './logic';
 import type Market from './market';
 import type Product from './product';
 
 
-export default class Producer extends Trader {
+export default class ProducerLogic extends Logic {
   priceBelief: Map<Good, PriceRange>;
   workedLastRound: boolean;
   idleRounds: number;
   employer: ?Company;
   product: ?Product;
+  job: Job;
 
-  constructor(market: Market, job: Job) {
-    super(market);
+  onInit() {
     this.workedLastRound = false;
-    this.job = job;
     this.idleRounds = 0;
     this.employer = null;
     this.product = null;
@@ -39,6 +38,10 @@ export default class Producer extends Trader {
       this.workedLastRound = false;
       return false;
     }
+
+    if (!this.job) {
+      return false;
+    }
     // $FlowFixMe
     const inventory: Inventory = this.isEmployed ? this.employer.inventory : this.inventory;
 
@@ -52,12 +55,13 @@ export default class Producer extends Trader {
     if (inventory.hasAmounts(this.product.requiredGoods)) {
       // take the goods required for the job
       // perform the job
-      this.job.workFunc(inventory);
+      // $FlowFixMe
+      inventory.removeMulti(this.product.requiredGoods);
       this.workedLastRound = true;
-      console.log(`Trader #${this.id} worked`);
+      console.log(`Trader #${this.entity.id} worked`);
       this.idleRounds = 0;
     } else {
-      console.log(`Trader #${this.id} did not work (${this.idleRounds} idle rounds)`);
+      console.log(`Trader #${this.entity.id} did not work (${this.idleRounds} idle rounds)`);
       this.workedLastRound = false;
       this.idleRounds++;
     }
@@ -75,6 +79,6 @@ export default class Producer extends Trader {
     if (!this.product) {
       return;
     }
-    this.inventory.addMulti(this.product.requiredGoods);
+    this.entity.inventory.addMulti(this.product.requiredGoods);
   }
 }

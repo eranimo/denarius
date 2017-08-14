@@ -104,3 +104,28 @@ sell orders = job applications
 
 If a job posting is a success, price belief converges on that price
 If a job posting is a failure, price belief diverges and moves towards market price
+
+
+
+
+
+
+
+
+
+
+
+
+## New Design
+
+```
+def: Person
+def: Market
+def: Company
+
+Company has many Person
+Market has many Person
+
+Person has a Job (called job)
+Person can work for a Company (called employee / employer)
+```

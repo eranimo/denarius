@@ -34,6 +34,7 @@
     "webpack": "^2.2.1",
     "webpack-dev-server": "^2.4.0"
   },
+  "repository": "git@github.com:eranimo/denarius.git",
   "dependencies": {
     "flow-typed": "^2.0.0",
     "global": "^4.3.1",

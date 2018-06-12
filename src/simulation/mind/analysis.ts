@@ -1,4 +1,4 @@
-// @flow
+
 // A consideration is a function that effects something
 export class Consideration {
   impact: number;

@@ -1,5 +1,5 @@
 // @flow
-import Stack from '../../src/simulation/ds/stack';
+import Stack from '../stack';
 
 describe('Stack', () => {
   let stack: Stack<number>;

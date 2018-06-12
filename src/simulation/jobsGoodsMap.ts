@@ -1,5 +1,5 @@
-import Job from './jobs';
-import Good from './goods';
+import { Job } from './jobs';
+import { Good } from './goods';
 import * as JOBS from './jobs';
 import * as GOODS from './goods';
 

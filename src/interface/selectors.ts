@@ -1,7 +1,7 @@
 import { createSelector } from 'reselect';
-import { History } from '../simulation/index';
-import { Good } from '../simulation/goods';
-import { GOODS } from '../simulation/goods';
+import { History } from '..//index';
+import { Good } from '..//goods';
+import { GOODS } from '..//goods';
 import _ from 'lodash';
 
 

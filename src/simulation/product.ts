@@ -1,4 +1,4 @@
-// @flow
+
 import { Good } from './goods';
 import Trader from './trader';
 import Market from './market';
@@ -59,7 +59,7 @@ export default class Product {
   priceAt(market: Market): number {
     const reqs: Map<Good, number> = this.requiredGoods;
     let cost: number = 0;
-    for (const [good, amount]: [Good, number] of reqs) {
+    for (const [good, amount] of reqs) {
       cost += market.meanPrice(good) * amount;
     }
     return cost;
@@ -76,14 +76,11 @@ export default class Product {
 
   laborCostAt(market: Market): number {
     let cost: number = 0;
-    for (const producer: Producer of this.workers) {
-      for (const [good, amount]: [Good, number] of producer.lifeNeeds) {
+    for (const producer of this.workers) {
+      for (const [good, amount] of producer.lifeNeeds) {
         cost += amount * market.meanPrice(good);
       }
     }
     return cost;
   }
-
-
-
 }

@@ -1,9 +1,8 @@
-// @flow
-import { companyProducing } from '../src/simulation/init';
-import type Company from '../src/simulation/company';
-import { Bank } from '../src/simulation/bank';
-import Market from '../src/simulation/market';
-import * as GOODS from '../src/simulation/goods';
+import { companyProducing } from '../init';
+import Company from '../company';
+import { Bank } from '../bank';
+import Market from '../market';
+import * as GOODS from '../goods';
 
 
 describe('Company', () => {
@@ -32,6 +31,5 @@ describe('Company', () => {
 
   test('cost of labor', () => {
     woodCompany.produce();
-    // expect(woodCompany)
   });
 });

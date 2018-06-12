@@ -1,6 +1,6 @@
-// @flow
 
-export default class BetterSet<T = any> extends Set {
+
+export default class BetterSet<T = any> extends Set<T> {
   sumBy(getter: any): number {
     let result: number = 0;
     for (const item of this) {

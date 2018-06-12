@@ -1,6 +1,6 @@
 // @flow
 
-import { Analysis, Consideration } from '../../src/simulation/mind/analysis';
+import { Analysis, Consideration } from '../analysis';
 
 test('analysis', () => {
 

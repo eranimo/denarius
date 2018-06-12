@@ -1,4 +1,4 @@
-// @flow
+
 import Market from './market';
 import { Good } from './goods';
 import { GOODS } from './goods';
@@ -20,7 +20,7 @@ export default class PriceBelief {
     this.trader = trader;
     this.observedTradingRange = new Map();
 
-    for (const good: Good of GOODS) {
+    for (const good of GOODS) {
       const averageGoodPrice: number = this.market.avgHistoricalPrice(good, 15);
       const low: number = averageGoodPrice * 0.5;
       const high: number = averageGoodPrice * 1.5;
@@ -30,7 +30,7 @@ export default class PriceBelief {
   }
 
   randomPriceFor(good: Good): number {
-    const priceBelief: ?PriceRange = this.prices.get(good);
+    const priceBelief: PriceRange | null = this.prices.get(good);
     if (priceBelief) {
       return priceBelief.random();
     }
@@ -38,7 +38,7 @@ export default class PriceBelief {
   }
 
   meanPriceFor(good: Good): number {
-    const priceBelief: ?PriceRange = this.prices.get(good);
+    const priceBelief: PriceRange | null = this.prices.get(good);
     if (priceBelief) {
       return priceBelief.mean();
     }
@@ -46,14 +46,14 @@ export default class PriceBelief {
   }
 
   tradingRangeExtremes(good: Good): PriceRange {
-    const tradingRange: ?Array<number> = this.observedTradingRange.get(good);
+    const tradingRange: Array<number> | null = this.observedTradingRange.get(good);
     if (!tradingRange) {
       throw new Error('Trader has no trade data');
     }
     return new PriceRange(min(tradingRange), max(tradingRange));
   }
 
-  update(good: Good, orderType: OrderType, isSuccessful: boolean, clearingPrice: ?number) {
+  update(good: Good, orderType: OrderType, isSuccessful: boolean, clearingPrice?: number) {
     if (!this.observedTradingRange || !this.market || !this.prices) {
       return;
     }
@@ -65,7 +65,7 @@ export default class PriceBelief {
     const MIN_PRICE: number = 0.01; // lowest allowed price of a Good
 
     if (isSuccessful && clearingPrice) {
-      const tradingRange: ?Array<number> = this.observedTradingRange.get(good);
+      const tradingRange: Array<number> | null = this.observedTradingRange.get(good);
       if (tradingRange){
         tradingRange.push(clearingPrice);
       }

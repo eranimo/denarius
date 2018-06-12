@@ -1,10 +1,9 @@
-// @flow
+
 import { HasID } from './mixins';
 import { AccountHolder } from './bank';
 import * as GOODS from './goods';
 import { Good } from './goods';
 import Inventory from './inventory';
-import { HasLogic } from './logic';
 
 
 /*
@@ -14,7 +13,7 @@ import { HasLogic } from './logic';
   A person has a required amount of goods each round
 
 */
-export default class Person extends HasLogic(HasID(AccountHolder)) {
+export default class Person extends HasID(AccountHolder) {
   lifeNeedsSatisfied: boolean;
   hungerRounds: number;
   inventory: Inventory;

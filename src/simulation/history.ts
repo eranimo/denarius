@@ -1,17 +1,17 @@
-import { Simulation } from './index';
+import Simulation from './index';
 import { Good } from './goods';
 import { Job } from './jobs';
-import { Loan } from './banks';
 import { GOODS } from './goods';
 
 
+// TODO: rename to Ledger
 export default class History {
   round: number;
   traders: Array<Object>;
   goodPrices: Map<Good, Object>;
-  mostDemandedGood: ?Good;
-  mostProfitableJob: ?Job;
-  bank;
+  mostDemandedGood: Good;
+  mostProfitableGood: Good;
+  bank: any;
 
   constructor(sim: Simulation) {
     this.round = sim.round;
@@ -24,20 +24,20 @@ export default class History {
     };
 
     this.mostDemandedGood = sim.market.mostDemandedGood();
-    this.mostProfitableJob = sim.market.mostProfitableJob();
+    this.mostProfitableGood = sim.market.mostProfitableGood();
 
-    for (const trader: Trader of sim.market.traders) {
+    for (const trader of sim.market.traders) {
       let loans: Array<Object> = [];
       let priceBelief: Array<Object> = [];
       GOODS.forEach((good: Good) => {
         priceBelief.push({
           good: good,
-          price: trader.priceFor(good),
-          low: trader.priceBelief.get(good).low,
-          high: trader.priceBelief.get(good).high
+          price: trader.priceBelief.meanPriceFor(good),
+          low: trader.priceBelief.prices.get(good).low,
+          high: trader.priceBelief.prices.get(good).high
         });
       });
-      for (const loan: Loan of trader.loans) {
+      for (const loan of trader.loans) {
         loans.push({
           balance: loan.balance,
           interestRate: loan.interestRate,

@@ -1,4 +1,4 @@
-// @flow
+
 import * as GOODS from './goods';
 import { Good } from './goods';
 
@@ -52,12 +52,12 @@ export type ProductionMap = Map<Good, number>;
 export function blueprintFor(good: Good): ProductionMap {
 
   function find(good: Good): Array<Requirement> {
-    const prod: ?Blueprint = production.get(good);
+    const prod: Blueprint = production.get(good);
     if (!prod) {
       return [];
     }
     let requirements: Array<Requirement> = [];
-    for (const req: Requirement of prod.input) {
+    for (const req of prod.input) {
       if (production.has(req.good)) {
         // manufactured good
         requirements = requirements.concat(find(req.good));
@@ -74,7 +74,7 @@ export function blueprintFor(good: Good): ProductionMap {
   const goodMap: ProductionMap = new Map();
 
   const reqs: Array<Requirement> = find(good);
-  for (const req: Requirement of reqs) {
+  for (const req of reqs) {
     if (goodMap.has(req.good)) {
       goodMap.set(req.good, goodMap.get(req.good) + req.amount);
     } else {

@@ -1,9 +1,9 @@
-// @flow
 import { HasID } from './mixins';
 import { Good } from './goods';
 import Producer from './producer';
 import Product from './product';
 import Market from './market';
+import Trader from './trader';
 import Inventory from './inventory';
 import { AccountHolder } from './bank';
 import { isRawGood, blueprintFor } from './production';
@@ -68,7 +68,8 @@ export default class Company extends HasID(AccountHolder) {
   inventory: Inventory;
   market: Market;
   bankrupt: boolean;
-  lastRound;
+  traders: Set<Trader>;
+  lastRound: { idleWorkers: number };
 
 
   constructor(market: Market) {
@@ -77,7 +78,7 @@ export default class Company extends HasID(AccountHolder) {
     this.workers = new Set();
     this.traders = new Set();
     this.products = new Set();
-    this.offices = new Set();
+    // this.offices = new Set();
     this.market = market;
     this.bankrupt = false;
     this.lastRound = {
@@ -99,10 +100,10 @@ export default class Company extends HasID(AccountHolder) {
 
   // give the required goods to produce all products this company has
   giveRequiredGoods() {
-    for (const product: Product of this.products) {
+    for (const product of this.products) {
       if (!isRawGood(product.good)) {
         const reqs: Map<Good, number> = blueprintFor(product.good);
-        for (const [good, amount]: [Good, number] of reqs.entries()) {
+        for (const [good, amount] of reqs.entries()) {
           this.inventory.add(good, amount);
         }
       }
@@ -113,19 +114,19 @@ export default class Company extends HasID(AccountHolder) {
     this.lastRound = {
       idleWorkers: 0,
     };
-    for (const product: Product of this.products) {
-      for (const producer: Producer of product.workers) {
+    for (const product of this.products) {
+      for (const producer of product.workers) {
 
         // if we have goods for this producer
-        if (this.inventory.hasAmounts(producer.workRequirements)) {
+        if (this.inventory.hasAmounts(product.requiredGoods)) {
           // give goods required to work
-          this.inventory.moveToMulti(producer.inventory, producer.workRequirements);
+          // this.inventory.moveToMulti(producer.inventory, product.requiredGoods);
 
           // work
           producer.work();
 
           // transfer output goods to company inventory
-          producer.inventory.moveTo(this.inventory, producer.job.output);
+          // producer.inventory.moveTo(this.inventory, producer.job.output);
         } else {
           // producer can't work
           this.lastRound.idleWorkers++;
@@ -135,8 +136,8 @@ export default class Company extends HasID(AccountHolder) {
   }
 
   trade() {
-    for (const product: Product of this.products) {
-      const trader: Trader = product.assignedTrader;
+    for (const product of this.products) {
+      const trader = product.assignedTrader;
 
     }
   }
@@ -151,8 +152,8 @@ export default class Company extends HasID(AccountHolder) {
 
   costOfLabor(): number {
     let cost: number = 0;
-    for (const product: Product of this.products) {
-      for (const market: Market of product.marketsTraded) {
+    for (const product of this.products) {
+      for (const market of product.marketsTraded) {
         cost += product.laborCostAt(market);
       }
     }

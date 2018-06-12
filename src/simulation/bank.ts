@@ -1,5 +1,4 @@
-// @flow
-import _ from 'lodash';
+import { sumBy } from 'lodash';
 
 
 export class AccountHolder {
@@ -28,7 +27,7 @@ export class AccountHolder {
 
   get liabilities(): number {
     let amount: number = 0;
-    for (const loan: Loan of this.loans) {
+    for (const loan of this.loans) {
       amount += loan.currentPrincipal;
     }
     return amount;
@@ -43,7 +42,7 @@ export class AccountHolder {
     return this.account.withdraws / this.account.deposits;
   }
 
-  borrowFunds(amount: number): ?Loan {
+  borrowFunds(amount: number): Loan | null {
     if (this.bank) {
       return this.bank.lend(this, amount, this.bank.calculateInterestRateFor(this));
     }
@@ -200,7 +199,7 @@ export class Bank extends AccountHolder {
   }
 
   createAccount(owner: AccountHolder, startingFunds: number = 0) {
-    const account: Account = new Account(owner, this);
+    const account: Account = new Account(owner);
     owner.account = account;
     account.deposit(startingFunds);
     owner.bank = this;
@@ -209,7 +208,7 @@ export class Bank extends AccountHolder {
 
   get totalDeposits(): number {
     let amount: number = 0;
-    for (const account: Account of this.accounts) {
+    for (const account of this.accounts) {
       amount += account.amount;
     }
     return amount;
@@ -241,7 +240,7 @@ export class Bank extends AccountHolder {
   }
 
   // lend a loan to a trader
-  lend(borrower: AccountHolder, amount: number, interestRate: number): ?Loan {
+  lend(borrower: AccountHolder, amount: number, interestRate: number): Loan | null {
     if (amount <= this.loanableFunds && borrower.account != null) {
       const loan: Loan = new Loan(amount, borrower, interestRate, this);
       borrower.account.deposit(amount);
@@ -254,24 +253,24 @@ export class Bank extends AccountHolder {
 
   // get the total amount of credit this bank is responsible for
   get totalCredit(): number {
-    return _.sumBy(Array.from(this.loans), (loan: Loan): number => loan.principal);
+    return sumBy(Array.from(this.loans), (loan: Loan): number => loan.principal);
   }
 
   // accrue interest on deposits and loans
   accrueAndChargeInterest() {
     // for all accounts, deposit interest
-    for (const account: Account of this.accounts) {
+    for (const account of this.accounts) {
       const interest: number = account.amount * this.savingsInterestRate;
       account.deposit(interest);
     }
     // for all loans, collect interest
-    for (const loan: Loan of this.loans) {
+    for (const loan of this.loans) {
       loan.accrueInterest();
     }
   }
 
   closeLoans() {
-    for (const loan: Loan of this.loans) {
+    for (const loan of this.loans) {
       if (loan.balance === 0) {
         this.loans.delete(loan);
         loan.borrower.loans.delete(loan);

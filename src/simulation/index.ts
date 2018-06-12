@@ -1,37 +1,20 @@
-// @flow
-import Trader from './trader';
+
+import Company from './company';
 import Market from './market';
-// import * as GOODS from './goods';
-import * as JOBS from './jobs';
 import History from './history';
 import { Bank } from './bank';
-import _ from 'lodash';
-import { Loan } from './bank';
+import { simpleStart } from './init';
 
 
-const SETTINGS = {
-  initialFunds: 25,
-  initialJobs: {
-    woodcutter: 5,
-    farmer: 5,
-    baker: 5,
-    blacksmith: 5,
-    miner: 5,
-    smelter: 5,
-    miller: 5,
-  },
-  bank: {
-    startingFunds: 100
-  }
-};
 
 // handles the market instance and the passing of time
 export default class Simulation {
   round: number;
-  market: Market;
   history: Array<History>;
+  market: Market;
   bank: Bank;
   hook: Function;
+  companies: Company[];
 
   constructor() {
     this.setup();
@@ -47,21 +30,10 @@ export default class Simulation {
     // start time
     this.round = 0;
 
-    // make a bank
-    this.bank = new Bank(SETTINGS.bank.startingFunds);
-
-    // make a market
-    this.market = new Market();
-
-    // create a few Traders with some inventory
-    _.map(SETTINGS.initialJobs, (amount: number, job: string) => {
-      for (let i: number = 0; i < SETTINGS.initialJobs[job]; i++) {
-        const trader: Trader = new Trader(JOBS[job]);
-        trader.giveStartInventory();
-        this.bank.createAccount(trader, SETTINGS.initialFunds);
-        this.market.addTrader(trader);
-      }
-    });
+    const { market, bank, companies } = simpleStart();
+    this.market = market;
+    this.bank = bank;
+    this.companies = companies;
   }
 
   nextRound(): History {
@@ -69,23 +41,25 @@ export default class Simulation {
     const text: string = `Simulation round #${this.round}`;
     console.groupCollapsed(text);
     console.groupCollapsed('Traders before trade:');
-    for (const trader: Trader of this.market.traders) {
-      trader.debug();
-    }
+    // for (const trader of this.market.traders) {
+    //   trader.debug();
+    // }
     console.groupEnd();
+
     this.market.simulate();
+
     console.groupCollapsed('Traders after trade:');
-    for (const trader: Trader of this.market.traders) {
-      trader.debug();
-    }
+    // for (const trader of this.market.traders) {
+    //   trader.debug();
+    // }
     console.groupEnd();
     console.groupEnd();
 
     this.bank.accrueAndChargeInterest();
     this.bank.closeLoans();
 
-    for (const trader: Trader of this.market.traders) {
-      for (const loan: Loan of trader.loans) {
+    for (const trader of this.market.traders) {
+      for (const loan of trader.loans) {
         loan.repay();
       }
     }

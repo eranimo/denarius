@@ -1,4 +1,4 @@
-// @flow
+
 
 export default class Stack<T> {
   items: Array<T>;

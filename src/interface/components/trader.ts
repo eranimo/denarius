@@ -1,4 +1,4 @@
-// @flow
+
 import React, { Component } from 'react';
 import { Breadcrumb, Table, List } from 'semantic-ui-react';
 import { connect } from 'react-redux';

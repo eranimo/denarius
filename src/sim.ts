@@ -1,5 +1,5 @@
-// @flow
-import Simulation from './simulation';
+
+import Simulation from ../';
 
 
-window.simulation = new Simulation();
+(window as any).simulation = new Simulation();

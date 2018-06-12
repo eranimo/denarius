@@ -1,4 +1,4 @@
-// @flow
+
 import { Good } from './goods';
 // import Trader from './trader';
 
@@ -12,7 +12,7 @@ export default class MarketOrder {
   originalAmount: number;
   price: number; // total value of this order (good unit price * amount)
   trader: any;
-  finalPrice: ?number;
+  finalPrice?: number;
 
   constructor(orderType: OrderType, good: Good, amount: number, price: number, trader: any) {
     this.orderType = orderType;

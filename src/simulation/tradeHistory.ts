@@ -1,5 +1,5 @@
-// @flow
-import _ from 'lodash';
+
+import { mean, takeRight } from 'lodash';
 import { Good } from './goods';
 
 
@@ -24,7 +24,6 @@ class TradeHistoryItem {
       console.trace();
     }
     if (this.record.has(key)) {
-      // $FlowFixMe
       const currentArray: Array<number> = this.record.get(key);
       const newArray: Array<number> = currentArray;
       newArray.push(...values);
@@ -36,7 +35,6 @@ class TradeHistoryItem {
 
   size(key: Good): number {
     if (this.record.has(key)) {
-      // $FlowFixMe
       return this.record.get(key).length;
     }
     return 0;
@@ -48,7 +46,7 @@ class TradeHistoryItem {
 
   average(key: Good, range: number = 10): number {
     if (this.record.has(key)) {
-      const avg: number = _.mean(_.takeRight(this.record.get(key), range));
+      const avg: number = mean(takeRight(this.record.get(key), range));
       return isNaN(avg) ? 0 : avg;
     }
     return 0;
@@ -57,10 +55,10 @@ class TradeHistoryItem {
   debug() {
     const title: string = `TradeHistoryItem: ${this.name}`;
     console.groupCollapsed(title);
-    for (const [key, value]: [Good, Array<number>] of this.record.entries()) {
+    for (const [key, value] of this.record.entries()) {
       console.log(`${key.key}: ${value.join(', ')}`);
     }
-    console.groupEnd(title);
+    console.groupEnd();
   }
 
 }

@@ -1,8 +1,8 @@
-// @flow
+
 import React, { Component } from 'react';
 import { Statistic, Table } from 'semantic-ui-react';
 import { connect } from 'react-redux';
-import { Good } from '../../simulation/goods';
+import { Good } from '../..//goods';
 import { historySelector, historicalGoodPriceSelector } from '../selectors';
 import { GoodPriceRecord } from '../selectors';
 import { GoodPriceChart } from './charts';

@@ -1,24 +1,23 @@
-// @flow
 import { Job } from './jobs';
 import { Good } from './goods';
 import Inventory from './inventory';
-import PriceRange from './priceRange';
-import { blueprintFor, isRawGood } from './production';
+import { isRawGood } from './production';
 import Company from './company';
-import Logic from './logic';
-import Market from './market';
+import Trader from './trader';
 import Product from './product';
+import Market from './market';
 
 
-export default class ProducerLogic extends Logic {
-  priceBelief: Map<Good, PriceRange>;
+export default class Producer extends Trader {
   workedLastRound: boolean;
   idleRounds: number;
-  employer: ?Company;
-  product: ?Product;
+  employer: Company | null;
+  product: Product | null;
   job: Job;
 
-  onInit() {
+  constructor(market: Market, job: Job) {
+    super(market);
+    this.job = job;
     this.workedLastRound = false;
     this.idleRounds = 0;
     this.employer = null;
@@ -42,26 +41,25 @@ export default class ProducerLogic extends Logic {
     if (!this.job) {
       return false;
     }
-    // $FlowFixMe
     const inventory: Inventory = this.isEmployed ? this.employer.inventory : this.inventory;
 
     // subtract Goods required to do job
     if (isRawGood(this.product.good)) {
+      // console.log(`Trader #${this.id} worked`);
       inventory.add(this.product.good, 1);
+      this.workedLastRound = true;
       return true;
     }
 
-    // $FlowFixMe
     if (inventory.hasAmounts(this.product.requiredGoods)) {
       // take the goods required for the job
       // perform the job
-      // $FlowFixMe
       inventory.removeMulti(this.product.requiredGoods);
       this.workedLastRound = true;
-      console.log(`Trader #${this.entity.id} worked`);
+      // console.log(`Trader #${this.id} worked`);
       this.idleRounds = 0;
     } else {
-      console.log(`Trader #${this.entity.id} did not work (${this.idleRounds} idle rounds)`);
+      // console.log(`Trader #${this.id} did not work (${this.idleRounds} idle rounds)`);
       this.workedLastRound = false;
       this.idleRounds++;
     }
@@ -79,6 +77,6 @@ export default class ProducerLogic extends Logic {
     if (!this.product) {
       return;
     }
-    this.entity.inventory.addMulti(this.product.requiredGoods);
+    this.inventory.addMulti(this.product.requiredGoods);
   }
 }

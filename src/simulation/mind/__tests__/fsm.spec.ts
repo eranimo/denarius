@@ -1,6 +1,6 @@
 // @flow
 
-import { State, StateMachine } from '../../src/simulation/mind/fsm';
+import { State, StateMachine } from '../fsm';
 
 const mock: Function = jest.fn((str: string): string => str);
 

@@ -1,5 +1,4 @@
-// @flow
-import { HasID } from '../src/simulation/mixins';
+import { HasID } from '../mixins';
 
 class Base {}
 class Foobar extends HasID(Base) {}

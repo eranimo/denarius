@@ -1,8 +1,5 @@
-// @flow
-import { AccountHolder, Bank } from '../src/simulation/bank';
-import type { Loan, Account } from '../src/simulation/bank';
-import Trader from '../src/simulation/trader';
-import * as JOBS from '../src/simulation/jobs';
+import { AccountHolder, Bank } from '../bank';
+import { Loan } from '../bank';
 
 
 /*
@@ -65,7 +62,7 @@ describe.skip('Bank', () => {
     expect(bank.loanableFunds).toBe(9);
     expect(bank.reserves).toBe(1);
 
-    const loan: ?Loan = bank.lend(person, 5, 0.05);
+    const loan: Loan = bank.lend(person, 5, 0.05);
 
     if (loan) {
       expect(bank.totalDeposits).toBe(15);
@@ -78,7 +75,7 @@ describe.skip('Bank', () => {
 
       expect(loan.balance).toBe(5 + 5 * 0.05);
       loan.repay();
-      const payment: number = loan.calculatePayment();
+      const payment: number = loan.borrower.calculatePayment(loan);
       expect(payment).toBeGreaterThan(0);
       expect(loan.repayments).toBe(1);
       expect(loan.missedRepayments).toBe(0);

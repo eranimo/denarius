@@ -1,6 +1,5 @@
-// @flow
-import _ from 'lodash';
 
+import { mean, round, random } from 'lodash';
 
 
 export default class PriceRange {
@@ -13,10 +12,10 @@ export default class PriceRange {
   }
 
   random(): number {
-    return _.round(_.random(this.low, this.high), 2);
+    return round(random(this.low, this.high), 2);
   }
 
   mean(): number {
-    return _.mean([this.low, this.high]);
+    return mean([this.low, this.high]);
   }
 }

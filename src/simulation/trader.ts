@@ -1,4 +1,4 @@
-// @flow
+
 import { Good } from './goods';
 import { GOODS } from './goods';
 import MarketOrder from './marketOrder';
@@ -31,7 +31,6 @@ export default class Trader extends Person {
     this.market = market;
   }
 
-  // $FlowFixMe
   get priceBelief(): PriceBelief {
     return this.marketPrices.get(this.market);
   }
@@ -65,7 +64,7 @@ export default class Trader extends Person {
     this.buyOrders = new Set();
     this.sellOrders = new Set();
 
-    for (const good: Good of GOODS) {
+    for (const good of GOODS) {
       const buyAmount: number = this.amountToBuy(good);
       const sellAmount: number = this.amountToSell(good);
       const price: number = this.priceBelief.randomPriceFor(good);

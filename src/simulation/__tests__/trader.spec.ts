@@ -1,8 +1,8 @@
 // @flow
-import Trader from '../src/simulation/trader';
-import Market from '../src/simulation/market';
-import { Bank } from '../src/simulation/bank';
-import * as GOODS from '../src/simulation/goods';
+import Trader from '../trader';
+import Market from '../market';
+import { Bank } from '../bank';
+import * as GOODS from '../goods';
 
 
 describe('Trader', () => {
@@ -58,17 +58,11 @@ describe('Trader', () => {
     t3.trade();
 
     // console.log(require('util').inspect(market.sellOrders, { colors: true, depth: 4 }));
-    // $FlowFixMe
     expect(market.buyOrders.get(GOODS.grain).size).toBe(2);
-    // $FlowFixMe
     expect(market.buyOrders.get(GOODS.wood).size).toBe(1);
-    // $FlowFixMe
     expect(market.buyOrders.get(GOODS.bread).size).toBe(2);
-    // $FlowFixMe
     expect(market.sellOrders.get(GOODS.wood).size).toBe(1);
-    // $FlowFixMe
     expect(market.sellOrders.get(GOODS.grain).size).toBe(1);
-    // $FlowFixMe
     expect(market.sellOrders.get(GOODS.bread).size).toBe(1);
 
 

@@ -1,7 +1,6 @@
 // @flow
-import { blueprintFor } from '../src/simulation/production';
-import * as GOODS from '../src/simulation/goods';
-import type { ProductionMap } from '../src/simulation/production';
+import { blueprintFor, ProductionMap } from '../production';
+import * as GOODS from '../goods';
 
 
 describe('production', () => {

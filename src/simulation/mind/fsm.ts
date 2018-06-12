@@ -1,8 +1,8 @@
-// @flow
+
 import { NotImplementedError } from '../errors';
 
 
-export class State<T> {
+export class State<T = any> {
   entity: T;
 
   constructor(entity: T) {
@@ -26,7 +26,7 @@ export class State<T> {
 A simple state machine without events
 States may transition by calling enter() in the state's update() function
 */
-export class StateMachine<T> {
+export class StateMachine<T = any> {
   states: Map<string, State<T>>;
   current: State<T>;
 

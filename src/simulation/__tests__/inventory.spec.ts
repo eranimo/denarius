@@ -1,7 +1,5 @@
-// @flow
-import Inventory from '../src/simulation/inventory';
-import type { InventorySet } from '../src/simulation/inventory';
-import * as GOODS from '../src/simulation/goods';
+import Inventory, { InventorySet } from '../inventory';
+import * as GOODS from '../goods';
 
 
 describe('Inventory', () => {

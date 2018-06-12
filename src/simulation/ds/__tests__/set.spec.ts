@@ -1,10 +1,12 @@
-import BetterSet from '../../src/simulation/ds/set';
+import BetterSet from '../set';
+
+type Item = { a: number };
 
 describe('BetterSet', () => {
-  let betterSet: BetterSet;
+  let betterSet: BetterSet<Item>;
 
   it('can add', () => {
-     betterSet = new BetterSet();
+     betterSet = new BetterSet<Item>();
 
      expect(betterSet.size).toBe(0);
 
@@ -13,6 +15,6 @@ describe('BetterSet', () => {
      betterSet.add({ a: 3 });
 
      expect(betterSet.size).toBe(3);
-     expect(betterSet.sumBy((item: Object): number => item.a)).toBe(5);
+     expect(betterSet.sumBy((item): number => item.a)).toBe(5);
   });
 });

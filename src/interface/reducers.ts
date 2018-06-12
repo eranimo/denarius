@@ -1,4 +1,4 @@
-import { History } from '../simulation/index';
+import History from '../simulation/history';
 import { FORWARD, BACKWARD, RESET, GO_TO_ROUND } from './actions';
 
 
@@ -11,7 +11,7 @@ const initialState = {
 export function time(state = initialState, action) {
   if (action.type === FORWARD) {
     if (state.currentRound + 1 > state.lastRound) {
-      const history: History = window.simulation.nextRound();
+      const history: History = (window as any).simulation.nextRound();
       return {
         ...state,
         history: {
@@ -46,7 +46,7 @@ export function time(state = initialState, action) {
       return state;
     }
   } else if (action.type === RESET) {
-    window.simulation.reset();
+    (window as any).simulation.reset();
     return initialState;
   } else {
     return state;

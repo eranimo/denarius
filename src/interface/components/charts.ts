@@ -1,6 +1,6 @@
-// @flow
+
 import React, { Component } from 'react';
-import { Good } from '../../simulation/goods';
+import { Good } from '../..//goods';
 import { GoodPriceRecord, MoneyRecord } from '../selectors';
 import {
   LineChart,

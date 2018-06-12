@@ -1,8 +1,6 @@
-// @flow
-import Inventory from './inventory';
+
 import { Good } from './goods';
 import * as GOODS from './goods';
-import _ from 'lodash';
 
 
 export type Job = {

@@ -1,4 +1,3 @@
-// @flow
 import Trader from './trader';
 import Market from './market';
 import Product from './product';

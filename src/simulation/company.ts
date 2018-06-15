@@ -70,6 +70,7 @@ export default class Company extends HasID(AccountHolder) {
   bankrupt: boolean;
   traders: Set<Trader>;
   lastRound: { idleWorkers: number };
+  shoppingList: Map<Good, number>;
 
 
   constructor(market: Market) {
@@ -79,23 +80,12 @@ export default class Company extends HasID(AccountHolder) {
     this.traders = new Set();
     this.products = new Set();
     // this.offices = new Set();
+    this.shoppingList = new Map();
     this.market = market;
     this.bankrupt = false;
     this.lastRound = {
       idleWorkers: 0,
     };
-  }
-
-  evaluateProducts() {
-    /*
-    if we don't have products, evaluate markets
-      for every good in the market, determine the cost to produce that good
-        include:
-          market price for each requirement
-          price for life needs of each worker
-
-
-    */
   }
 
   // give the required goods to produce all products this company has
@@ -138,13 +128,11 @@ export default class Company extends HasID(AccountHolder) {
   trade() {
     for (const product of this.products) {
       const trader = product.assignedTrader;
-
+      trader.setDesire(product.good, this.shoppingList.get(product.good))
     }
   }
 
-  simulate() {
-    this.evaluateProducts();
-
+  handleBankrupt() {
     if (this.availableFunds === 0) {
       this.bankrupt = true;
     }

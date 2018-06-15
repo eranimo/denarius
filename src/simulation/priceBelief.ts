@@ -8,6 +8,13 @@ import { OrderType } from './marketOrder';
 import Trader from './trader';
 
 
+export type PriceBeliefExport = {
+  good: Good;
+  price: number;
+  low: number;
+  high: number;
+}[];
+
 export default class PriceBelief {
   prices: Map<Good, PriceRange>;
   market: Market;
@@ -160,5 +167,18 @@ export default class PriceBelief {
         throw new Error('Price belief high must be higher than low');
       }
     }
+  }
+
+  export(): PriceBeliefExport {
+    let results;
+    for (const good of GOODS) {
+      results.push({
+        good: good,
+        price: this.meanPriceFor(good),
+        low: this.prices.get(good).low,
+        high: this.prices.get(good).high
+      });
+    }
+    return results;
   }
 }

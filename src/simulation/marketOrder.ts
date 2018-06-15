@@ -1,9 +1,19 @@
 
 import { Good } from './goods';
-// import Trader from './trader';
+import Trader from './trader';
 
 
 export type OrderType = 'buy' | 'sell';
+
+export type MarketOrderExport = {
+  orderType: OrderType;
+  good: Good;
+  amount: number;
+  amountReceived: number;
+  price: number;
+  trader: number;
+  finalPrice: number;
+}
 
 export default class MarketOrder {
   orderType: OrderType;
@@ -11,7 +21,7 @@ export default class MarketOrder {
   amount: number; // how much of a good we are selling or buying
   originalAmount: number;
   price: number; // total value of this order (good unit price * amount)
-  trader: any;
+  trader: Trader;
   finalPrice?: number;
 
   constructor(orderType: OrderType, good: Good, amount: number, price: number, trader: any) {

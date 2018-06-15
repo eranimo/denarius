@@ -1,21 +1,58 @@
 import Simulation from './index';
 import { Good } from './goods';
-import { Job } from './jobs';
+// import { Job } from './jobs';
+import { InventoryExport } from './inventory';
+import { MarketOrderExport } from './marketOrder';
 import { GOODS } from './goods';
+import { LoanExport } from './bank';
+import { PriceBeliefExport } from './priceBelief';
 
+
+type TraderExport = {
+  id: number;
+  money: number;
+  liabilities: number;
+  justWorked: boolean;
+  justTraded: boolean;
+  failedTrades: number;
+  successfulTrades: number;
+  moneyLastRound: number;
+  profitLastRound: number;
+  accountRatio: number;
+  inventory: InventoryExport;
+  thisRoundOrders: {
+    buy: MarketOrderExport[];
+    sell: MarketOrderExport[];
+  };
+  loans: LoanExport[];
+  priceBelief: PriceBeliefExport
+}
+
+type ProducerExport = {
+  id: number;
+  workedLastRound: boolean;
+  idleRounds: number;
+}
+
+type CompanyExport = {
+  traders: TraderExport[];
+  producers: ProducerExport[];
+}
 
 // TODO: rename to Ledger
 export default class History {
   round: number;
-  traders: Array<Object>;
-  goodPrices: Map<Good, Object>;
+  traders: any[];
+  goodPrices: Map<Good, any>;
   mostDemandedGood: Good;
   mostProfitableGood: Good;
   bank: any;
+  companies: any[];
 
   constructor(sim: Simulation) {
     this.round = sim.round;
     this.traders = [];
+    this.companies = [];
     this.goodPrices = new Map();
     this.bank = {
       capital: sim.bank.availableFunds,
@@ -26,49 +63,44 @@ export default class History {
     this.mostDemandedGood = sim.market.mostDemandedGood();
     this.mostProfitableGood = sim.market.mostProfitableGood();
 
-    for (const trader of sim.market.traders) {
-      let loans: Array<Object> = [];
-      let priceBelief: Array<Object> = [];
-      GOODS.forEach((good: Good) => {
-        priceBelief.push({
-          good: good,
-          price: trader.priceBelief.meanPriceFor(good),
-          low: trader.priceBelief.prices.get(good).low,
-          high: trader.priceBelief.prices.get(good).high
-        });
-      });
-      for (const loan of trader.loans) {
-        loans.push({
-          balance: loan.balance,
-          interestRate: loan.interestRate,
-          repayments: loan.repayments,
-          missedRepayments: loan.missedRepayments
+    for (const company of sim.companies) {
+      const companyRecord: CompanyExport = {
+        traders: [],
+        producers: [],
+      };
+      for (const trader of company.traders) {
+        companyRecord.traders.push({
+          id: trader.id,
+          money: trader.availableFunds,
+          liabilities: trader.liabilities,
+          justWorked: trader.lastRound.hasWorked,
+          justTraded: trader.lastRound.hasTraded,
+          failedTrades: trader.failedTrades,
+          successfulTrades: trader.successfulTrades,
+          moneyLastRound: trader.lastRound.money,
+          profitLastRound: trader.availableFunds - trader.lastRound.money,
+          accountRatio: trader.accountRatio,
+          inventory: trader.inventory.export(),
+          thisRoundOrders: {
+            buy: Array.from(trader.buyOrders).map(order => order.export()),
+            sell: Array.from(trader.sellOrders).map(order => order.export())
+          },
+          loans: Array.from(trader.loans).map(load => load.export()),
+          priceBelief: trader.priceBelief.export(),
         });
       }
 
-      this.traders.push({
-        id: trader.id,
-        money: trader.availableFunds,
-        liabilities: trader.liabilities,
-        justWorked: trader.lastRound.hasWorked,
-        justTraded: trader.lastRound.hasTraded,
-        failedTrades: trader.failedTrades,
-        successfulTrades: trader.successfulTrades,
-        idleRounds: trader.idleRounds,
-        moneyLastRound: trader.lastRound.money,
-        profitLastRound: trader.availableFunds - trader.lastRound.money,
-        job: trader.job.key,
-        accountRatio: trader.accountRatio,
-        bankruptTimes: trader.bankruptTimes,
-        inventory: trader.inventory.export(),
-        thisRoundOrders: {
-          buy: Array.from(trader.thisRoundOrders.buy).map((order: any): any => order.export()),
-          sell: Array.from(trader.thisRoundOrders.sell).map((order: any): any => order.export())
-        },
-        loans: loans,
-        priceBelief
-      });
+      for (const producer of company.workers) {
+        companyRecord.producers.push({
+          id: producer.id,
+          workedLastRound: producer.workedLastRound,
+          idleRounds: producer.idleRounds,
+        });
+      }
+
+      this.companies.push(companyRecord);
     }
+
 
     GOODS.forEach((good: Good) => {
       this.goodPrices.set(good, {

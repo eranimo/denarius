@@ -64,6 +64,11 @@ class NoGoodsError extends Error {
   }
 }
 
+export type InventoryExport = Array<{
+  good: Good
+  amount: number
+}>;
+
 export default class Inventory {
   // a store of goods kept in descending order of cost (highest cost first)
   store: Map<Good, InventorySet>;
@@ -231,6 +236,14 @@ export default class Inventory {
       return 0;
     }
     return records.store.size;
+  }
+
+  export(): InventoryExport {
+    let results = [];
+    for (const [good, amount] of this.store.entries()) {
+      results.push({ good, amount });
+    }
+    return results;
   }
 
   get totalCost(): number {

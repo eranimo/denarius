@@ -145,22 +145,18 @@ export default class Market {
       }
 
 
-      // TODO: track the most profitable good
-      // const profit: Map<Good, Array<number>> = new Map();
+      // track the most profitable good
+      const newProfit: Map<Good, Array<number>> = new Map();
 
-      // for (const trader: Trader of this.traders) {
-      //   if (profit.has(trader.job)) {
-      //     const newArr: Array<number> = profit.get(trader.job);
-      //     newArr.push(trader.profitLastRound);
-      //     profit.set(trader.job, newArr);
-      //   } else {
-      //     profit.set(trader.job, [trader.profitLastRound]);
-      //   }
-      // }
+      for (const trader of this.traders) {
+        const newArr: Array<number> = newProfit.get(good);
+        newArr.push(trader.profitLastRound);
+        newProfit.set(good, newArr);
+      }
 
-      // for (const [job, profit]: [Job, Array<number>] of profit.entries()) {
-      //   this.history.profit.add(job, profit);
-      // }
+      for (const [job, profit] of newProfit.entries()) {
+        this.history.profit.add(job, profit);
+      }
 
       this.buyOrders.set(good, new Set());
       this.sellOrders.set(good, new Set());
@@ -275,32 +271,29 @@ export default class Market {
   }
 
   simulate() {
-    // const overTitle = `Traders working and trading`;
-    // console.groupCollapsed(overTitle);
-    // for (const trader of this.traders) {
-    //   trader.lastRound.money = trader.availableFunds;
-    //   // do their job
-    //   console.groupCollapsed(`Trader #${trader.id} working`);
-    //   trader.work();
-    //   console.groupEnd();
-    //   // perform trades
-    //   const title: string = `Trader #${trader.id} is trading`;
-    //   console.groupCollapsed(title);
-    //   trader.trade();
-    //   console.groupEnd();
+    const overTitle = `Traders working and trading`;
+    console.groupCollapsed(overTitle);
+    for (const trader of this.traders) {
+      if (!trader.product) {
+        continue;
+      }
+      trader.lastRound.money = trader.availableFunds;
+      // perform trades
+      const title: string = `Trader #${trader.id} is trading`;
+      console.groupCollapsed(title);
+      trader.trade();
+      console.groupEnd();
 
-    //   trader.recordProfit();
+      trader.product.recordProfit(trader.profitLastRound);
+    }
+    console.groupEnd();
 
-    //   trader.handleBankruptcy();
-    // }
-    // console.groupEnd();
+    // resolve the orders for this round
+    const title: string = `Resolving orders`;
+    console.groupCollapsed(title);
+    this.resolveOrders();
+    console.groupEnd();
 
-    // // resolve the orders for this round
-    // const title: string = `Resolving orders`;
-    // console.groupCollapsed(title);
-    // this.resolveOrders();
-    // console.groupEnd();
-
-    // this.history.debug();
+    this.history.debug();
   }
 }

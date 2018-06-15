@@ -46,6 +46,11 @@ export default class Product {
     this.workers.add(producer);
   }
 
+  assignTrader(trader: Trader) {
+    trader.product = this;
+    this.assignedTrader = trader;
+  }
+
   // value of a good at a market
   valueAt(market: Market): number {
     return market.meanPrice(this.good);

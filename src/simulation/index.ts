@@ -38,22 +38,16 @@ export default class Simulation {
 
   nextRound(): History {
     this.round += 1;
-    const text: string = `Simulation round #${this.round}`;
-    console.groupCollapsed(text);
-    console.groupCollapsed('Traders before trade:');
-    // for (const trader of this.market.traders) {
-    //   trader.debug();
-    // }
-    console.groupEnd();
 
+    // simulate markets
     this.market.simulate();
 
-    console.groupCollapsed('Traders after trade:');
-    // for (const trader of this.market.traders) {
-    //   trader.debug();
-    // }
-    console.groupEnd();
-    console.groupEnd();
+    // simulate companies
+    for (const company of this.companies) {
+      company.produce();
+      company.trade();
+      company.handleBankrupt();
+    }
 
     this.bank.accrueAndChargeInterest();
     this.bank.closeLoans();

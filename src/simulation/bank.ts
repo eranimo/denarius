@@ -67,6 +67,13 @@ export class AccountHolder {
   }
 }
 
+export type LoanExport = {
+  balance: number;
+  interestRate: number;
+  repayments: number;
+  missedRepayments: number;
+}
+
 export class Loan {
   borrower: AccountHolder;
   principal: number;
@@ -129,6 +136,15 @@ export class Loan {
     if (this.balance === 0) {
       this.isRepayed = true;
     }
+  }
+
+  export(): LoanExport {
+    return {
+      balance: this.balance,
+      interestRate: this.interestRate,
+      repayments: this.repayments,
+      missedRepayments: this.missedRepayments
+    };
   }
 }
 

@@ -3,6 +3,7 @@ import { Good } from './goods';
 import { GOODS } from './goods';
 import MarketOrder from './marketOrder';
 import Market from './market';
+import Product from './product';
 import PriceBelief from './priceBelief';
 import Person from './person';
 
@@ -13,6 +14,14 @@ export default class Trader extends Person {
   buyingList: Map<Good, number>;
   buyOrders: Set<MarketOrder>;
   sellOrders: Set<MarketOrder>;
+  successfulTrades: number;
+  failedTrades: number;
+  lastRound: {
+    hasWorked: boolean,
+    hasTraded: boolean,
+    money: number,
+  }
+  product: Product;
 
   constructor(market: Market) {
     super();
@@ -22,6 +31,15 @@ export default class Trader extends Person {
 
     this.buyOrders = new Set();
     this.sellOrders = new Set();
+
+    this.successfulTrades = 0;
+    this.failedTrades = 0;
+    this.lastRound = {
+      hasWorked: false,
+      hasTraded: false,
+      money: 0,
+    }
+    this.product = null;
   }
 
   goToMarket(market: Market) {
@@ -33,6 +51,10 @@ export default class Trader extends Person {
 
   get priceBelief(): PriceBelief {
     return this.marketPrices.get(this.market);
+  }
+
+  get profitLastRound() {
+    return this.availableFunds - this.lastRound.money;
   }
 
   // set the amount of goods that this trader will try to have every turn

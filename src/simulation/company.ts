@@ -104,6 +104,7 @@ export default class Company extends HasID(AccountHolder) {
     this.lastRound = {
       idleWorkers: 0,
     };
+    this.shoppingList = new Map();
     for (const product of this.products) {
       for (const producer of product.workers) {
 
@@ -115,11 +116,20 @@ export default class Company extends HasID(AccountHolder) {
           // work
           producer.work();
 
+          for (const [good] of product.requiredGoods) {
+            this.shoppingList.set(good, 0);
+          }
+
           // transfer output goods to company inventory
           // producer.inventory.moveTo(this.inventory, producer.job.output);
         } else {
           // producer can't work
           this.lastRound.idleWorkers++;
+
+          // add required goods to the shopping list
+          for (const [good, number] of product.requiredGoods) {
+            this.shoppingList.set(good, number - this.inventory.amountOf(good));
+          }
         }
       }
     }
@@ -128,7 +138,9 @@ export default class Company extends HasID(AccountHolder) {
   trade() {
     for (const product of this.products) {
       const trader = product.assignedTrader;
-      trader.setDesire(product.good, this.shoppingList.get(product.good))
+      for (const [good, number] of this.shoppingList) {
+        trader.setDesire(good, number)
+      }
     }
   }
 

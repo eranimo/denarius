@@ -8,7 +8,7 @@ test('analysis', () => {
     opinion: 0
   });
 
-  const good_1: Consideration = new Consideration(5, (state: Object): Object => {
+  const good_1: Consideration = new Consideration(5, (state: any) => {
     return {
       ...state,
       opinion: state.opinion + 1

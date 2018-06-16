@@ -4,7 +4,7 @@ import MarketOrder from './marketOrder';
 import { GOODS } from './goods';
 import { JOBS } from './jobs';
 import { Good } from './goods';
-import { Job } from './jobs';
+// import { Job } from './jobs';
 import { sortBy, sumBy, random } from 'lodash';
 import { TradeHistory } from './tradeHistory';
 
@@ -15,6 +15,19 @@ type MarketOptions = {
 
 const defaultMarketOptions: MarketOptions = {
   randomStartPrices: false,
+}
+
+export type MarketGoodExport = {
+  meanPrice: number,
+  supply: number,
+  demand: number,
+};
+
+export type MarketExport = {
+  goodPrices: Map<Good, MarketGoodExport>;
+  mostDemandedGood: Good;
+  mostProfitableGood: Good;
+  numTraders: number;
 }
 
 export default class Market {
@@ -57,6 +70,7 @@ export default class Market {
     for (const good of GOODS) {
       const buyOrders: Set<MarketOrder> | null = this.buyOrders.get(good);
       const sellOrders: Set<MarketOrder> | null = this.sellOrders.get(good);
+      console.groupCollapsed(`Orders for ${good.displayName}: buy: ${buyOrders.size} sell: ${sellOrders.size}`);
 
       if (!buyOrders || !sellOrders) {
         return;
@@ -81,7 +95,7 @@ export default class Market {
         const goodsTraded: number = Math.min(buyOrder.amount, sellOrder.amount);
         const totalPrice: number = goodsTraded * unitPrice;
 
-        // console.log(`Buyer: #${buyOrder.trader.id},  Seller: #${sellOrder.trader.id},  Good: ${buyOrder.good.displayName},  Quantity: ${goodsTraded}, Unit Price: $${unitPrice},  Total Price: $${totalPrice}, Buyer has $${buyOrder.trader.availableFunds}`);
+        console.log(`Buyer: #${buyOrder.trader.id},  Seller: #${sellOrder.trader.id},  Good: ${buyOrder.good.displayName},  Quantity: ${goodsTraded}, Unit Price: $${unitPrice},  Total Price: $${totalPrice}, Buyer has $${buyOrder.trader.availableFunds}`);
 
         // if the buyer doesn't have the correct amount of money, borrow it
         if (!buyOrder.trader.account.has(totalPrice)) {
@@ -149,7 +163,7 @@ export default class Market {
       const newProfit: Map<Good, Array<number>> = new Map();
 
       for (const trader of this.traders) {
-        const newArr: Array<number> = newProfit.get(good);
+        const newArr: Array<number> = newProfit.get(good) || [];
         newArr.push(trader.profitLastRound);
         newProfit.set(good, newArr);
       }
@@ -160,6 +174,8 @@ export default class Market {
 
       this.buyOrders.set(good, new Set());
       this.sellOrders.set(good, new Set());
+
+      console.groupEnd();
     }
   }
 
@@ -271,8 +287,7 @@ export default class Market {
   }
 
   simulate() {
-    const overTitle = `Traders working and trading`;
-    console.groupCollapsed(overTitle);
+    console.groupCollapsed('Traders working and trading');
     for (const trader of this.traders) {
       if (!trader.product) {
         continue;
@@ -289,11 +304,29 @@ export default class Market {
     console.groupEnd();
 
     // resolve the orders for this round
-    const title: string = `Resolving orders`;
-    console.groupCollapsed(title);
+    console.groupCollapsed('Resolving orders');
     this.resolveOrders();
     console.groupEnd();
 
+    console.groupCollapsed('Trade history this round');
     this.history.debug();
+    console.groupEnd();
+  }
+
+  export(): MarketExport {
+    const goodPrices: Map<Good, MarketGoodExport> = new Map();
+    GOODS.forEach((good: Good) => {
+      goodPrices.set(good, {
+        meanPrice: this.meanPrice(good),
+        supply: this.supplyFor(good),
+        demand: this.demandFor(good)
+      });
+    });
+    return {
+      goodPrices,
+      numTraders: this.traders.size,
+      mostDemandedGood: this.mostDemandedGood(),
+      mostProfitableGood: this.mostProfitableGood(),
+    }
   }
 }

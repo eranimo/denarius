@@ -1,6 +1,5 @@
 
 import React, { Component } from 'react';
-import { Breadcrumb, Table, List } from '@blueprintjs/core';
 import { connect } from 'react-redux';
 import _ from 'lodash';
 import { historySelector, historicalTraderMoneySelector } from '../selectors';
@@ -10,62 +9,62 @@ import { TraderMoneyChart } from './charts';
 import { Link } from 'react-router-dom';
 
 
-class Trader extends Component < {
-    history,
-    match,
-    historicalMoney: Array<MoneyRecord>
+class Trader extends Component<{
+  history,
+  match,
+  historicalMoney: Array<MoneyRecord>
 }> {
   renderOrderTable(orders: Array<any>) {
     const sortedOrders: Array<any> = _.sortBy(orders, (i) => i.good.displayName);
     return (
-      <Table celled compact>
-        <Table.Header>
-          <Table.Row>
-            <Table.HeaderCell>Order #</Table.HeaderCell>
-            <Table.HeaderCell>Good</Table.HeaderCell>
-            <Table.HeaderCell>My Unit Price</Table.HeaderCell>
-            <Table.HeaderCell>∑ Price</Table.HeaderCell>
-            <Table.HeaderCell>Final Unit Price</Table.HeaderCell>
-            <Table.HeaderCell>∑ Final Price</Table.HeaderCell>
-            <Table.HeaderCell>Order Quantity</Table.HeaderCell>
-            <Table.HeaderCell>Quantity Transfered</Table.HeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
+      <table className="pt-html-table pt-small pt-html-table-striped">
+        <thead>
+          <tr>
+            <th>Order #</th>
+            <th>Good</th>
+            <th>My Unit Price</th>
+            <th>∑ Price</th>
+            <th>Final Unit Price</th>
+            <th>∑ Final Price</th>
+            <th>Order Quantity</th>
+            <th>Quantity Transfered</th>
+          </tr>
+        </thead>
+        <tbody>
           {sortedOrders.map((order, index: number) => {
             return (
-              <Table.Row key={index}>
-                <Table.Cell>
+              <tr key={index}>
+                <td>
                   {index + 1}
-                </Table.Cell>
-                <Table.Cell>
+                </td>
+                <td>
                   {order.good.displayName}
-                </Table.Cell>
-                <Table.Cell>
+                </td>
+                <td>
                   {currencyFormat(order.price, 3)}
-                </Table.Cell>
-                <Table.Cell>
+                </td>
+                <td>
                   {currencyFormat(order.price * order.amount, 3)}
-                </Table.Cell>
-                <Table.Cell>
+                </td>
+                <td>
                   {currencyFormat(order.finalPrice, 3)}
-                </Table.Cell>
-                <Table.Cell>
+                </td>
+                <td>
                   {order.finalPrice
                     ? currencyFormat(order.finalPrice * order.amount, 3)
                     : ''}
-                </Table.Cell>
-                <Table.Cell>
+                </td>
+                <td>
                   {order.amount}
-                </Table.Cell>
-                <Table.Cell>
+                </td>
+                <td>
                   {order.amountReceived}
-                </Table.Cell>
-              </Table.Row>
+                </td>
+              </tr>
             );
           })}
-        </Table.Body>
-      </Table>
+        </tbody>
+      </table>
     );
   }
 
@@ -90,98 +89,96 @@ class Trader extends Component < {
 
     return (
       <div>
-        <Breadcrumb>
-          <Link to={'/'}>
-            <Breadcrumb.Section link>
+        <ul className="pt-breadcrumbs">
+          <li className="pt-breadcrumb">
+            <Link to={'/'}>
               Market
-            </Breadcrumb.Section>
-          </Link>
-          <Breadcrumb.Divider />
-          <Breadcrumb.Section active>Trader #{trader.id}</Breadcrumb.Section>
-        </Breadcrumb>
+            </Link>
+          </li>
+          <li className="pt-breadcrumb pt-breadcrumb-current">
+            <span>Trader #{trader.id}</span>
+          </li>
+        </ul>
         <h1>Trader #{trader.id}</h1>
-        <Table definition>
-          <Table.Body>
-            <Table.Row>
-              <Table.Cell>Job</Table.Cell>
-              <Table.Cell>{trader.job}</Table.Cell>
-            </Table.Row>
-            <Table.Row>
-              <Table.Cell>Money</Table.Cell>
-              <Table.Cell>{currencyFormat(trader.money)} ({currencyFormat(trader.profitLastRound)})</Table.Cell>
-            </Table.Row>
-            <Table.Row>
-              <Table.Cell>Idle Rounds</Table.Cell>
-              <Table.Cell>{trader.idleRounds}</Table.Cell>
-            </Table.Row>
-            <Table.Row>
-              <Table.Cell>Liabilities (loans)</Table.Cell>
-              <Table.Cell>{currencyFormat(trader.liabilities)}</Table.Cell>
-            </Table.Row>
-            <Table.Row>
-              <Table.Cell>Inventory</Table.Cell>
-              <Table.Cell>
-                <List>
+        <table className="pt-html-table pt-small pt-html-table-striped">
+          <tbody>
+            <tr>
+              <td>Job</td>
+              <td>{trader.job}</td>
+            </tr>
+            <tr>
+              <td>Money</td>
+              <td>{currencyFormat(trader.money)} ({currencyFormat(trader.profitLastRound)})</td>
+            </tr>
+            <tr>
+              <td>Idle Rounds</td>
+              <td>{trader.idleRounds}</td>
+            </tr>
+            <tr>
+              <td>Liabilities (loans)</td>
+              <td>{currencyFormat(trader.liabilities)}</td>
+            </tr>
+            <tr>
+              <td>Inventory</td>
+              <td>
+                <table className="pt-html-table pt-html-table-bordered">
                   {trader.inventory.map((inventory, index: number) => {
                     return (
-                      <List.Item key={index}>
-                        {inventory.good.displayName} - <b>{inventory.amount}</b>
-                      </List.Item>
+                      <tr key={index}>
+                        <td>{inventory.good.displayName}</td>
+                        <td>{inventory.amount}</td>
+                      </tr>
                     );
                   })}
-                </List>
-              </Table.Cell>
-            </Table.Row>
-            <Table.Row>
-              <Table.Cell>Last Round</Table.Cell>
-              <Table.Cell>
-                <List>
-                  <List.Item>Worked: <b>{trader.justWorked ? 'Yes' : 'No'}</b></List.Item>
-                  <List.Item>Traded: <b>{trader.justTraded ? 'Yes' : 'No'}</b></List.Item>
-                </List>
-              </Table.Cell>
-            </Table.Row>
-            <Table.Row>
-              <Table.Cell># Trades</Table.Cell>
-              <Table.Cell>
-                <List>
-                  <List.Item>Total: <b>{trader.failedTrades + trader.successfulTrades}</b></List.Item>
-                  <List.Item>Failed: <b>{trader.failedTrades}</b></List.Item>
-                  <List.Item>Success: <b>{trader.successfulTrades}</b></List.Item>
-                </List>
-              </Table.Cell>
-            </Table.Row>
-          </Table.Body>
-        </Table>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td>Last Round</td>
+              <td>
+                Worked: <b>{trader.justWorked ? 'Yes' : 'No'}</b><br />
+                Traded: <b>{trader.justTraded ? 'Yes' : 'No'}</b>
+              </td>
+            </tr>
+            <tr>
+              <td># Trades</td>
+              <td>
+                Total: <b>{trader.failedTrades + trader.successfulTrades}</b><br />
+                Failed: <b>{trader.failedTrades}</b><br />
+                Success: <b>{trader.successfulTrades}</b>
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
 
         <TraderMoneyChart data={this.props.historicalMoney} />
 
         <h2>Price Belief</h2>
-        <Table celled compact>
-          <Table.Header>
-            <Table.Row>
-              <Table.HeaderCell>Good</Table.HeaderCell>
-              <Table.HeaderCell>My Price</Table.HeaderCell>
-              <Table.HeaderCell>Low Range</Table.HeaderCell>
-              <Table.HeaderCell>High Range</Table.HeaderCell>
-              <Table.HeaderCell>Market Price</Table.HeaderCell>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
+        <table className="pt-html-table pt-small pt-html-table-striped">
+          <thead>
+            <tr>
+              <th>Good</th>
+              <th>My Price</th>
+              <th>Low Range</th>
+              <th>High Range</th>
+              <th>Market Price</th>
+            </tr>
+          </thead>
+          <tbody>
             {trader.priceBelief.map((belief, index: number) => {
               return (
-                <Table.Row key={index}>
-                  <Table.Cell>{belief.good.displayName}</Table.Cell>
-                  <Table.Cell>{currencyFormat(belief.price, 3)}</Table.Cell>
-                  <Table.Cell>{currencyFormat(belief.low, 3)}</Table.Cell>
-                  <Table.Cell>{currencyFormat(belief.high, 3)}</Table.Cell>
-                  <Table.Cell>{currencyFormat(history.goodPrices.get(belief.good).meanPrice)}</Table.Cell>
-                </Table.Row>
+                <tr key={index}>
+                  <td>{belief.good.displayName}</td>
+                  <td>{currencyFormat(belief.price)}</td>
+                  <td>{currencyFormat(belief.low, 3)}</td>
+                  <td>{currencyFormat(belief.high, 3)}</td>
+                  <td>{currencyFormat(history.goodPrices.get(belief.good).meanPrice)}</td>
+                </tr>
               );
             })}
-          </Table.Body>
-        </Table>
+          </tbody>
+        </table>
 
         <h2>Orders</h2>
         <h3>Buy</h3>
@@ -193,7 +190,7 @@ class Trader extends Component < {
   }
 }
 
-const mapStateToProps: Function = (state, props) => {
+const mapStateToProps = (state, props) => {
   return {
     ...historySelector(state),
     historicalMoney: historicalTraderMoneySelector(props.match.params.id, 30)(state)

@@ -101,15 +101,17 @@ export default class Company extends HasID(AccountHolder) {
   }
 
   produce() {
+    console.log(`Production - products: ${this.products.size}`)
     this.lastRound = {
       idleWorkers: 0,
     };
     this.shoppingList = new Map();
     for (const product of this.products) {
+      console.log(`Product '${product.good.displayName}' - workers: ${product.workers.size}`);
       for (const producer of product.workers) {
-
         // if we have goods for this producer
         if (this.inventory.hasAmounts(product.requiredGoods)) {
+          console.log(`Product produced`);
           // give goods required to work
           // this.inventory.moveToMulti(producer.inventory, product.requiredGoods);
 
@@ -123,6 +125,7 @@ export default class Company extends HasID(AccountHolder) {
           // transfer output goods to company inventory
           // producer.inventory.moveTo(this.inventory, producer.job.output);
         } else {
+          console.log(`Product not produced - out of goods`);
           // producer can't work
           this.lastRound.idleWorkers++;
 

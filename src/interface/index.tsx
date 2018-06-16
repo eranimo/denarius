@@ -6,13 +6,14 @@ import ReactDOM from 'react-dom';
 import { createStore } from 'redux';
 import { BrowserRouter } from 'react-router-dom';
 import Application from './components/app';
+import './main.css';
 
 
 export default function setup() {
   const appReducer = combineReducers(reducers);
   const store = createStore(
     appReducer,
-    window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+    (window as any).__REDUX_DEVTOOLS_EXTENSION__ && (window as any).__REDUX_DEVTOOLS_EXTENSION__()
   );
 
   const app = (

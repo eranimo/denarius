@@ -1,21 +1,24 @@
-import React, { Component, PropTypes } from 'react';
-import { Menu, Header, Button } from '@blueprintjs/core';
+import React, { Component } from 'react';
+import {
+  Navbar,
+  Button,
+  Alignment,
+} from '@blueprintjs/core';
 import { NavLink } from 'react-router-dom';
-import { connect } from 'react-redux';
+import { connect, Dispatch } from 'react-redux';
 import { historySelector } from '../selectors';
 import { forward, backward, reset, goToRound } from '../actions';
+import { RootState, Moment } from '../types';
 
 
-class Controls extends Component<{
-  currentRound: PropTypes.number.isRequired,
-  lastRound: PropTypes.number.isRequired,
-  canGoBackward: PropTypes.bool.isRequired,
-  canGoForward: PropTypes.bool.isRequired,
-  reset: PropTypes.func.isRequired,
-  forward: PropTypes.func.isRequired,
-  backward: PropTypes.func.isRequired,
-  goToRound: PropTypes.func.isRequired,
-}> {
+type ControlProps = Moment & {
+  reset: () => void,
+  forward: () => void,
+  backward: () => void,
+  goToRound: (round: number) => void,
+}
+
+class Controls extends Component<ControlProps> {
   render() {
     const {
       currentRound,
@@ -46,89 +49,70 @@ class Controls extends Component<{
     }
 
     return (
-      <div>
-        <Header as="h1">
-          Denarius
-        </Header>
-        <Menu pointing>
-          <NavLink className="item" activeClassName="active" to="/" exact>
-            Market
-          </NavLink>
-          <Menu.Menu position="right">
-            <Menu.Item>
-              <Button
-                basic
-                icon="refresh"
-                compact
-                onClick={() => {
-                  reset();
-                  forward();
-                }}
-              />
-            </Menu.Item>
-
-            <Menu.Item>
-              <Button
-                basic
-                icon="write"
-                compact
-                onClick={() => {
-                  const num: number = parseInt(window.prompt('Enter round to go to'), 10);
-                  goToRound(num);
-                }}
-              />
-            </Menu.Item>
-
-            <Menu.Item>
-              <Button
-                basic
-                icon="backward"
-                compact
-                disabled={!canGoBackward}
-                onClick={backward}
-              />
-            </Menu.Item>
-
-            <Menu.Item>
-              {currentRound} / {lastRound}
-            </Menu.Item>
-
-            <Menu.Item>
-              <Button
-                basic
-                icon="forward"
-                compact
-                disabled={!canGoForward}
-                onClick={forward}
-              />
-            </Menu.Item>
-
-            <Menu.Item>
-              <Button.Group basic compact>
-                <Button
-                  style={{fontWeight: 'bold'}}
-                  disabled={!canGoForward}
-                  onClick={jumpForward(10)}
-                >
-                  x10
-                </Button>
-                <Button
-                  style={{fontWeight: 'bold'}}
-                  disabled={!canGoForward}
-                  onClick={jumpForward(25)}
-                >
-                  x25
-                </Button>
-              </Button.Group>
-            </Menu.Item>
-          </Menu.Menu>
-        </Menu>
-      </div>
+      <Navbar>
+        <Navbar.Group align={Alignment.LEFT}>
+          <Navbar.Heading>
+            Denarius
+          </Navbar.Heading>
+          <Navbar.Divider />
+          <Button minimal>
+            <NavLink className="item" activeClassName="active" to="/" exact>
+              Market
+            </NavLink>
+          </Button>
+        </Navbar.Group>
+        <Navbar.Group align={Alignment.RIGHT}>
+          <Button
+            icon="refresh"
+            onClick={() => {
+              reset();
+              forward();
+            }}
+          />
+          <Button
+            icon="calendar"
+            onClick={() => {
+              const num: number = parseInt(window.prompt('Enter round to go to'), 10);
+              goToRound(num);
+            }}
+          />
+          <Button
+            icon="fast-backward"
+            disabled={!canGoBackward}
+            onClick={() => backward()}
+          />
+          <span>{currentRound} / {lastRound}</span>
+          <Button
+            icon="fast-forward"
+            disabled={!canGoForward}
+            onClick={() => forward()}
+          />
+          <Button
+            style={{ fontWeight: 'bold' }}
+            disabled={!canGoForward}
+            onClick={() => jumpForward(10)}
+          >
+            x10
+          </Button>
+          <Button
+            style={{ fontWeight: 'bold' }}
+            disabled={!canGoForward}
+            onClick={() => jumpForward(25)}
+          >
+            x25
+          </Button>
+        </Navbar.Group>
+      </Navbar>
     );
   }
 }
-const mapStateToProps: Function = historySelector;
-const mapDispatchToProps = { backward, forward, reset, goToRound };
+const mapStateToProps = (state: RootState): Moment => historySelector(state);
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+  backward: () => dispatch(backward()),
+  forward: () => dispatch(forward()),
+  reset: () => dispatch(reset()),
+  goToRound: (round: number) => dispatch(goToRound(round)),
+});
 const ControlsConnect = connect(mapStateToProps, mapDispatchToProps)(Controls);
 
 export default ControlsConnect;

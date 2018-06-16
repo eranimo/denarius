@@ -1,20 +1,21 @@
 import { createSelector } from 'reselect';
-import { History } from '../simulation/history';
+import History from '../simulation/history';
 import { Good } from '../simulation/goods';
 import { GOODS } from '../simulation/goods';
 import _ from 'lodash';
+import { TimeState, Moment } from './types';
 
 
-const timeSelector: Function = (state) => state.time;
-const roundSelector: Function = (roundsBack: number): Function => createSelector(
+const timeSelector = (state): TimeState => state.time;
+const roundSelector = (roundsBack: number) => createSelector(
   timeSelector,
-  (time)<number, History> => {
+  (time: TimeState): History[] => {
     const currentRound: number = time.currentRound;
     const rounds: Array<number> = _.take(_.rangeRight(0, currentRound + 1), roundsBack)
       .reverse()
       .filter((i: number): boolean => i > 0);
     const history: Array<History> = [];
-    for (const round: number of rounds) {
+    for (const round of rounds) {
       history.push(time.history[round]);
     }
     return history;
@@ -23,7 +24,7 @@ const roundSelector: Function = (roundsBack: number): Function => createSelector
 
 export const historySelector: Function = createSelector(
   timeSelector,
-  (time) => {
+  (time: TimeState): Moment => {
     return {
       lastRound: time.lastRound,
       currentRound: time.currentRound,
@@ -40,13 +41,12 @@ export type MoneyRecord = {
   liabilities: number
 };
 
-export const historicalTraderMoneySelector: Function = (traderId: number, roundsBack: number): Function => createSelector(
-  timeSelector,
+export const historicalTraderMoneySelector = (traderId: number, roundsBack: number) => createSelector(
   roundSelector(roundsBack),
-  (time, rounds: Array<History>): Array<MoneyRecord> => {
+  (rounds: Array<History>): Array<MoneyRecord> => {
     const records: Array<MoneyRecord> = [];
-    for (const history: History of rounds) {
-      const trader = _.find(history.traders, ['id', parseInt(traderId, 10)]);
+    for (const history of rounds) {
+      const trader = _.find(history.traders, ['id', traderId]);
       records.push({
         round: history.round,
         money: trader.money,
@@ -64,17 +64,16 @@ export type GoodPriceRecord = {
   demand: number
 };
 
-export const historicalGoodPriceSelector: Function = (roundsBack: number): Function => createSelector(
-  timeSelector,
+export const historicalGoodPriceSelector = (roundsBack: number) => createSelector(
   roundSelector(roundsBack),
-  (time, rounds: Array<History>): Map<Good, Array<GoodPriceRecord>> => {
-    const records: Map<Good, Array<GoodPriceRecord>> = new Map();
-    for (const good: Good of GOODS) {
+  (rounds: History[]): Map<Good, GoodPriceRecord[]> => {
+    const records: Map<Good, GoodPriceRecord[]> = new Map();
+    for (const good of GOODS) {
       const items: Array<GoodPriceRecord> = [];
-      for (const history: History of rounds) {
+      for (const history of rounds) {
         items.push({
           round: history.round,
-          ...history.goodPrices.get(good)
+          ...history.market.goodPrices.get(good)
         });
       }
       records.set(good, items);

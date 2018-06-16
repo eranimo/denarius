@@ -2,16 +2,25 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Good } from '../../simulation/goods';
+import History from '../../simulation/history';
 import { historySelector, historicalGoodPriceSelector } from '../selectors';
 import { GoodPriceRecord } from '../selectors';
 import { GoodPriceChart } from './charts';
 import { currencyFormat } from '../formatters';
 import _ from 'lodash';
 import { Link } from 'react-router-dom';
+import { RootState } from '../types';
 
+
+namespace Statistic {
+  export const Item = ({ children }) => <div className="statistic-item">{children}</div>
+  export const Group = ({ children }) => <div className="statistic-group">{children}</div>
+  export const Value = ({ children }) => <div className="statistic-value">{children}</div>
+  export const Label = ({ children }) => <div className="statistic-label">{children}</div>
+}
 
 class Market extends Component<{
-  history,
+  history: History,
   historicalGoodPrices: Map<Good, Array<GoodPriceRecord>>
 }> {
 
@@ -25,77 +34,75 @@ class Market extends Component<{
 
     return (
       <div>
-        <Statistic.Group size="small">
-          <Statistic>
+        <Statistic.Group>
+          <Statistic.Item>
             <Statistic.Value>
-              {history.traders.length}
+              {history.market.numTraders}
             </Statistic.Value>
             <Statistic.Label>Traders</Statistic.Label>
-          </Statistic>
-          {history.mostProfitableJob && <Statistic>
+          </Statistic.Item>
+          {history.market.mostProfitableGood && <Statistic.Item>
             <Statistic.Value>
-              {history.mostProfitableJob.displayName}
+              {history.market.mostProfitableGood.displayName}
             </Statistic.Value>
-            <Statistic.Label>Most Profitable Job</Statistic.Label>
-          </Statistic>}
-          {history.mostDemandedGood && <Statistic>
+            <Statistic.Label>Most Profitable Good</Statistic.Label>
+          </Statistic.Item>}
+          {history.market.mostDemandedGood && <Statistic.Item>
             <Statistic.Value>
-              {history.mostDemandedGood.displayName}
+              {history.market.mostDemandedGood.displayName}
             </Statistic.Value>
             <Statistic.Label>Most Demanded Good</Statistic.Label>
-          </Statistic>}
+          </Statistic.Item>}
         </Statistic.Group>
 
         <h2>Bank</h2>
-        <Statistic.Group size="small">
-          {<Statistic>
+        <Statistic.Group>
+          {<Statistic.Item>
             <Statistic.Value>
               {currencyFormat(history.bank.capital)}
             </Statistic.Value>
             <Statistic.Label>Bank Capital</Statistic.Label>
-          </Statistic>}
-          {<Statistic>
+          </Statistic.Item>}
+          {<Statistic.Item>
             <Statistic.Value>
               {currencyFormat(history.bank.totalDeposits)}
             </Statistic.Value>
             <Statistic.Label>Bank Total Deposits</Statistic.Label>
-          </Statistic>}
-          {<Statistic>
+          </Statistic.Item>}
+          {<Statistic.Item>
             <Statistic.Value>
               {currencyFormat(history.bank.liabilities)}
             </Statistic.Value>
             <Statistic.Label>Bank Liabilities</Statistic.Label>
-          </Statistic>}
+          </Statistic.Item>}
         </Statistic.Group>
 
 
         <h1>Traders</h1>
-        <Table celled sortable compact>
-          <Table.Header>
-            <Table.Row>
-              <Table.HeaderCell>ID</Table.HeaderCell>
-              <Table.HeaderCell>Job</Table.HeaderCell>
-              <Table.HeaderCell># Bankrupt</Table.HeaderCell>
-              <Table.HeaderCell>Account Ratio</Table.HeaderCell>
-              <Table.HeaderCell># Loans</Table.HeaderCell>
-              <Table.HeaderCell>Money</Table.HeaderCell>
-              <Table.HeaderCell>Profit</Table.HeaderCell>
-            </Table.Row>
-          </Table.Header>
+        <table className="pt-html-table pt-small pt-html-table-striped">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Product</th>
+              <th>Account Ratio</th>
+              <th># Loans</th>
+              <th>Money</th>
+              <th>Profit</th>
+            </tr>
+          </thead>
 
-          <Table.Body>
+          <tbody>
             {history.traders.map((trader) => {
               return (
-                <Table.Row key={trader.id}>
-                  <Table.Cell>
+                <tr key={trader.id}>
+                  <td>
                     <Link to={`/trader/${trader.id}`}>
                       {trader.id}
                     </Link>
-                  </Table.Cell>
-                  <Table.Cell>{trader.job}</Table.Cell>
-                  <Table.Cell>{trader.bankruptTimes}</Table.Cell>
-                  <Table.Cell>{_.round(trader.accountRatio, 2)}</Table.Cell>
-                  <Table.Cell>
+                  </td>
+                  <td>{trader.product.good.displayName}</td>
+                  <td>{_.round(trader.accountRatio, 2)}</td>
+                  <td>
                     {trader.loans.length > 0
                       ? <div>
                           {trader.loans.map((loan, index: number) => {
@@ -107,42 +114,42 @@ class Market extends Component<{
                           })}
                         </div>
                       : 'None'}
-                  </Table.Cell>
-                  <Table.Cell content={currencyFormat(trader.money)} />
-                  <Table.Cell content={currencyFormat(trader.profitLastRound)} />
-                </Table.Row>
+                  </td>
+                  <td>{currencyFormat(trader.money)}</td>
+                  <td>{currencyFormat(trader.profitLastRound)}</td>
+                </tr>
               );
             })}
-          </Table.Body>
-        </Table>
+          </tbody>
+        </table>
 
         <h1>Goods</h1>
 
-        <Table celled sortable compact>
-          <Table.Header>
-            <Table.Row>
-              <Table.HeaderCell>Good</Table.HeaderCell>
-              <Table.HeaderCell>Mean Price</Table.HeaderCell>
-              <Table.HeaderCell>Demand (buy orders)</Table.HeaderCell>
-              <Table.HeaderCell>Supply (sell orders)</Table.HeaderCell>
-            </Table.Row>
-          </Table.Header>
+        <table className="pt-html-table pt-small pt-html-table-striped">
+          <thead>
+            <tr>
+              <th>Good</th>
+              <th>Mean Price</th>
+              <th>Demand (buy orders)</th>
+              <th>Supply (sell orders)</th>
+            </tr>
+          </thead>
 
-          <Table.Body>
-            {Array.from(history.goodPrices.entries()).map(([good, item]: [Good, Object]) => {
+          <tbody>
+            {Array.from(history.market.goodPrices.entries()).map(([good, item]: [Good, any]) => {
               return (
-                <Table.Row key={good.key}>
-                  <Table.Cell>{good.displayName}</Table.Cell>
-                  <Table.Cell>{currencyFormat(item.meanPrice)}</Table.Cell>
-                  <Table.Cell>{item.demand}</Table.Cell>
-                  <Table.Cell>{item.supply}</Table.Cell>
-                </Table.Row>
+                <tr key={good.key}>
+                  <td>{good.displayName}</td>
+                  <td>{currencyFormat(item.meanPrice)}</td>
+                  <td>{item.demand}</td>
+                  <td>{item.supply}</td>
+                </tr>
               );
             })}
-          </Table.Body>
-        </Table>
+          </tbody>
+        </table>
 
-        {Array.from(history.goodPrices.entries()).map(([good]: [Good]) => {
+        {Array.from(history.market.goodPrices.entries()).map(([good]) => {
           return (
             <GoodPriceChart
               key={good.key}
@@ -155,7 +162,7 @@ class Market extends Component<{
     );
   }
 }
-const mapStateToProps: Function = (state) => {
+const mapStateToProps = (state: RootState) => {
   return {
     ...historySelector(state),
     historicalGoodPrices: historicalGoodPriceSelector(30)(state)

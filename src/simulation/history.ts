@@ -1,16 +1,16 @@
 import Simulation from './index';
-import { Good } from './goods';
-// import { Job } from './jobs';
+import { MarketExport } from './market';
 import { InventoryExport } from './inventory';
 import { MarketOrderExport } from './marketOrder';
-import { GOODS } from './goods';
 import { LoanExport } from './bank';
 import { PriceBeliefExport } from './priceBelief';
+import { ProductExport } from './product';
 
 
 type TraderExport = {
   id: number;
   money: number;
+  product: ProductExport;
   liabilities: number;
   justWorked: boolean;
   justTraded: boolean;
@@ -37,40 +37,38 @@ type ProducerExport = {
 type CompanyExport = {
   traders: TraderExport[];
   producers: ProducerExport[];
+  products: ProductExport[];
 }
 
 // TODO: rename to Ledger
 export default class History {
   round: number;
-  traders: any[];
-  goodPrices: Map<Good, any>;
-  mostDemandedGood: Good;
-  mostProfitableGood: Good;
+  traders: TraderExport[];
+  market: MarketExport;
   bank: any;
-  companies: any[];
+  companies: CompanyExport[];
 
   constructor(sim: Simulation) {
     this.round = sim.round;
-    this.traders = [];
     this.companies = [];
-    this.goodPrices = new Map();
+    this.traders = [];
     this.bank = {
       capital: sim.bank.availableFunds,
       totalDeposits: sim.bank.totalDeposits,
       liabilities: sim.bank.liabilities
     };
-
-    this.mostDemandedGood = sim.market.mostDemandedGood();
-    this.mostProfitableGood = sim.market.mostProfitableGood();
+    this.market = sim.market.export();
 
     for (const company of sim.companies) {
       const companyRecord: CompanyExport = {
         traders: [],
         producers: [],
+        products: [],
       };
       for (const trader of company.traders) {
-        companyRecord.traders.push({
+        const traderExport: TraderExport = {
           id: trader.id,
+          product: trader.product.export(),
           money: trader.availableFunds,
           liabilities: trader.liabilities,
           justWorked: trader.lastRound.hasWorked,
@@ -87,7 +85,9 @@ export default class History {
           },
           loans: Array.from(trader.loans).map(load => load.export()),
           priceBelief: trader.priceBelief.export(),
-        });
+        };
+        companyRecord.traders.push(traderExport);
+        this.traders.push(traderExport);
       }
 
       for (const producer of company.workers) {
@@ -98,16 +98,11 @@ export default class History {
         });
       }
 
+      for (const product of company.products) {
+        companyRecord.products.push(product.export());
+      }
+
       this.companies.push(companyRecord);
     }
-
-
-    GOODS.forEach((good: Good) => {
-      this.goodPrices.set(good, {
-        meanPrice: sim.market.meanPrice(good),
-        supply: sim.market.supplyFor(good),
-        demand: sim.market.demandFor(good)
-      });
-    });
   }
 }

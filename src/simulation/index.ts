@@ -38,19 +38,28 @@ export default class Simulation {
 
   nextRound(): History {
     this.round += 1;
+    console.group(`Round ${this.round}`);
 
     // simulate markets
+    console.groupCollapsed('Market');
     this.market.simulate();
+    console.groupEnd();
 
     // simulate companies
+    console.groupCollapsed('Companies');
     for (const company of this.companies) {
+      console.groupCollapsed(`Company ${company.id}`);
       company.produce();
       company.trade();
       company.handleBankrupt();
+      console.groupEnd();
     }
+    console.groupEnd();
 
+    console.groupCollapsed('Bank');
     this.bank.accrueAndChargeInterest();
     this.bank.closeLoans();
+    console.groupEnd();
 
     for (const trader of this.market.traders) {
       for (const loan of trader.loans) {
@@ -63,7 +72,7 @@ export default class Simulation {
     if (this.hook) {
       this.hook(history);
     }
-
+    console.groupEnd();
     return history;
   }
 

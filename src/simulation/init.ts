@@ -24,13 +24,15 @@ import { Job } from './jobs';
 export function companyProducing(good: Good, market: Market, bank: Bank): Company {
   const company: Company = new Company(market);
   const trader: Trader = new Trader(market);
+  company.traders.add(trader);
   market.addTrader(trader);
   bank.createAccount(trader);
   const product: Product = new Product(good, company, trader);
   const requirements: Map<Good, number> = blueprintFor(good);
-
+  trader.product = product;
   company.products.add(product);
 
+  // create producers for each required good
   for (const [req, amount] of requirements.entries()) {
     const job: Job = goodsForJobs.get(req);
     for (let c = 0; c < amount; c++) { // eslint-disable-line
@@ -38,6 +40,12 @@ export function companyProducing(good: Good, market: Market, bank: Bank): Compan
       product.assignWorker(producer);
       company.workers.add(producer);
     }
+  }
+  // companies producing raw materials
+  if (company.workers.size === 0) {
+    const producer = new Producer(market, goodsForJobs.get(good));
+    product.assignWorker(producer);
+    company.workers.add(producer);
   }
   return company;
 }

@@ -22,6 +22,12 @@ costOfProduction
 
 */
 
+export type ProductExport = {
+  good: Good;
+  companyID: number;
+  traderID: number;
+}
+
 export default class Product {
   good: Good;
   company: Company;
@@ -87,5 +93,13 @@ export default class Product {
       }
     }
     return cost;
+  }
+
+  export(): ProductExport {
+    return {
+      good: this.good,
+      companyID: this.company.id,
+      traderID: this.assignedTrader.id,
+    }
   }
 }

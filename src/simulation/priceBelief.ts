@@ -170,7 +170,7 @@ export default class PriceBelief {
   }
 
   export(): PriceBeliefExport {
-    let results;
+    let results = [];
     for (const good of GOODS) {
       results.push({
         good: good,

@@ -1,41 +1,12 @@
 import Simulation from './index';
 import { MarketExport } from './market';
-import { InventoryExport } from './inventory';
-import { MarketOrderExport } from './marketOrder';
-import { LoanExport } from './bank';
-import { PriceBeliefExport } from './priceBelief';
 import { ProductExport } from './product';
+import { TraderExport } from './trader';
+import { ProducerExport } from './producer';
 
-
-type TraderExport = {
-  id: number;
-  money: number;
-  product: ProductExport;
-  liabilities: number;
-  justWorked: boolean;
-  justTraded: boolean;
-  failedTrades: number;
-  successfulTrades: number;
-  moneyLastRound: number;
-  profitLastRound: number;
-  accountRatio: number;
-  inventory: InventoryExport;
-  thisRoundOrders: {
-    buy: MarketOrderExport[];
-    sell: MarketOrderExport[];
-  };
-  loans: LoanExport[];
-  priceBelief: PriceBeliefExport
-}
-
-type ProducerExport = {
-  id: number;
-  workedLastRound: boolean;
-  idleRounds: number;
-}
 
 type CompanyExport = {
-  traders: TraderExport[];
+  merchants: TraderExport[];
   producers: ProducerExport[];
   products: ProductExport[];
 }
@@ -61,41 +32,20 @@ export default class History {
 
     for (const company of sim.companies) {
       const companyRecord: CompanyExport = {
-        traders: [],
+        merchants: [],
         producers: [],
         products: [],
       };
-      for (const trader of company.traders) {
-        const traderExport: TraderExport = {
-          id: trader.id,
-          product: trader.product.export(),
-          money: trader.availableFunds,
-          liabilities: trader.liabilities,
-          justWorked: trader.lastRound.hasWorked,
-          justTraded: trader.lastRound.hasTraded,
-          failedTrades: trader.failedTrades,
-          successfulTrades: trader.successfulTrades,
-          moneyLastRound: trader.lastRound.money,
-          profitLastRound: trader.availableFunds - trader.lastRound.money,
-          accountRatio: trader.accountRatio,
-          inventory: trader.inventory.export(),
-          thisRoundOrders: {
-            buy: Array.from(trader.buyOrders).map(order => order.export()),
-            sell: Array.from(trader.sellOrders).map(order => order.export())
-          },
-          loans: Array.from(trader.loans).map(load => load.export()),
-          priceBelief: trader.priceBelief.export(),
-        };
-        companyRecord.traders.push(traderExport);
-        this.traders.push(traderExport);
+      for (const merchant of company.merchants) {
+        const merchantExport = merchant.export();
+        companyRecord.merchants.push(merchantExport);
+        this.traders.push(merchantExport);
       }
 
-      for (const producer of company.workers) {
-        companyRecord.producers.push({
-          id: producer.id,
-          workedLastRound: producer.workedLastRound,
-          idleRounds: producer.idleRounds,
-        });
+      for (const producer of company.producers) {
+        const producerExport = producer.export();
+        companyRecord.producers.push(producerExport);
+        this.traders.push(producerExport);
       }
 
       for (const product of company.products) {

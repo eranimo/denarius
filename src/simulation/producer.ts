@@ -3,14 +3,20 @@ import { Good } from './goods';
 import Inventory from './inventory';
 import { isRawGood } from './production';
 import Company from './company';
-import Trader from './trader';
+import Trader, { TraderExport } from './trader';
 import Product from './product';
 import Market from './market';
 
 
+export type ProducerExport = TraderExport & {
+  workedLastRound: boolean;
+  idleRounds: number;
+}
+
 export default class Producer extends Trader {
   workedLastRound: boolean;
   idleRounds: number;
+  companyInventory: Inventory;
   employer: Company | null;
   product: Product | null;
   job: Job;
@@ -21,6 +27,7 @@ export default class Producer extends Trader {
     this.workedLastRound = false;
     this.idleRounds = 0;
     this.employer = null;
+    this.companyInventory = new Inventory();
     this.product = null;
   }
 
@@ -35,35 +42,39 @@ export default class Producer extends Trader {
   work(): boolean {
     if (!this.product) {
       this.workedLastRound = false;
-      return false;
+      throw new Error('Producer can not work, has no assigned product.')
     }
 
     if (!this.job) {
-      return false;
+      throw new Error('Producer can not work, has no job');
     }
-    const inventory: Inventory = this.isEmployed ? this.employer.inventory : this.inventory;
 
     // subtract Goods required to do job
     if (isRawGood(this.product.good)) {
       // console.log(`Trader #${this.id} worked`);
-      inventory.add(this.product.good, 1);
+      this.companyInventory.add(this.product.good, 1);
       this.workedLastRound = true;
       return true;
     }
 
-    if (inventory.hasAmounts(this.product.requiredGoods)) {
+    if (this.companyInventory.hasAmounts(this.product.requiredGoods)) {
       // take the goods required for the job
       // perform the job
-      inventory.removeMulti(this.product.requiredGoods);
+      this.companyInventory.removeMulti(this.product.requiredGoods);
       this.workedLastRound = true;
       // console.log(`Trader #${this.id} worked`);
       this.idleRounds = 0;
+      return true;
     } else {
       // console.log(`Trader #${this.id} did not work (${this.idleRounds} idle rounds)`);
       this.workedLastRound = false;
       this.idleRounds++;
+      return false;
     }
-    return true;
+  }
+
+  get canWork() {
+    return isRawGood(this.product.good) || this.companyInventory.hasAmounts(this.product.requiredGoods);
   }
 
   idealAmountOfGood(good: Good): number {
@@ -78,5 +89,14 @@ export default class Producer extends Trader {
       return;
     }
     this.inventory.addMulti(this.product.requiredGoods);
+  }
+
+  export(): ProducerExport {
+    return {
+      ...super.export(),
+      kind: 'Producer',
+      idleRounds: this.idleRounds,
+      workedLastRound: this.workedLastRound,
+    };
   }
 }

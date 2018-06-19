@@ -1,6 +1,8 @@
 
 import { Good } from './goods';
 import Trader from './trader';
+import { Account } from './bank';
+import Inventory from './inventory';
 
 
 export type OrderType = 'buy' | 'sell';
@@ -23,8 +25,18 @@ export default class MarketOrder {
   price: number; // total value of this order (good unit price * amount)
   trader: Trader;
   finalPrice?: number;
+  account: Account;
+  inventory: Inventory;
 
-  constructor(orderType: OrderType, good: Good, amount: number, price: number, trader: any) {
+  constructor(
+    orderType: OrderType,
+    good: Good,
+    amount: number,
+    price: number,
+    trader: Trader,
+    account: Account = null,
+    inventory: Inventory = null,
+  ) {
     this.orderType = orderType;
     this.good = good;
     this.originalAmount = amount;
@@ -32,6 +44,8 @@ export default class MarketOrder {
     this.price = price;
     this.trader = trader;
     this.finalPrice = null;
+    this.account = account || trader.account;
+    this.inventory = inventory || trader.inventory;
 
     if (amount === 0) {
       throw Error(`Cannot create a order of quantity zero`);
@@ -41,7 +55,6 @@ export default class MarketOrder {
       throw Error(`Cannot create a order of price zero`);
     }
   }
-
 
   export() {
     return {

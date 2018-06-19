@@ -3,7 +3,7 @@ import { Good } from './goods';
 import Producer from './producer';
 import Product from './product';
 import Market from './market';
-import Trader from './trader';
+import Merchant from './merchant';
 import Inventory from './inventory';
 import { AccountHolder } from './bank';
 import { isRawGood, blueprintFor } from './production';
@@ -63,29 +63,39 @@ trade():
 */
 
 export default class Company extends HasID(AccountHolder) {
-  workers: Set<Producer>;
+  producers: Set<Producer>;
   products: Set<Product>;
   inventory: Inventory;
   market: Market;
   bankrupt: boolean;
-  traders: Set<Trader>;
-  lastRound: { idleWorkers: number };
+  merchants: Set<Merchant>;
+  lastRound: { idleProducers: number };
   shoppingList: Map<Good, number>;
 
 
   constructor(market: Market) {
     super();
     this.inventory = new Inventory();
-    this.workers = new Set();
-    this.traders = new Set();
+    this.producers = new Set();
+    this.merchants = new Set();
     this.products = new Set();
     // this.offices = new Set();
     this.shoppingList = new Map();
     this.market = market;
     this.bankrupt = false;
     this.lastRound = {
-      idleWorkers: 0,
+      idleProducers: 0,
     };
+  }
+
+  hireProducer(producer: Producer) {
+    producer.employer = this;
+    this.producers.add(producer);
+  }
+
+  hireMerchant(merchant: Merchant) {
+    merchant.employer = this;
+    this.merchants.add(merchant);
   }
 
   // give the required goods to produce all products this company has
@@ -101,50 +111,72 @@ export default class Company extends HasID(AccountHolder) {
   }
 
   produce() {
-    console.log(`Production - products: ${this.products.size}`)
+    console.groupCollapsed(`Production - Products: ${this.products.size}`)
     this.lastRound = {
-      idleWorkers: 0,
+      idleProducers: 0,
     };
     this.shoppingList = new Map();
     for (const product of this.products) {
       console.log(`Product '${product.good.displayName}' - workers: ${product.workers.size}`);
       for (const producer of product.workers) {
-        // if we have goods for this producer
-        if (this.inventory.hasAmounts(product.requiredGoods)) {
-          console.log(`Product produced`);
-          // give goods required to work
-          // this.inventory.moveToMulti(producer.inventory, product.requiredGoods);
-
-          // work
-          producer.work();
-
-          for (const [good] of product.requiredGoods) {
-            this.shoppingList.set(good, 0);
+        // transfer required goods to producer if the company has them
+        for (const [good, number] of product.requiredGoods) {
+          const missingAmount = number - producer.inventory.amountOf(good);
+          if (missingAmount > 0) {
+            if (this.inventory.hasAmount(good, missingAmount)) {
+              this.inventory.moveTo(producer.companyInventory, good, missingAmount);
+            }
           }
+        }
 
-          // transfer output goods to company inventory
-          // producer.inventory.moveTo(this.inventory, producer.job.output);
+        const didWork = producer.work();
+
+        if (didWork) {
+          console.log(`Producer #${producer.id} produced ${product.good.displayName}`);
+          // produced goods to company inventory
+          producer.companyInventory.moveTo(
+            this.inventory,
+            product.good,
+            producer.companyInventory.amountOf(product.good)
+          );
         } else {
-          console.log(`Product not produced - out of goods`);
           // producer can't work
-          this.lastRound.idleWorkers++;
+          this.lastRound.idleProducers++;
 
-          // add required goods to the shopping list
+          console.groupCollapsed(`Producer #${producer.id} could not produce ${product.good.displayName}`);
           for (const [good, number] of product.requiredGoods) {
-            this.shoppingList.set(good, number - this.inventory.amountOf(good));
+            const missingAmount = number - producer.inventory.amountOf(good);
+            console.log(`Missing amount: ${missingAmount} ${good.displayName}`);
+            // add missing goods to the shopping list
+            this.shoppingList.set(good, (this.shoppingList.get(good) || 0) + missingAmount);
           }
+          console.groupEnd();
         }
       }
     }
+    console.groupEnd();
   }
 
-  trade() {
+  calculateTrades() {
+    console.groupCollapsed(`Trade calculation - Merchants: ${this.merchants.size}`);
     for (const product of this.products) {
-      const trader = product.assignedTrader;
+      const trader = product.assignMerchant;
+      // set trade desires for buying goods producers need
       for (const [good, number] of this.shoppingList) {
-        trader.setDesire(good, number)
+        console.log(`Merchant #${trader.id} should buy ${number} ${good.displayName}`);
+        trader.buyingGoods.set(good, number);
+      }
+
+      // sell goods the producers made
+      const surplus = this.inventory.amountOf(product.good);
+      if (surplus > 0) {
+        console.log(`Merchant #${trader.id} should sell ${surplus} ${product.good.displayName}`);
+        trader.sellingGoods.set(product.good, surplus);
+      } else {
+        console.log(`Merchant #${trader.id} had no goods to sell`);
       }
     }
+    console.groupEnd();
   }
 
   handleBankrupt() {
@@ -162,6 +194,4 @@ export default class Company extends HasID(AccountHolder) {
     }
     return cost;
   }
-
-
 }

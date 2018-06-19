@@ -40,20 +40,21 @@ export default class Simulation {
     this.round += 1;
     console.group(`Round ${this.round}`);
 
-    // simulate markets
-    console.groupCollapsed('Market');
-    this.market.simulate();
-    console.groupEnd();
-
     // simulate companies
     console.groupCollapsed('Companies');
     for (const company of this.companies) {
       console.groupCollapsed(`Company ${company.id}`);
+      console.log(company);
       company.produce();
-      company.trade();
+      company.calculateTrades();
       company.handleBankrupt();
       console.groupEnd();
     }
+    console.groupEnd();
+
+    // simulate markets
+    console.groupCollapsed('Market');
+    this.market.simulate();
     console.groupEnd();
 
     console.groupCollapsed('Bank');

@@ -25,8 +25,8 @@ describe('Company', () => {
     expect(lumberCompany.inventory.amountOf(GOODS.wood)).toBeGreaterThan(0);
     woodCompany.produce();
     lumberCompany.produce();
-    expect(woodCompany.lastRound.idleWorkers).toBe(0);
-    expect(lumberCompany.lastRound.idleWorkers).toBe(0);
+    expect(woodCompany.lastRound.idleProducers).toBe(0);
+    expect(lumberCompany.lastRound.idleProducers).toBe(0);
   });
 
   test('cost of labor', () => {

@@ -2,12 +2,13 @@ import { sumBy } from 'lodash';
 
 
 export class AccountHolder {
-  account: Account;
+  account: Account | null;
   loans: Set<Loan>;
   bank: Bank;
 
   constructor() {
     this.loans = new Set();
+    this.account = null;
   }
 
   get availableFunds(): number {
@@ -39,6 +40,7 @@ export class AccountHolder {
 
   // ratio of the amount of all withdraws compared to amount of total deposits
   get accountRatio(): number {
+    if (this.account === null) return 0;
     return this.account.withdraws / this.account.deposits;
   }
 

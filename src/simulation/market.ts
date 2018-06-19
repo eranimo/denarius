@@ -70,16 +70,37 @@ export default class Market {
     for (const good of GOODS) {
       const buyOrders: Set<MarketOrder> | null = this.buyOrders.get(good);
       const sellOrders: Set<MarketOrder> | null = this.sellOrders.get(good);
-      console.groupCollapsed(`Orders for ${good.displayName}: buy: ${buyOrders.size} sell: ${sellOrders.size}`);
+      console.groupCollapsed(`Orders for ${good.displayName}`);
+
+      console.groupCollapsed(`Buy orders: ${buyOrders.size}`);
+      console.table(Array.from(buyOrders).map(order => ({
+        'Good': order.good.displayName,
+        'Quantity': order.amount,
+        'Price': order.price,
+        'Trader': order.trader.id,
+      })));
+      console.groupEnd();
+
+      console.groupCollapsed(`Sell orders: ${sellOrders.size}`);
+      console.table(Array.from(sellOrders).map(order => ({
+        'Good': order.good.displayName,
+        'Quantity': order.amount,
+        'Price': order.price,
+        'Trader': order.trader.id,
+      })));
+      console.groupEnd();
 
       if (!buyOrders || !sellOrders) {
         return;
       }
 
+
       // sort buy orders from highest to lowest price
       const sortedBuyOrders: Array<MarketOrder> = sortBy(Array.from(buyOrders), ['price'], ['DESC']);
       // sort sell orders from lowest to highest price
       const sortedSellOrders: Array<MarketOrder> = sortBy(Array.from(sellOrders), ['price'], ['ASC']);
+
+      console.groupCollapsed(`Trade round`);
 
       const totalBuyAmount: number = sumBy(sortedBuyOrders, 'amount');
       const totalSellAmount: number = sumBy(sortedSellOrders, 'amount');
@@ -95,17 +116,25 @@ export default class Market {
         const goodsTraded: number = Math.min(buyOrder.amount, sellOrder.amount);
         const totalPrice: number = goodsTraded * unitPrice;
 
-        console.log(`Buyer: #${buyOrder.trader.id},  Seller: #${sellOrder.trader.id},  Good: ${buyOrder.good.displayName},  Quantity: ${goodsTraded}, Unit Price: $${unitPrice},  Total Price: $${totalPrice}, Buyer has $${buyOrder.trader.availableFunds}`);
+        console.table({
+          'Buyer ID': buyOrder.trader.id,
+          'Seller ID': sellOrder.trader.id,
+          'Quantity': goodsTraded,
+          'Unit Price': unitPrice,
+          'Total Price': totalPrice,
+          'Buyer funds': buyOrder.account.amount,
+        });
 
         // if the buyer doesn't have the correct amount of money, borrow it
         if (!buyOrder.trader.account.has(totalPrice)) {
+          console.log('Buyer bought goods on credit');
           const difference: number = totalPrice - buyOrder.trader.availableFunds;
           buyOrder.trader.borrowFunds(difference);
         }
 
         // remove money from buyer and give it to seller
-        this.transferGood(sellOrder.trader, buyOrder.trader, buyOrder.good, goodsTraded);
-        this.transferMoney(buyOrder.trader, sellOrder.trader, totalPrice);
+        this.transferGood(sellOrder, buyOrder, goodsTraded);
+        this.transferMoney(buyOrder, sellOrder, totalPrice);
 
         // update metrics
         buyOrder.trader.successfulTrades++;
@@ -125,15 +154,24 @@ export default class Market {
         // throw out (deny) all other orders
         if (buyOrder.amount === 0) {
           sortedBuyOrders.shift();
+          console.log('Buy order is completed');
+        } else {
+          console.log(`Buy order has ${buyOrder.amount} left to buy`);
         }
 
         if (sellOrder.amount === 0) {
           sortedSellOrders.shift();
+          console.log('Sell order is completed');
+        } else {
+          console.log(`Sell order has ${sellOrder.amount} left to sell`);
         }
 
         moneyTraded += totalPrice;
         unitsTraded += goodsTraded;
       }
+
+      console.groupEnd();
+      console.log(`Leftover orders - buy: ${sortedBuyOrders.length} sell: ${sortedSellOrders.length}`);
 
       // record failure
       for (const leftoverSellOrder of sortedSellOrders) {
@@ -180,20 +218,20 @@ export default class Market {
   }
 
   // transfer a good from one Trader to another
-  transferGood(fromTrader: Trader, toTrader: Trader, good: Good, amount: number) {
-    if (fromTrader.inventory.hasAmount(good, amount)) {
-      fromTrader.inventory.moveTo(toTrader.inventory, good, amount);
+  transferGood(sellOrder: MarketOrder, buyOrder: MarketOrder, amount: number) {
+    if (sellOrder.inventory.hasAmount(sellOrder.good, amount)) {
+      sellOrder.inventory.moveTo(buyOrder.inventory, sellOrder.good, amount);
     } else {
-      throw new Error(`Trader ${fromTrader.toString()} doesn't have ${amount} '${good.displayName}' goods (it has ${fromTrader.inventory.amountOf(good)})`);
+      throw new Error(`Trader ${sellOrder.trader.toString()} doesn't have ${amount} '${sellOrder.good.displayName}' goods (it has ${sellOrder.inventory.amountOf(sellOrder.good)})`);
     }
   }
 
   // transfer money from one Trader to another
-  transferMoney(fromTrader: Trader, toTrader: Trader, amount: number) {
-    if (fromTrader.availableFunds >= amount) {
-      fromTrader.account.transferTo(toTrader.account, amount);
+  transferMoney(buyOrder: MarketOrder, sellOrder: MarketOrder, amount: number) {
+    if (buyOrder.account.amount >= amount) {
+      buyOrder.account.transferTo(sellOrder.account, amount);
     } else {
-      throw new Error(`Trader ${fromTrader.toString()} doesn't have ${amount} money (it has ${fromTrader.availableFunds})`);
+      throw new Error(`Trader ${buyOrder.trader.toString()} doesn't have ${amount} money (it has ${buyOrder.account.amount})`);
     }
   }
 
@@ -289,17 +327,14 @@ export default class Market {
   simulate() {
     console.groupCollapsed('Traders working and trading');
     for (const trader of this.traders) {
-      if (!trader.product) {
-        continue;
-      }
       trader.lastRound.money = trader.availableFunds;
       // perform trades
-      const title: string = `Trader #${trader.id} is trading`;
-      console.groupCollapsed(title);
+      console.groupCollapsed(`Trader #${trader.id} is trading`);
+      console.log(trader);
       trader.trade();
       console.groupEnd();
 
-      trader.product.recordProfit(trader.profitLastRound);
+      trader.recordProfit(trader.profitLastRound);
     }
     console.groupEnd();
 

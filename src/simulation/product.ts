@@ -1,6 +1,6 @@
 
 import { Good } from './goods';
-import Trader from './trader';
+import Merchant from './merchant';
 import Market from './market';
 import Company from './company';
 import Producer from './producer';
@@ -25,24 +25,24 @@ costOfProduction
 export type ProductExport = {
   good: Good;
   companyID: number;
-  traderID: number;
+  merchantID: number;
 }
 
 export default class Product {
   good: Good;
   company: Company;
   workers: Set<Producer>;
-  assignedTrader: Trader;
+  assignMerchant: Merchant;
   marketsTraded: Set<Market>;
   marketsProduced: Set<Market>;
   profitHistory: Array<number>;
 
-  constructor(good: Good, company: Company, assignedTrader: Trader) {
+  constructor(good: Good, company: Company, assignedTrader: Merchant) {
     this.good = good;
     this.marketsTraded = new Set();
     this.marketsProduced = new Set();
     this.company = company;
-    this.assignedTrader = assignedTrader;
+    this.assignMerchant = assignedTrader;
     this.profitHistory = [];
     this.workers = new Set();
   }
@@ -52,9 +52,9 @@ export default class Product {
     this.workers.add(producer);
   }
 
-  assignTrader(trader: Trader) {
+  assignTrader(trader: Merchant) {
     trader.product = this;
-    this.assignedTrader = trader;
+    this.assignMerchant = trader;
   }
 
   // value of a good at a market
@@ -99,7 +99,7 @@ export default class Product {
     return {
       good: this.good,
       companyID: this.company.id,
-      traderID: this.assignedTrader.id,
+      merchantID: this.assignMerchant.id,
     }
   }
 }

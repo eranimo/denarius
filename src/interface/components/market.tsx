@@ -83,7 +83,7 @@ class Market extends Component<{
           <thead>
             <tr>
               <th>ID</th>
-              <th>Product</th>
+              <th>Kind</th>
               <th>Account Ratio</th>
               <th># Loans</th>
               <th>Money</th>
@@ -100,8 +100,8 @@ class Market extends Component<{
                       {trader.id}
                     </Link>
                   </td>
-                  <td>{trader.product.good.displayName}</td>
-                  <td>{_.round(trader.accountRatio, 2)}</td>
+                  <td>{trader.kind}</td>
+                  <td>{_.round(trader.accountRatio || 0, 2)}</td>
                   <td>
                     {trader.loans.length > 0
                       ? <div>

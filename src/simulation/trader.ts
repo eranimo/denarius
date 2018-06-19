@@ -1,17 +1,42 @@
 
-import { Good } from './goods';
-import { GOODS } from './goods';
+import { GOODS, Good } from './goods';
 import MarketOrder from './marketOrder';
 import Market from './market';
-import Product from './product';
 import PriceBelief from './priceBelief';
 import Person from './person';
+import { takeRight } from 'lodash';
+import { InventoryExport } from './inventory';
+import { MarketOrderExport } from './marketOrder';
+import { LoanExport } from './bank';
+import { PriceBeliefExport } from './priceBelief';
+
+
+export type TraderExport = {
+  id: number;
+  kind: string;
+  money: number;
+  liabilities: number;
+  justWorked: boolean;
+  justTraded: boolean;
+  failedTrades: number;
+  successfulTrades: number;
+  moneyLastRound: number;
+  profitLastRound: number;
+  accountRatio: number;
+  inventory: InventoryExport;
+  thisRoundOrders: {
+    buy: MarketOrderExport[];
+    sell: MarketOrderExport[];
+  };
+  loans: LoanExport[];
+  priceBelief: PriceBeliefExport
+}
 
 
 export default class Trader extends Person {
   marketPrices: Map<Market, PriceBelief>;
   market: Market;
-  buyingList: Map<Good, number>;
+  desiredInventory: Map<Good, number>;
   buyOrders: Set<MarketOrder>;
   sellOrders: Set<MarketOrder>;
   successfulTrades: number;
@@ -21,13 +46,13 @@ export default class Trader extends Person {
     hasTraded: boolean,
     money: number,
   }
-  product: Product;
+  profitHistory: number[];
 
   constructor(market: Market) {
     super();
     this.marketPrices = new Map();
     this.goToMarket(market);
-    this.buyingList = new Map();
+    this.desiredInventory = new Map();
 
     this.buyOrders = new Set();
     this.sellOrders = new Set();
@@ -39,7 +64,7 @@ export default class Trader extends Person {
       hasTraded: false,
       money: 0,
     }
-    this.product = null;
+    this.profitHistory = [];
   }
 
   goToMarket(market: Market) {
@@ -59,15 +84,15 @@ export default class Trader extends Person {
 
   // set the amount of goods that this trader will try to have every turn
   setDesire(good: Good, amount: number) {
-    if (this.buyingList.has(good)) {
-      this.buyingList.set(good, this.buyingList.get(good) + amount);
+    if (this.desiredInventory.has(good)) {
+      this.desiredInventory.set(good, this.desiredInventory.get(good) + amount);
     } else {
-      this.buyingList.set(good, amount);
+      this.desiredInventory.set(good, amount);
     }
   }
 
   amountRequired(good: Good): number {
-    return this.buyingList.get(good) || 0;
+    return this.desiredInventory.get(good) || 0;
   }
 
   amountToBuy(good: Good): number {
@@ -82,6 +107,11 @@ export default class Trader extends Person {
     return 0;
   }
 
+  recordProfit(profit: number) {
+    this.profitHistory.push(profit);
+    this.profitHistory = takeRight(this.profitHistory, 30);
+  }
+
   trade() {
     this.buyOrders = new Set();
     this.sellOrders = new Set();
@@ -93,15 +123,40 @@ export default class Trader extends Person {
 
       if (buyAmount > 0) {
         const order: MarketOrder = new MarketOrder('buy', good, buyAmount, price, this);
+        console.log(`Trader ${this.id} is buying ${buyAmount} ${good.displayName}`);
         this.buyOrders.add(order);
         this.market.buy(order);
       }
 
       if (sellAmount > 0) {
         const order: MarketOrder = new MarketOrder('buy', good, sellAmount, price, this);
+        console.log(`Trader ${this.id} is selling ${buyAmount} ${good.displayName}`);
         this.sellOrders.add(order);
         this.market.sell(order);
       }
     }
+  }
+
+  export(): TraderExport {
+    return {
+      id: this.id,
+      kind: 'Trader',
+      money: this.availableFunds,
+      liabilities: this.liabilities,
+      justWorked: this.lastRound.hasWorked,
+      justTraded: this.lastRound.hasTraded,
+      failedTrades: this.failedTrades,
+      successfulTrades: this.successfulTrades,
+      moneyLastRound: this.lastRound.money,
+      profitLastRound: this.availableFunds - this.lastRound.money,
+      accountRatio: this.accountRatio,
+      inventory: this.inventory.export(),
+      thisRoundOrders: {
+        buy: Array.from(this.buyOrders).map(order => order.export()),
+        sell: Array.from(this.sellOrders).map(order => order.export())
+      },
+      loans: Array.from(this.loans).map(load => load.export()),
+      priceBelief: this.priceBelief.export(),
+    };
   }
 }

@@ -238,7 +238,7 @@ export class Bank extends AccountHolder {
   // if no other banks can
   // http://www.thesimpledollar.com/why-are-savings-account-rates-so-low/
   get savingsInterestRate(): number {
-    return 0.01;
+    return 0; // 0.01;
   }
 
   get reserves(): number {
@@ -279,7 +279,7 @@ export class Bank extends AccountHolder {
     // for all accounts, deposit interest
     for (const account of this.accounts) {
       const interest: number = account.amount * this.savingsInterestRate;
-      account.deposit(interest);
+      this.account.transferTo(account, interest);
     }
     // for all loans, collect interest
     for (const loan of this.loans) {

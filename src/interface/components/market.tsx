@@ -94,7 +94,7 @@ class Market extends Component<{
           <tbody>
             {history.traders.map((trader) => {
               return (
-                <tr key={trader.id}>
+                <tr key={`${trader.kind}-${trader.id}`}>
                   <td>
                     <Link to={`/trader/${trader.id}`}>
                       {trader.id}

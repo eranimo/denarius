@@ -1,7 +1,7 @@
 import { Constructor } from './common';
 
 
-let idMap: Map<string, number> = new Map();
+let currentID = 0;
 
 
 export function HasID<TBase extends Constructor>(Base: TBase) {
@@ -9,19 +9,13 @@ export function HasID<TBase extends Constructor>(Base: TBase) {
     id: number;
 
     static resetIDs() {
-      idMap = new Map();
+      currentID = 0;
     }
 
     constructor(...args: any[]) {
       super(...args);
-      const name: string = this.constructor.name;
-      if (idMap.has(name)) {
-        this.id = idMap.get(name) + 1;
-        idMap.set(name, this.id);
-      } else {
-        idMap.set(name, 1);
-        this.id = 1;
-      }
+      this.id = currentID + 1;
+      currentID++;
     }
 
     toString(): string {

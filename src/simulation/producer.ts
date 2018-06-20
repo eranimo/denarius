@@ -61,6 +61,7 @@ export default class Producer extends Trader {
       // take the goods required for the job
       // perform the job
       this.companyInventory.removeMulti(this.product.requiredGoods);
+      this.companyInventory.add(this.product.good, 1);
       this.workedLastRound = true;
       // console.log(`Trader #${this.id} worked`);
       this.idleRounds = 0;

@@ -10,16 +10,6 @@ export type Job = {
   output: Good,
 };
 
-/*
-bread, lumber, tools -> grain
-bread, tools -> iron_ore
-bread, tools, timber -> lumber
-bread, tools -> timber
-bread, iron, lumber -> tools
-bread, iron_ore, tools -> iron
-grain -> bread
-*/
-
 export const woodcutter: Job = {
   key: 'woodcutter',
   displayName: 'Woodcutter',

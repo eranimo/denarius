@@ -17,11 +17,11 @@ export default function setup() {
   );
 
   const app = (
-    <Provider store={store}>
-      <BrowserRouter>
+    <BrowserRouter>
+      <Provider store={store}>
         <Application />
-      </BrowserRouter>
-    </Provider>
+      </Provider>
+    </BrowserRouter>
   );
   ReactDOM.render(app, document.querySelector('main.app'));
 }

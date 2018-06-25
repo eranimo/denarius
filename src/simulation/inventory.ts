@@ -4,6 +4,12 @@ import { orderBy } from 'lodash';
 import BetterSet from './ds/set';
 
 
+type InventoryRecordExport = {
+  good: Good;
+  amount: number;
+  unitCost: number;
+}
+
 export class InventoryRecord {
   good: Good;
   amount: number;
@@ -17,6 +23,14 @@ export class InventoryRecord {
 
   get cost(): number {
     return this.unitCost * this.amount;
+  }
+
+  export(): InventoryRecordExport {
+    return {
+      good: this.good,
+      amount: this.amount,
+      unitCost: this.unitCost,
+    };
   }
 }
 
@@ -52,6 +66,10 @@ export class InventorySet {
   entries(): Array<InventoryRecord> {
     return Array.from(this.store);
   }
+
+  export(): InventoryRecordExport[] {
+    return Array.from(this.store).map(item => item.export());
+  }
 }
 
 class NoGoodsError extends Error {
@@ -64,10 +82,10 @@ class NoGoodsError extends Error {
   }
 }
 
-export type InventoryExport = Array<{
+export type InventoryExport = {
   good: Good
-  amount: number
-}>;
+  items: InventoryRecordExport[],
+}[];
 
 export default class Inventory {
   // a store of goods kept in descending order of cost (highest cost first)
@@ -240,8 +258,9 @@ export default class Inventory {
 
   export(): InventoryExport {
     let results = [];
-    for (const [good, amount] of this.store.entries()) {
-      results.push({ good, amount });
+    for (const [good, store] of this.store) {
+      const item = { good, items: store.export() };
+      results.push(item);
     }
     return results;
   }

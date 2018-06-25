@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
 import { connect, Dispatch } from 'react-redux';
-import { Switch, Route } from 'react-router-dom';
+import { Switch, Route, withRouter } from 'react-router-dom';
 import { forward } from '../actions';
 import Controls from './controls';
 import Market from './market';
 import Trader from './trader';
 
+
+document.body.classList.add('pt-dark');
 
 class Application extends Component<{
   forward: () => any
@@ -22,13 +24,17 @@ class Application extends Component<{
     return (
       <div>
         <Controls />
-        <Switch>
-          <Route exact path="/" component={Market} />
-          <Route path="/trader/:id" component={Trader} />
-          <Route>
-            404: Page not found
-          </Route>
-        </Switch>
+        <main style={{ marginTop: '58px', padding: '1rem' }}>
+          <Switch>
+            <Route exact path="/" component={Market} />
+            <Route path="/foo" component={() => <div>Foo</div>} />
+            <Route path="/bar" component={() => <div>Bar</div>} />
+            <Route path="/trader/:id" component={Trader} />
+            <Route>
+              404: Page not found
+            </Route>
+          </Switch>
+        </main>
       </div>
     );
   }
@@ -36,6 +42,6 @@ class Application extends Component<{
 const mapStateToDispatch = (dispatch: Dispatch) => ({
   forward: () => dispatch(forward()),
 })
-const ApplicationContainer = connect(null, mapStateToDispatch)(Application);
+const ApplicationContainer = withRouter<any>(connect(null, mapStateToDispatch)(Application));
 
 export default ApplicationContainer;

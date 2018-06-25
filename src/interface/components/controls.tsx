@@ -2,12 +2,14 @@ import React, { Component } from 'react';
 import {
   Navbar,
   Button,
+  ButtonGroup,
+  ControlGroup,
   Alignment,
 } from '@blueprintjs/core';
-import { NavLink } from 'react-router-dom';
+import { NavLink, withRouter } from 'react-router-dom';
 import { connect, Dispatch } from 'react-redux';
 import { historySelector } from '../selectors';
-import { forward, backward, reset, goToRound } from '../actions';
+import * as ACTIONS from '../actions';
 import { RootState, Moment } from '../types';
 
 
@@ -49,58 +51,81 @@ class Controls extends Component<ControlProps> {
     }
 
     return (
-      <Navbar>
+      <Navbar fixedToTop>
         <Navbar.Group align={Alignment.LEFT}>
           <Navbar.Heading>
             Denarius
           </Navbar.Heading>
           <Navbar.Divider />
-          <Button minimal>
-            <NavLink className="item" activeClassName="active" to="/" exact>
-              Market
-            </NavLink>
-          </Button>
+          <NavLink className="pt-button pt-minimal pt-icon-home" activeClassName="pt-intent-primary" to="/" exact>
+            Market
+          </NavLink>
+          <NavLink className="pt-button pt-minimal pt-icon-home" activeClassName="pt-intent-primary" to="/foo">
+            Foo
+          </NavLink>
+          <NavLink className="pt-button pt-minimal pt-icon-home" activeClassName="pt-intent-primary" to="/bar">
+            Bar
+          </NavLink>
         </Navbar.Group>
         <Navbar.Group align={Alignment.RIGHT}>
-          <Button
-            icon="refresh"
-            onClick={() => {
-              reset();
-              forward();
-            }}
-          />
-          <Button
-            icon="calendar"
-            onClick={() => {
-              const num: number = parseInt(window.prompt('Enter round to go to'), 10);
-              goToRound(num);
-            }}
-          />
-          <Button
-            icon="fast-backward"
-            disabled={!canGoBackward}
-            onClick={() => backward()}
-          />
-          <span>{currentRound} / {lastRound}</span>
-          <Button
-            icon="fast-forward"
-            disabled={!canGoForward}
-            onClick={() => forward()}
-          />
-          <Button
-            style={{ fontWeight: 'bold' }}
-            disabled={!canGoForward}
-            onClick={() => jumpForward(10)}
+          <ButtonGroup
+            style={{ marginRight: '1rem' }}
           >
-            x10
-          </Button>
-          <Button
-            style={{ fontWeight: 'bold' }}
-            disabled={!canGoForward}
-            onClick={() => jumpForward(25)}
+            <Button
+              icon="refresh"
+              minimal
+              onClick={() => {
+                reset();
+                forward();
+              }}
+            />
+            <Button
+              icon="calendar"
+              minimal
+              onClick={() => {
+                const num: number = parseInt(window.prompt('Enter round to go to'), 10);
+                goToRound(num);
+              }}
+            />
+          </ButtonGroup>
+          <ControlGroup
+            style={{ marginRight: '1rem' }}
           >
-            x25
-          </Button>
+            <Button
+              minimal
+              icon="fast-backward"
+              disabled={!canGoBackward}
+              onClick={() => backward()}
+            />
+            <div
+              className="pt-button pt-minimal"
+              style={{ width: '4rem', textAlign: 'center' }}
+            >
+              {`${currentRound} / ${lastRound}`}
+            </div>
+            <Button
+              minimal
+              icon="fast-forward"
+              disabled={!canGoForward}
+              onClick={() => forward()}
+            />
+          </ControlGroup>
+          <ButtonGroup>
+            <Button
+              minimal
+              disabled={!canGoForward}
+              onClick={() => jumpForward(10)()}
+            >
+              x10
+            </Button>
+            <Button
+              minimal
+              disabled={!canGoForward}
+              onClick={() => jumpForward(25)()}
+            >
+              x25
+            </Button>
+          </ButtonGroup>
         </Navbar.Group>
       </Navbar>
     );
@@ -108,11 +133,11 @@ class Controls extends Component<ControlProps> {
 }
 const mapStateToProps = (state: RootState): Moment => historySelector(state);
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  backward: () => dispatch(backward()),
-  forward: () => dispatch(forward()),
-  reset: () => dispatch(reset()),
-  goToRound: (round: number) => dispatch(goToRound(round)),
+  backward: () => dispatch(ACTIONS.backward()),
+  forward: () => dispatch(ACTIONS.forward()),
+  reset: () => dispatch(ACTIONS.reset()),
+  goToRound: (round: number) => dispatch(ACTIONS.goToRound(round)),
 });
-const ControlsConnect = connect(mapStateToProps, mapDispatchToProps)(Controls);
+const ControlsConnect = withRouter<any>(connect(mapStateToProps, mapDispatchToProps)(Controls));
 
 export default ControlsConnect;

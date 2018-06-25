@@ -14,7 +14,7 @@ module.exports = function() {
     output: {
       filename: '[name].js',
       path: path.resolve(__dirname, 'dist'),
-      // publicPath: path.resolve(__dirname, 'dist', 'assets')
+      publicPath: path.resolve(__dirname, 'dist', 'assets')
     },
     resolve: {
       extensions: [".ts", ".tsx", ".js", ".css"],
@@ -60,14 +60,18 @@ module.exports = function() {
     ],
     serve: {
       port: 8999,
-      content: [__dirname],
+      dev: {
+        publicPath: path.resolve(__dirname, 'dist', 'assets'),
+      },
+      clipboard: false,
+      content: [path.resolve(__dirname, 'dist')],
       add: (app, middleware, options) => {
-        middleware.webpack();
-        middleware.content();
         const historyOptions = {
-          index: path.resolve(__dirname, 'dist')
+          // index: path.resolve(__dirname, 'dist', 'index.html')
         };
         app.use(convert(history(historyOptions)));
+        // middleware.webpack();
+        // middleware.content();
       },
     }
   };

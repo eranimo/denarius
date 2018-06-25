@@ -7,11 +7,12 @@ import { MoneyRecord } from '../selectors';
 import { currencyFormat } from '../formatters';
 import { TraderMoneyChart } from './charts';
 import { Link } from 'react-router-dom';
+import History from '../../simulation/history';
 
 
 class Trader extends Component<{
-  history,
-  match,
+  history: History,
+  match: any,
   historicalMoney: Array<MoneyRecord>
 }> {
   renderOrderTable(orders: Array<any>) {
@@ -77,7 +78,6 @@ class Trader extends Component<{
     const trader = _.find(history.traders, ['id', id]);
 
     console.log(trader);
-    console.log(this.props.historicalMoney);
 
     if (!trader) {
       return (
@@ -103,16 +103,8 @@ class Trader extends Component<{
         <table className="pt-html-table pt-small pt-html-table-striped">
           <tbody>
             <tr>
-              <td>Job</td>
-              <td>{trader.job}</td>
-            </tr>
-            <tr>
               <td>Money</td>
               <td>{currencyFormat(trader.money)} ({currencyFormat(trader.profitLastRound)})</td>
-            </tr>
-            <tr>
-              <td>Idle Rounds</td>
-              <td>{trader.idleRounds}</td>
             </tr>
             <tr>
               <td>Liabilities (loans)</td>
@@ -124,9 +116,9 @@ class Trader extends Component<{
                 <table className="pt-html-table pt-html-table-bordered">
                   {trader.inventory.map((inventory, index: number) => {
                     return (
-                      <tr key={index}>
+                      <tr key={inventory.good.displayName}>
                         <td>{inventory.good.displayName}</td>
-                        <td>{inventory.amount}</td>
+                        <td>{inventory.items}</td>
                       </tr>
                     );
                   })}
@@ -173,7 +165,7 @@ class Trader extends Component<{
                   <td>{currencyFormat(belief.price)}</td>
                   <td>{currencyFormat(belief.low, 3)}</td>
                   <td>{currencyFormat(belief.high, 3)}</td>
-                  <td>{currencyFormat(history.goodPrices.get(belief.good).meanPrice)}</td>
+                  <td>{currencyFormat(history.market.goodPrices.get(belief.good).meanPrice)}</td>
                 </tr>
               );
             })}
@@ -193,7 +185,7 @@ class Trader extends Component<{
 const mapStateToProps = (state, props) => {
   return {
     ...historySelector(state),
-    historicalMoney: historicalTraderMoneySelector(props.match.params.id, 30)(state)
+    historicalMoney: historicalTraderMoneySelector(parseInt(props.match.params.id, 10), 30)(state)
   };
 };
 const TraderConnect = connect(mapStateToProps)(Trader);

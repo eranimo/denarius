@@ -6,7 +6,7 @@ import History from '../../simulation/history';
 import { historySelector, historicalGoodPriceSelector } from '../selectors';
 import { GoodPriceRecord } from '../selectors';
 import { GoodPriceChart } from './charts';
-import { currencyFormat } from '../formatters';
+import { currencyFormat, numberFormat } from '../formatters';
 import _ from 'lodash';
 import { Link } from 'react-router-dom';
 import { RootState } from '../types';
@@ -14,6 +14,7 @@ import {
   Tabs,
   Tab,
 } from '@blueprintjs/core';
+import Trend from './trend';
 
 
 class Market extends Component<{
@@ -61,7 +62,13 @@ class Market extends Component<{
                     : 'None'}
                 </td>
                 <td>{currencyFormat(trader.money)}</td>
-                <td>{currencyFormat(trader.profitLastRound)}</td>
+                <td>
+                  <Trend
+                    value={trader.money}
+                    delta={trader.profitLastRound}
+                    format={currencyFormat}
+                  />
+                </td>
               </tr>
             );
           })}
@@ -81,8 +88,8 @@ class Market extends Component<{
             <tr>
               <th>Good</th>
               <th>Mean Price</th>
-              <th>Demand (buy orders)</th>
-              <th>Supply (sell orders)</th>
+              <th>Demand</th>
+              <th>Supply</th>
             </tr>
           </thead>
 
@@ -91,9 +98,27 @@ class Market extends Component<{
               return (
                 <tr key={good.key}>
                   <td>{good.displayName}</td>
-                  <td>{currencyFormat(item.meanPrice)}</td>
-                  <td>{item.demand}</td>
-                  <td>{item.supply}</td>
+                  <td>
+                    <Trend
+                      value={item.meanPrice}
+                      delta={item.priceChange}
+                      format={currencyFormat}
+                    />
+                  </td>
+                  <td>
+                    <Trend
+                      value={item.demand}
+                      delta={item.demandChange}
+                      format={numberFormat}
+                    />
+                  </td>
+                  <td>
+                    <Trend
+                      value={item.supply}
+                      delta={item.supplyChange}
+                      format={numberFormat}
+                    />
+                  </td>
                 </tr>
               );
             })}
@@ -137,7 +162,10 @@ class Market extends Component<{
                   ? history.market.mostProfitableGood.displayName
                   : 'None'}
               </td>
-              <td>{history.market.mostDemandedGood.displayName}</td>
+              <td>{history.market.mostDemandedGood
+                  ? history.market.mostDemandedGood.displayName
+                  : 'None'}
+              </td>
             </tr>
           </tbody>
         </table>

@@ -39,6 +39,7 @@ export default class Simulation {
   nextRound(): History {
     this.round += 1;
     console.group(`Round ${this.round}`);
+    console.time(`Execution time`);
 
     // simulate companies
     console.groupCollapsed('Companies');
@@ -73,6 +74,7 @@ export default class Simulation {
     if (this.hook) {
       this.hook(history);
     }
+    console.timeEnd(`Execution time`);
     console.groupEnd();
     return history;
   }

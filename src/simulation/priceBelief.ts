@@ -148,7 +148,8 @@ export default class PriceBelief {
             priceBelief.high -= deltaToMean / 2;
           }
         } else {
-          throw new Error('Weird case where no buy or sell orders happened');
+          // weird case where no buy or sell orders happened
+          // price belief stays the same
         }
       }
 

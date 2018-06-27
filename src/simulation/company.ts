@@ -124,7 +124,10 @@ export default class Company extends HasID(AccountHolder) {
           const missingAmount = number - producer.inventory.amountOf(good);
           if (missingAmount > 0) {
             if (this.inventory.hasAmount(good, missingAmount)) {
+              console.log(`Give producer ${missingAmount} ${good.displayName} from company inventory`);
               this.inventory.moveTo(producer.companyInventory, good, missingAmount);
+            } else {
+              console.log(`Company missing ${number - this.inventory.amountOf(good)} ${good.displayName} to give producer`);
             }
           }
         }
@@ -145,7 +148,7 @@ export default class Company extends HasID(AccountHolder) {
 
           console.groupCollapsed(`Producer #${producer.id} could not produce ${product.good.displayName}`);
           for (const [good, number] of product.requiredGoods) {
-            const missingAmount = number - producer.inventory.amountOf(good);
+            const missingAmount = number - this.inventory.amountOf(good);
             console.log(`Missing amount: ${missingAmount} ${good.displayName}`);
             // add missing goods to the shopping list
             this.shoppingList.set(good, (this.shoppingList.get(good) || 0) + missingAmount);

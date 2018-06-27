@@ -61,7 +61,10 @@ export type GoodPriceRecord = {
   round: number,
   meanPrice: number,
   supply: number,
-  demand: number
+  demand: number,
+  priceChange: number,
+  supplyChange: number,
+  demandChange: number,
 };
 
 export const historicalGoodPriceSelector = (roundsBack: number) => createSelector(

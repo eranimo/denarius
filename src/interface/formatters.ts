@@ -9,3 +9,7 @@ export function currencyFormat(currency?: number, points: number = 2): string {
     // maximumFractionDigits: points
   });
 }
+
+export function numberFormat(value: number): string {
+  return value.toLocaleString();
+}

@@ -19,8 +19,11 @@ const defaultMarketOptions: MarketOptions = {
 
 export type MarketGoodExport = {
   meanPrice: number,
+  priceChange: number,
   supply: number,
   demand: number,
+  supplyChange: number,
+  demandChange: number,
 };
 
 export type MarketExport = {
@@ -325,6 +328,7 @@ export default class Market {
   }
 
   simulate() {
+    console.log(this);
     console.groupCollapsed('Traders working and trading');
     for (const trader of this.traders) {
       trader.lastRound.money = trader.availableFunds;
@@ -352,9 +356,12 @@ export default class Market {
     const goodPrices: Map<Good, MarketGoodExport> = new Map();
     GOODS.forEach((good: Good) => {
       goodPrices.set(good, {
-        meanPrice: this.meanPrice(good),
+        meanPrice: this.history.prices.get(good, 0),
+        priceChange: this.history.prices.get(good, 0) - this.history.prices.get(good, 1),
         supply: this.supplyFor(good),
-        demand: this.demandFor(good)
+        demand: this.demandFor(good),
+        supplyChange: this.history.sellOrderAmount.get(good, 0) - this.history.sellOrderAmount.get(good, 1),
+        demandChange: this.history.buyOrderAmount.get(good, 0) - this.history.buyOrderAmount.get(good, 1),
       });
     });
     return {

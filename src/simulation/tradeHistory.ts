@@ -52,6 +52,13 @@ class TradeHistoryItem {
     return 0;
   }
 
+  get(key: Good, fromEnd: number = 0): number {
+    if (this.record.has(key)) {
+      return this.record.get(key)[this.record.get(key).length - 1 - fromEnd];
+    }
+    return 0;
+  }
+
   debug() {
     const title: string = `TradeHistoryItem: ${this.name}`;
     console.groupCollapsed(title);

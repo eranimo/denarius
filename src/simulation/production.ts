@@ -46,6 +46,13 @@ export function isRawGood(good: Good): boolean {
   return production.has(good) === false;
 }
 
+export function calculateGoodOutput(good: Good): number {
+  if (isRawGood(good)) {
+    return 4;
+  }
+  return production.get(good).output;
+}
+
 export type ProductionMap = Map<Good, number>;
 
 // gets the production tree for a good

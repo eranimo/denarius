@@ -129,8 +129,10 @@ export default class Inventory {
     return true;
   }
 
+  /** does the inventory have the given amount of goods? */
   hasAmount(good: Good, amount: number): boolean {
-    return this.has(good, amount);
+    const records: InventorySet = this.storeFor(good);
+    return records.totalAmount >= amount;
   }
 
   amountOf(good: Good): number {
@@ -160,8 +162,9 @@ export default class Inventory {
       for (const [good, amount] of multi.entries()) {
         this.take(good, amount);
       }
+    } else {
+      throw new Error('Missing goods to delete');
     }
-    throw new Error('Missing goods to delete');
   }
 
   moveTo(

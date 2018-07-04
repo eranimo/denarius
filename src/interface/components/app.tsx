@@ -2,9 +2,10 @@ import React, { Component } from 'react';
 import { connect, Dispatch } from 'react-redux';
 import { Switch, Route, withRouter } from 'react-router-dom';
 import { forward } from '../actions';
-import Controls from './controls';
-import Market from './market';
-import Trader from './trader';
+import Controls from './Controls';
+import Market from './Market';
+import Trader from './Trader';
+import CompanyList from './CompanyList';
 
 
 document.body.classList.add('pt-dark');
@@ -27,6 +28,7 @@ class Application extends Component<{
         <main style={{ marginTop: '58px', padding: '1rem' }}>
           <Switch>
             <Route exact path="/" component={Market} />
+            <Route path="/companies" component={CompanyList} />
             <Route path="/foo" component={() => <div>Foo</div>} />
             <Route path="/bar" component={() => <div>Bar</div>} />
             <Route path="/trader/:id" component={Trader} />

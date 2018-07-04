@@ -60,11 +60,8 @@ class Controls extends Component<ControlProps> {
           <NavLink className="pt-button pt-minimal pt-icon-home" activeClassName="pt-intent-primary" to="/" exact>
             Market
           </NavLink>
-          <NavLink className="pt-button pt-minimal pt-icon-home" activeClassName="pt-intent-primary" to="/foo">
-            Foo
-          </NavLink>
-          <NavLink className="pt-button pt-minimal pt-icon-home" activeClassName="pt-intent-primary" to="/bar">
-            Bar
+          <NavLink className="pt-button pt-minimal pt-icon-home" activeClassName="pt-intent-primary" to="/companies" exact>
+            Companies
           </NavLink>
         </Navbar.Group>
         <Navbar.Group align={Alignment.RIGHT}>

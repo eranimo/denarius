@@ -151,6 +151,10 @@ export class Loan {
 }
 
 
+export type AccountExport = {
+  amount: number;
+}
+
 export class Account {
   owner: AccountHolder;
   amount: number;
@@ -198,6 +202,12 @@ export class Account {
       return true;
     }
     return false;
+  }
+
+  export(): AccountExport {
+    return {
+      amount: this.amount,
+    };
   }
 }
 

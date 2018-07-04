@@ -1,131 +1,135 @@
-# Denarius Simulation Design
+# Design
+Trading happens each tick.
+Payroll happens every 10 ticks.
 
-## Relationships
+## Models
+- Person
+- Organization
+- Resource
 
-links:
-```
-has
-is
-contains
-contains
-```
+## Types
+- Good
+- Job
 
-quantifiers:
-```
-a
-many
-```
+## Components
+Can be applied to any model
 
-
-```
-def: Good
-def: Job  # Producer roles
-def: Person
-def: Market
-def: Company
-def: Product  # a Good being sold by a Company
-def: Bank
-def: Account
-def: Inventory
-
-
-Market has many Person
-Market has a Bank
-
-link: "belongs to" from Person to Bank
-Person belongs to a Bank
+- AccountHolder: allows holding money
+- InventoryHolder: allows storing inventory
+- Producer: can produce goods
+  - has an assigned product
+- Employee: allows becoming an employee
+  - can receive wages
+  - can be unemployeed
+  - has a job
+- Employer: allows having employees
+  - can hire employees
+  - sends wages to employees
+- Trader: allows buying and selling goods
+  - has a buy and sell list
+  - maintains a mapping between markets and their last known price of each good
 
 
-link: "works at" from Person to Company
-Person has a Inventory
-Person has a Account
+## Economy
 
-def: Trader is a Person
-def: Producer is a Trader
-def: Dealer is a Trader
+### Labor
+Employers have Employees.
 
-Company has many Product
-Trader works at a Company
-Producer works at a Company
+Employees have a _job satisfaction rating_. This is a number from 0 to 10. When this number reaches 0 the employee quits. This number drops by 1 each round that their wage is below market price.
 
-link: "trades at" from Trader to Market
-Trader trades at Market
+Jobs:
+- Merchant (BaseWage: $10)
+- Producer (BaseWage: $5)
 
-```
+#### Wages
+Each Employee has a wage, which can be a different number for each employee. Wages are calculated every 10 rounds.
 
-─── Person
-    ├── Trader
-    │   ├── Producer
-    │   ├── Agent
-    │   └── Marketer
-    └── Slave
+#### Labor Market
 
 
+### Production
+
+### Trading
+- models with the _Trader_ component can trade
+
+### Goods
+A good has:
+
+- type
+- quality
+
+#### Types
+Each type has a BaseValue and an optional list of production requirements
+
+- Gold
+- Coin (Gold + Iron)
+- Wood
+- Lumber (Wood)
+- Iron Ore
+- Iron (Iron)
+- Wheat
+- Bread (Wheat)
+- Tools (Iron + Lumber)
+
+#### Quality
+Good quality changes the price and use of the good. Lower quality goods are cheaper but make lower quality products.
+
+Quality with QualityModifier
+- Poor (0.9)
+- Good (1)
+- Excellent (1.1)
+
+### Prices
+Prices are different at each market.
+
+#### Base Price
+
+`BasePrice = BaseValue * QualityModifier`
+
+QualityModifier = quality multiplier for good
+
+#### P Function
+The P function is the building block of prices, taking into account local supply and demand.
+
+`P = BasePrice * (LocalDemand + DemandFactor * UnitsDemanded) / (LocalSupply + SupplyFactor * UnitsSupplied)`
+
+values per good:
+BasePrice = a constant number for each good
+
+values per market:
+LocalDemand = sum quantity of goods traders want to buy at this market
+LocalSupply = sum quantity of goods traders want to sell at this market
+UnitsDemanded = the quantity of goods wanting to be bought by this agent, 0 if none
+UnitsSupplied = the quantity of goods wanting to be sold by this agent, 0 if none
+DemandFactor = when an agent sells X units of this good this goes up by X, defaults to 1
+SupplyFactor = when an agent buys X units of this good this goes up by X, defaults to 1
 
 
-
-# GoodList
-
-in the form Map<String, Map<Good, number>>
-
-e.g.
-```javascript
-const goodList = new GoodList();
-
-goodList.create('Life Goods', [
-  [GOODS.bread, 1],
-], {
-  onFailure: {
-
-  }
-});
-
-goodList.create('work', [
-  [GOODS.iron, 1]
-]);
-
-```
+#### Total Price
+The total price of buying x units:
+`TotalPrice(x) = LocalSupply * P(UnitsDemanded=LocalSupply) - (LocalSupply - x) * P(UnitsDemanded=LocalSupply - x)`
 
 
-# JobMarket
-a variant of the Market class
-trades in jobs
-buy orders = job postings
-sell orders = job applications
+#### Supply and Demand Factor
+SupplyFactor: when a player sells x units of a good in a market, this increases by x
+DemandFactor: when a player purchases x units of a good in a market, this increases by x
 
-## Pricing Jobs
+#### Example
+A trader tries to buy 5 units
 
-### Considerations
+Initial:
+LocalSupply = 10
+LocalDemand = 10
+BasePrice = 100
+DemandFactor = 1
+SupplyFactor = 1
 
-1. must at least cover cost of living expenses (currently 1 bread every round)
-2. must have a small amount of disposable income
+Buying 10 unis
 
-### Price belief mechanics
+P(x) => (x * 100 * (10 + 1 * x) / (10 + 1 * 0))
+TotalPrice(x) = P(10) - P(10 - x)
+TotalPrice(1) = 290
+TotalPrice(5) = $1250
 
-If a job posting is a success, price belief converges on that price
-If a job posting is a failure, price belief diverges and moves towards market price
-
-
-
-
-
-
-
-
-
-
-
-
-## New Design
-
-```
-def: Person
-def: Market
-def: Company
-
-Company has many Person
-Market has many Person
-
-Person has a Job (called job)
-Person can work for a Company (called employee / employer)
-```
+1250 / 5 = $250 unit price
+1450 - 1250 = $200 bulk price savings

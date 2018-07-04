@@ -1,4 +1,3 @@
-
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Good } from '../../simulation/goods';
@@ -14,7 +13,7 @@ import {
   Tabs,
   Tab,
 } from '@blueprintjs/core';
-import Trend from './trend';
+import Trend from './Trend';
 
 
 class Market extends Component<{

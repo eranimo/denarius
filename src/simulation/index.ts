@@ -49,6 +49,7 @@ export default class Simulation {
       company.produce();
       company.calculateTrades();
       company.handleBankrupt();
+      company.roundEnd();
       console.groupEnd();
     }
     console.groupEnd();

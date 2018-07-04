@@ -5,8 +5,21 @@ import Product from './product';
 import Market from './market';
 import Merchant from './merchant';
 import Inventory from './inventory';
-import { AccountHolder } from './bank';
+import { AccountHolder, AccountExport } from './bank';
 import { isRawGood, blueprintFor } from './production';
+import { ProductExport } from './product';
+import { TraderExport } from './trader';
+import { ProducerExport } from './producer';
+
+
+export type CompanyExport = {
+  id: number;
+  account: AccountExport;
+  profitLastRound: number;
+  merchants: TraderExport[];
+  producers: ProducerExport[];
+  products: ProductExport[];
+}
 
 /*
 Overview:
@@ -71,6 +84,7 @@ export default class Company extends HasID(AccountHolder) {
   merchants: Set<Merchant>;
   lastRound: { idleProducers: number };
   shoppingList: Map<Good, number>;
+  moneyLastRound: number;
 
 
   constructor(market: Market) {
@@ -86,6 +100,7 @@ export default class Company extends HasID(AccountHolder) {
     this.lastRound = {
       idleProducers: 0,
     };
+    this.moneyLastRound = 0;
   }
 
   hireProducer(producer: Producer) {
@@ -188,6 +203,10 @@ export default class Company extends HasID(AccountHolder) {
     }
   }
 
+  roundEnd() {
+    this.moneyLastRound = this.account.amount;
+  }
+
   costOfLabor(): number {
     let cost: number = 0;
     for (const product of this.products) {
@@ -196,5 +215,30 @@ export default class Company extends HasID(AccountHolder) {
       }
     }
     return cost;
+  }
+
+  export() {
+    const companyRecord: CompanyExport = {
+      id: this.id,
+      account: this.account.export(),
+      profitLastRound: this.account.amount - this.moneyLastRound,
+      merchants: [],
+      producers: [],
+      products: [],
+    };
+    for (const merchant of this.merchants) {
+      const merchantExport = merchant.export();
+      companyRecord.merchants.push(merchantExport);
+    }
+
+    for (const producer of this.producers) {
+      const producerExport = producer.export();
+      companyRecord.producers.push(producerExport);
+    }
+
+    for (const product of this.products) {
+      companyRecord.products.push(product.export());
+    }
+    return companyRecord;
   }
 }

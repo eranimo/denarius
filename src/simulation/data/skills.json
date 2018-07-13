@@ -1,0 +1,7 @@
+[
+  {
+    "name": "Baking",
+    "modifier": "ProductionYield.Bread",
+    "xpGainFactor": 2
+  }
+]

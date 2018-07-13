@@ -46,6 +46,7 @@ export default class Simulation {
     for (const company of this.companies) {
       console.groupCollapsed(`Company ${company.id}`);
       console.log(company);
+      company.roundStart();
       company.produce();
       company.calculateTrades();
       company.handleBankrupt();

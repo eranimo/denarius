@@ -10,6 +10,7 @@ import { isRawGood, blueprintFor } from './production';
 import { ProductExport } from './product';
 import { TraderExport } from './trader';
 import { ProducerExport } from './producer';
+import Person from './person';
 
 
 export type CompanyExport = {
@@ -200,6 +201,24 @@ export default class Company extends HasID(AccountHolder) {
   handleBankrupt() {
     if (this.availableFunds === 0) {
       this.bankrupt = true;
+    }
+  }
+
+  /** Returns the cost of all the live need goods of this person */
+  calculateCostOfLabor(person: Person): number {
+    let cost: number = 0;
+    for (const [good, amount] of person.lifeNeeds.entries()) {
+      cost += this.market.meanPrice(good) * amount;
+    }
+    return cost;
+  }
+
+  roundStart() {
+    for (const producer of this.producers) {
+      producer.live();
+    }
+    for (const merchant of this.merchants) {
+      merchant.live();
     }
   }
 

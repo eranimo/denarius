@@ -21,6 +21,8 @@ import { Good } from './goods';
   1 Trader to trade the Product
 */
 
+const START_CASH = 20;
+
 export function companyProducing(good: Good, market: Market, bank: Bank): Company {
   const company: Company = new Company(market);
   bank.createAccount(company);
@@ -30,7 +32,7 @@ export function companyProducing(good: Good, market: Market, bank: Bank): Compan
   company.hireMerchant(merchant);
   market.addTrader(merchant);
   bank.createAccount(merchant);
-  merchant.account.deposit(10);
+  merchant.account.deposit(START_CASH);
 
   const product: Product = new Product(good, company, merchant);
   merchant.product = product;
@@ -41,7 +43,7 @@ export function companyProducing(good: Good, market: Market, bank: Bank): Compan
   company.hireProducer(producer);
   market.addTrader(producer);
   bank.createAccount(producer);
-  producer.account.deposit(10);
+  producer.account.deposit(START_CASH);
   return company;
 }
 

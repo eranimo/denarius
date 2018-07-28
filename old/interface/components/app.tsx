@@ -2,10 +2,10 @@ import React, { Component } from 'react';
 import { connect, Dispatch } from 'react-redux';
 import { Switch, Route, withRouter } from 'react-router-dom';
 import { forward } from '../actions';
-import Controls from './Controls';
-import Market from './Market';
-import Trader from './Trader';
-import CompanyList from './CompanyList';
+import Controls from './controls';
+import Market from './market';
+import Trader from './trader';
+import CompanyList from './companyList';
 
 
 document.body.classList.add('pt-dark');

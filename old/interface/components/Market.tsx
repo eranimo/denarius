@@ -13,7 +13,7 @@ import {
   Tabs,
   Tab,
 } from '@blueprintjs/core';
-import Trend from './Trend';
+import Trend from './trend';
 
 
 class Market extends Component<{

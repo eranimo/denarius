@@ -1,5 +1,5 @@
 
-import Simulation from './simulation';
+import init from './main/initialize';
 
 
-(window as any).simulation = new Simulation();
+(window as any).simulation = init();

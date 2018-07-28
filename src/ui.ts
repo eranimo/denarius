@@ -1,5 +1,5 @@
 
-import setup from './interface';
+// import setup from './interface';
 
-// render the UI
-setup();
+// // render the UI
+// setup();

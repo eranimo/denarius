@@ -5,7 +5,7 @@ import History from '../../simulation/history';
 import { historySelector, historicalGoodPriceSelector } from '../selectors';
 import { GoodPriceRecord } from '../selectors';
 import { RootState } from '../types';
-import Trend from './Trend';
+import Trend from './trend';
 import { currencyFormat } from '../formatters';
 
 

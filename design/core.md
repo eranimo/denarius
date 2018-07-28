@@ -2,6 +2,7 @@
 1 tick = 1 day
 30 days = 1 month
 12 months = 1 year
+360 ticks = 1 year
 
 # Architecture
 

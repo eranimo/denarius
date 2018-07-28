@@ -6,7 +6,7 @@ enum ModifierType {
 interface IModifierEffect {
   amount: number;
   type: ModifierType;
-  value: Value;
+  // value: Value;
 }
 
 interface IModifier {

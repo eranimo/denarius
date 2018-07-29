@@ -25,8 +25,17 @@ function getLowestValues(
   return array.filter(value => getter(value) === minValue);
 }
 
+function ndarrayStats(ndarray: ndarray) {
+  return {
+    array: ndarray,
+    avg: ops.sum(ndarray) / (ndarray.shape[0] * ndarray.shape[0]),
+    max: ops.sup(ndarray),
+    min: ops.inf(ndarray),
+  };
+}
 
-const getNeighbors = (x: number, y: number) => [
+
+const getNeighbors = (x: number, y: number): number[][] => [
   [x - 1, y],
   [x + 1, y],
   [x, y - 1],
@@ -70,62 +79,71 @@ export async function init(options: IGenOptions): Promise<IWorldMap> {
   fill(heights, (x, y) => terrain.get(x, y) * 255);
 
   // decide water types
+  let oceanCells = 0;
   waterTypes = ndarray([], [width, height]);
   fill(waterTypes, (x, y) => {
     const height = heights.get(x, y);
-    if (height < sealevel) {
+    if (height < (sealevel * 255)) {
+      oceanCells++;
       return WaterTypes.OCEAN;
     } else {
       return WaterTypes.NO_WATER;
     }
   });
+  log('percent ocean', oceanCells / (width * height));
 
-  // waterLevels represents the max height of water or land at a given cell
+  // waterLevels represents the land above sealevel
+  // NOTE: should be re-named
   const waterLevels = ndarray(new Uint8ClampedArray(width * height), [width, height]);
   fill(waterLevels, (x, y) => {
-    // water in the ocean
     if (waterTypes.get(x, y) === WaterTypes.OCEAN) {
-      return sealevel - heights.get(x, y);
+      return 0;
     }
-    // rain
-    return 5 * Math.random();
+    // const rain = Math.round(5 * ((noise(x / width - 0.5, y / height - 0.5) + 1) / 2));;
+    return (heights.get(x, y) - (sealevel * 255));
   });
-  const waterFlow = ndarray(new Float32Array(width * height), [width, height]);
+
+  // amount of water moved by each cell
+  // NOTE: not implemented
+  const waterFlow = ndarray(new Uint8ClampedArray(width * height), [width, height]);
   fill(waterFlow, (x, y) => 0);
 
+  // boolean 2D array of cells which are known to drain to the ocean
+  // initially only ocean cells drain are marked true
   const drains = ndarray([], [width, height]);
-  let oceanCells = 0;
-  fill(drains, (x, y) => {
-    if (waterTypes.get(x, y) == WaterTypes.OCEAN) {
-      oceanCells++;
-      return 1;
-    }
-    return 0;
-  });
-  log('percent ocean', oceanCells / (width * height));
+  fill(drains, (x, y) => waterLevels.get(x, y) === 0);
+
+  log('stats: heights', ndarrayStats(heights));
+  log('stats: waterLevels (before)', ndarrayStats(waterLevels));
+
+  // calculate a 2D array of neighbor arrays
+  const neighborMap = ndarray([], [width, height]);
+  fill(neighborMap, (x, y) => getNeighbors(x, y)
+    .filter(([x, y]) => x >= 0 && y >= 0 && x < width && y < height))
 
   function step() {
     let didWork = false;
-    let maxWaterLevel;
     for (let x = 0; x < width; x++) {
       for (let y = 0; y < height; y++) {
-        if (waterTypes.get(x, y) != WaterTypes.OCEAN) {
-          const neighbors = getNeighbors(x, y);
-          const myLevel = heights.get(x, y) + waterLevels.get(x, y);
-          const neighborLevels = neighbors
-          .map(([nx, ny]) => [nx, ny, heights.get(nx, ny) + waterLevels.get(nx, ny)])
-            .filter(([nx, ny, level]) => (
-              level !== undefined &&
-              level < myLevel
-            ));
-          const lowestNeighbors = getLowestValues(neighborLevels, i => i[2]);
+        if (waterTypes.get(x, y) === WaterTypes.OCEAN) continue;
+        const neighbors = neighborMap.get(x, y);
+        const neighborLevels = neighbors
+          .map(([nx, ny]) => {
+            // do not consider neighbors that do not drain to ocean
+            if (drains.get(nx, ny) === 0) {
+              return -Infinity;
+            }
+            return waterLevels.get(nx, ny);
+          });
+        if (neighborLevels.length > 0) {
+          const maxLevel = Math.max(...neighborLevels)
+          const thisLevel = waterLevels.get(x, y);
 
-          for (let [nx, ny, level] of lowestNeighbors) {
+          // if we have a neighbor higher than us
+          if (maxLevel > thisLevel) {
+            waterLevels.set(x, y, maxLevel);
+            drains.set(x, y, 1);
             didWork = true;
-            const share = waterLevels.get(x, y) / lowestNeighbors.length;
-            waterLevels.set(nx, ny, waterLevels.get(nx, ny) + share);
-            waterLevels.set(x, y, waterLevels.get(x, y) - share);
-            waterFlow.set(x, y, waterFlow.get(x, y) + share);
           }
         }
       }
@@ -133,35 +151,33 @@ export async function init(options: IGenOptions): Promise<IWorldMap> {
     return didWork;
   }
 
-  // let stepCount = 0;
-  // while (step()) {
-  //   stepCount++;
-  // }
-  // log(`River generation took '${stepCount}' steps`);
+  // run river generation step until nothing happens
+  let stepCount = 0;
+  while (step()) {
+    stepCount++;
+  }
+  log(`River generation took '${stepCount}' steps`);
 
-  for (let i = 0; i < 50; i++) step();
+  for (let i = 0; i < 1; i++) step();
 
-  log(waterLevels);
-  fill(waterLevels, (x, y) => {
-    if (waterTypes.get(x, y) === WaterTypes.OCEAN) return 0;
-    return waterLevels.get(x, y);
-  });
+  // fill(waterLevels, (x, y) => {
+  //   if (waterTypes.get(x, y) === WaterTypes.OCEAN) return 0;
+  //   return waterLevels.get(x, y) - heights.get(x, y);
+  // });
   const maxWaterLevel = ops.sup(waterLevels);
   const minWaterLevel = ops.inf(waterLevels);
-  log('maxWaterLevel', maxWaterLevel);
-  log('minWaterLevel', minWaterLevel);
+  log('stats: waterLevels (after)', ndarrayStats(waterLevels));
 
-  // normalize waterLevels as waterFill
+  // normalize waterLevels as waterFill for the MapViewer
   const waterFill = ndarray(new Float32Array(width * height), [width, height]);
   fill(waterFill, (x, y) => (waterLevels.get(x, y) - minWaterLevel) / maxWaterLevel);
 
-  log('waterFill', ops.sum(waterFill) / (width * height));
+  log('stats: waterFill', ndarrayStats(waterFill));
 
-  // normalize waterFlow
+  // normalize waterFlow for the MapViewer
   const maxWaterFlow = ops.sup(waterFlow);
   const minWaterFlow = ops.inf(waterFlow);
-  log('maxWaterFlow', maxWaterFlow);
-  log('minWaterFlow', minWaterFlow);
+  log('stats: waterFlow', ndarrayStats(waterFlow));
   fill(waterFlow, (x, y) => (waterFlow.get(x, y) - minWaterFlow) / maxWaterFlow);
 
 

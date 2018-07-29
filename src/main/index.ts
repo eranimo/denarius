@@ -15,20 +15,25 @@ function runSimulation() {
 
 export default function initialize() {
   return new Promise((resolve) => {
-    const worldgen = new WorldGen({
-      seed: Math.random().toString(),
+    const options = {
+      seed: 'fuck',
       size: {
-        width: 100,
-        height: 100,
+        width: 250,
+        height: 200,
       },
       terrain: {
         frequency: 122,
       }
-    });
+    };
+    const worldgen = new WorldGen(options);
+    console.time('worldgen');
     worldgen.init().then(((worldmap: IWorldMap) => {
+      console.timeEnd('worldgen');
       console.log(worldmap);
       (window as any).worldmap = {
-        terrain: ndarray(worldmap.terrain, [100, 100])
+        terrain: ndarray(worldmap.terrain, [options.size.width, options.size.height]),
+        waterFill: ndarray(worldmap.waterFill, [options.size.width, options.size.height]),
+        waterFlow: ndarray(worldmap.waterFlow, [options.size.width, options.size.height]),
       };
       runSimulation();
       resolve();

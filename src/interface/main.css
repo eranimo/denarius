@@ -1,10 +1,20 @@
+@import "~@blueprintjs/core/lib/css/blueprint.css";
+@import "~@blueprintjs/icons/lib/css/blueprint-icons.css";
+
+
+*:focus {
+  outline: none !important;
+}
+
 body {
   margin: 0;
   padding: 0;
-  background-color: #111;
+  background-color: #293742;
 }
 
 canvas {
   border: 1px solid black;
   background-color: white;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }

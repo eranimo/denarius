@@ -1,27 +1,33 @@
 import React, { Component } from 'react';
 
+const CELL_SIZE = 3;
 
-export default class MapViewer extends Component {
+interface IMapViewerProps {
+  mapName: string;
+  drawFunc(value: number): [number, number, number]
+}
+
+export default class MapViewer extends Component<IMapViewerProps> {
   canvas: HTMLCanvasElement;
 
   componentDidMount() {
     const worldmap = (window as any).worldmap;
-    console.log('worldmap', worldmap);
     if (!this.canvas) return;
     const ctx = this.canvas.getContext('2d');
-    for (let x = 0; x < 500; x += 5) {
-      for (let y = 0; y < 500; y += 5) {
-        let i = worldmap.terrain.get(
-          Math.floor(x / 5),
-          Math.floor(y / 5)
+    const width = worldmap[this.props.mapName].shape[0];
+    const height = worldmap[this.props.mapName].shape[1];
+    this.canvas.width = width * CELL_SIZE;
+    this.canvas.height = height * CELL_SIZE;
+    for (let x = 0; x < width * CELL_SIZE; x += CELL_SIZE) {
+      for (let y = 0; y < height * CELL_SIZE; y += CELL_SIZE) {
+        let i = worldmap[this.props.mapName].get(
+          Math.floor(x / CELL_SIZE),
+          Math.floor(y / CELL_SIZE)
         );
-        i = Math.round(i * 15) / 15;
-        if (i < 0.4) {
-          ctx.fillStyle = 'blue';
-        } else {
-          ctx.fillStyle = `rgb(${i * 255}, ${i * 255}, ${i * 255})`;
-        }
-        ctx.fillRect(x, y, x + 5, y + 5);
+
+        const color = this.props.drawFunc(i);
+        ctx.fillStyle = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+        ctx.fillRect(x, y, x + CELL_SIZE, y + CELL_SIZE);
       }
     }
   }
@@ -32,8 +38,6 @@ export default class MapViewer extends Component {
         ref={ref => {
           this.canvas = ref;
         }}
-        width={100 * 5}
-        height={100 * 5}
       >
       </canvas>
     )

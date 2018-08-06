@@ -13,12 +13,16 @@ export interface IGenOptions {
   }
 }
 
-export interface IWorldMap {
+export interface IWorldGenProps {
   terrain: Data<number>;
+  sealevel: number;
+}
+
+export interface IWorldGenTick {
+  ticks: number;
   waterTypes: Data<number>;
   waterFill: Data<number>;
   waterFlow: Data<number>;
-  sealevel: number;
 }
 
 export enum WaterTypes {
@@ -26,5 +30,10 @@ export enum WaterTypes {
   OCEAN,
   SMALL_RIVER,
   LARGE_RIVER,
+  LAKE,
   STREAM,
 }
+
+export interface ISimRuntime {
+  processTick: Function
+};

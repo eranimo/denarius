@@ -24,7 +24,7 @@ class Market extends Component<{
   renderTraders() {
     const history = this.props.history;
     return (
-      <table className="pt-html-table pt-small pt-html-table-striped">
+      <table className="bp3-html-table bp3-small bp3-html-table-striped">
         <thead>
           <tr>
             <th>ID</th>
@@ -82,7 +82,7 @@ class Market extends Component<{
 
     return (
       <div>
-        <table className="pt-html-table pt-small pt-html-table-striped">
+        <table className="bp3-html-table bp3-small bp3-html-table-striped">
           <thead>
             <tr>
               <th>Good</th>
@@ -145,7 +145,7 @@ class Market extends Component<{
 
     return (
       <div>
-        <table className="pt-html-table stats-table">
+        <table className="bp3-html-table stats-table">
           <thead>
             <tr>
               <th>Number of Traders</th>

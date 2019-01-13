@@ -8,7 +8,7 @@ import Trader from './trader';
 import CompanyList from './companyList';
 
 
-document.body.classList.add('pt-dark');
+document.body.classList.add('bp3-dark');
 
 class Application extends Component<{
   forward: () => any

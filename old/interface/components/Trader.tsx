@@ -18,7 +18,7 @@ class Trader extends Component<{
   renderOrderTable(orders: Array<any>) {
     const sortedOrders: Array<any> = _.sortBy(orders, (i) => i.good.displayName);
     return (
-      <table className="pt-html-table pt-small pt-html-table-striped">
+      <table className="bp3-html-table bp3-small bp3-html-table-striped">
         <thead>
           <tr>
             <th>Order #</th>
@@ -89,18 +89,18 @@ class Trader extends Component<{
 
     return (
       <div>
-        <ul className="pt-breadcrumbs">
-          <li className="pt-breadcrumb">
+        <ul className="bp3-breadcrumbs">
+          <li className="bp3-breadcrumb">
             <Link to={'/'}>
               Market
             </Link>
           </li>
-          <li className="pt-breadcrumb pt-breadcrumb-current">
+          <li className="bp3-breadcrumb bp3-breadcrumb-current">
             <span>Trader #{trader.id}</span>
           </li>
         </ul>
         <h1>Trader #{trader.id}</h1>
-        <table className="pt-html-table pt-small pt-html-table-striped">
+        <table className="bp3-html-table bp3-small bp3-html-table-striped">
           <tbody>
             <tr>
               <td>Money</td>
@@ -113,7 +113,7 @@ class Trader extends Component<{
             <tr>
               <td>Inventory</td>
               <td>
-                <table className="pt-html-table pt-html-table-bordered">
+                <table className="bp3-html-table bp3-html-table-bordered">
                   {trader.inventory.map((inventory, index: number) => {
                     return (
                       <tr key={inventory.good.displayName}>
@@ -147,7 +147,7 @@ class Trader extends Component<{
         <TraderMoneyChart data={this.props.historicalMoney} />
 
         <h2>Price Belief</h2>
-        <table className="pt-html-table pt-small pt-html-table-striped">
+        <table className="bp3-html-table bp3-small bp3-html-table-striped">
           <thead>
             <tr>
               <th>Good</th>

@@ -57,10 +57,10 @@ class Controls extends Component<ControlProps> {
             Denarius
           </Navbar.Heading>
           <Navbar.Divider />
-          <NavLink className="pt-button pt-minimal pt-icon-home" activeClassName="pt-intent-primary" to="/" exact>
+          <NavLink className="bp3-button bp3-minimal bp3-icon-home" activeClassName="bp3-intent-primary" to="/" exact>
             Market
           </NavLink>
-          <NavLink className="pt-button pt-minimal pt-icon-home" activeClassName="pt-intent-primary" to="/companies" exact>
+          <NavLink className="bp3-button bp3-minimal bp3-icon-home" activeClassName="bp3-intent-primary" to="/companies" exact>
             Companies
           </NavLink>
         </Navbar.Group>
@@ -95,7 +95,7 @@ class Controls extends Component<ControlProps> {
               onClick={() => backward()}
             />
             <div
-              className="pt-button pt-minimal"
+              className="bp3-button bp3-minimal"
               style={{ width: '4rem', textAlign: 'center' }}
             >
               {`${currentRound} / ${lastRound}`}

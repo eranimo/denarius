@@ -4,8 +4,6 @@ const CELL_SIZE = 6;
 
 interface IMapViewerProps {
   mapName: string;
-  currentTick: number;
-  isTick?: boolean;
   drawFunc(value: number): [number, number, number]
 }
 
@@ -24,12 +22,7 @@ export default class MapViewer extends Component<IMapViewerProps> {
     const worldmap = (window as any).worldmap;
     if (!this.canvas) return;
     const ctx = this.canvas.getContext('2d');
-    if (props.isTick && !worldmap.ticks[props.currentTick]) {
-      return;
-    }
-    const data = props.isTick
-      ? worldmap.ticks[props.currentTick][props.mapName]
-      : worldmap[props.mapName];
+    const data = worldmap[props.mapName];
 
     const width = data.shape[0];
     const height = data.shape[1];

@@ -94,7 +94,7 @@ export async function init(options: IGenOptions): Promise<IWorldGenProps> {
   waterTypes = ndarray([], [width, height]);
   fill(waterTypes, (x, y) => {
     const height = heights.get(x, y);
-    if (height <= (sealevel * 255)) {
+    if (height < (sealevel * 255)) {
       oceanCells++;
       return WaterTypes.OCEAN;
     } else {
@@ -116,16 +116,19 @@ export async function init(options: IGenOptions): Promise<IWorldGenProps> {
   console.log('terrain stats', ndarrayStats(terrain));
   console.log('altitudes stats', ndarrayStats(altitudes));
 
+  // waterFill: the amount of water at each cell
   waterFill = ndarray(new Float32Array(width * height), [width, height]);
-  waterFlow = ndarray(new Uint8ClampedArray(width * height), [width, height]);
+  // waterFlow: the amount of water that has passed through this cell
+  waterFlow = ndarray(new Float32Array(width * height), [width, height]);
+  fill(waterFill, (x, y) => 0);
   fill(waterFlow, (x, y) => 0);
 
-  waterLevels = ndarray(new Uint8ClampedArray(width * height), [width, height]);
+  waterLevels = ndarray(new Int8Array(width * height), [width, height]);
   fill(waterLevels, (x, y) => {
     if (waterTypes.get(x, y) === WaterTypes.OCEAN) {
       return 0;
     }
-    // return Math.round(5 * ((noise(x / width - 0.5, y / height - 0.5) + 1) / 2));;
+    return Math.round(5 * ((noise(x / width - 0.5, y / height - 0.5) + 1) / 2));;
   });
 
   neighborMap = ndarray([], [width, height]);
@@ -135,82 +138,5 @@ export async function init(options: IGenOptions): Promise<IWorldGenProps> {
   return {
     terrain: terrain.data,
     sealevel
-  };
-}
-
-export async function processTick(): Promise<IWorldGenTick> {
-  ticks++;
-
-  let higherSteps = 0;
-  let lowerSteps = 0;
-  for (let x = 0; x < width; x++) {
-    for (let y = 0; y < height; y++) {
-      if (waterTypes.get(x, y) === WaterTypes.OCEAN) continue;
-      const neighbors = neighborMap.get(x, y) as any;
-      const thisAltitude = altitudes.get(x, y);
-      const thisWaterLevel = waterLevels.get(x, y);
-      const thisHeight = thisAltitude + thisWaterLevel;
-      const neighborLevels = neighbors
-        // get water levels of neighbors
-        .map(([nx, ny]) => [nx, ny, altitudes.get(nx, ny) + waterLevels.get(nx, ny)])
-        .sort((a, b) => a[2] - b[2]);
-        // filter neighbors higher than this cell
-      const lowestNeighbors = getLowestValues(
-        neighborLevels.filter(([nx, ny, waterHeight]) => waterHeight < thisHeight),
-        i => i[2]
-      );
-
-      if (lowestNeighbors.length === 0) {
-        waterTypes.set(x, y, WaterTypes.LAKE);
-        const higherNeighbors = getLowestValues(
-          neighborLevels.filter(([nx, ny, waterHeight]) => waterHeight > thisHeight),
-          i => i[2]
-        );
-        const nextHighestNeighbor = higherNeighbors[0];
-        if (nextHighestNeighbor) { // if not level
-          const newWaterLevel = nextHighestNeighbor[2] + 1;
-          waterLevels.set(x, y, newWaterLevel);
-          waterFlow.set(x, y, waterFlow.get(x, y) + 1);
-          higherSteps++;
-        }
-      } else {
-        // we have lower neighbors
-        // move all our water to them
-        const [nx, ny, waterHeight] = lowestNeighbors[0];
-        if (waterTypes.get(nx, ny) !== WaterTypes.OCEAN) {
-          waterLevels.set(nx, ny, thisWaterLevel);
-          waterFlow.set(nx, ny, waterFlow.get(nx, ny) + 1);
-        }
-        waterLevels.set(x, y, 0);
-        lowerSteps++;
-      }
-    }
-  }
-
-  console.log('higher steps', higherSteps);
-  console.log('lower steps', lowerSteps);
-
-  const maxWaterLevel = ops.sup(waterLevels);
-  const minWaterLevel = ops.inf(waterLevels);
-  log('stats: waterLevels (after)', ndarrayStats(waterLevels));
-
-  // normalize waterLevels as waterFill for the MapViewer
-  fill(waterFill, (x, y) => (waterLevels.get(x, y) - minWaterLevel) / maxWaterLevel);
-
-  log('stats: waterFill', ndarrayStats(waterFill));
-
-  // normalize waterFlow for the MapViewer
-  const avgWaterFlow = ops.sum(waterFlow) / (waterFlow.shape[0] * waterFlow.shape[0]);
-  const maxWaterFlow = ops.sup(waterFlow);
-  const minWaterFlow = ops.inf(waterFlow);
-  log('stats: waterFlow', ndarrayStats(waterFlow));
-  fill(waterFlow, (x, y) => (waterFlow.get(x, y) - minWaterFlow) / maxWaterFlow);
-
-
-  return {
-    ticks,
-    waterTypes: waterTypes.data,
-    waterFill: waterFill.data,
-    waterFlow: waterFlow.data,
   };
 }

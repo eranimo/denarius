@@ -16,8 +16,4 @@ export default class WorldGen {
     console.log('init: ', map);
     return map;
   }
-
-  async processTick(): Promise<IWorldGenTick> {
-    return await this.worker.processTick();
-  }
 }

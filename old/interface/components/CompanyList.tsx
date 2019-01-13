@@ -19,7 +19,7 @@ class CompanyList extends Component<{
     if (!history) return <div>Loading...</div>;
 
     return (
-      <table className="pt-html-table pt-html-table-bordered">
+      <table className="bp3-html-table bp3-html-table-bordered">
         <thead>
           <tr>
             <th>Company ID</th>

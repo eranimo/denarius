@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { connect, Dispatch } from 'react-redux';
-import { Switch, Route, withRouter } from 'react-router-dom';
+import { connect } from 'react-redux';
+import { Switch, Route } from 'react-router-dom';
 import { forward } from '../actions';
 import Controls from './Controls';
 import Market from './Market';
@@ -41,9 +41,9 @@ class Application extends Component<{
     );
   }
 }
-const mapStateToDispatch = (dispatch: Dispatch) => ({
+const mapStateToDispatch = (dispatch) => ({
   forward: () => dispatch(forward()),
 })
-const ApplicationContainer = withRouter<any>(connect(null, mapStateToDispatch)(Application));
+const ApplicationContainer = connect(null, mapStateToDispatch)(Application);
 
 export default ApplicationContainer;

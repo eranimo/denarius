@@ -200,13 +200,13 @@ export default class Inventory {
   // with a number: get a number of goods in the inventory
   // sorted by record cost in ascending order
   // will return an empty InventorySet if no goods are in the inventory for that type
-  take(good: Good, amount: number, order: string = 'asc'): InventorySet {
+  take(good: Good, amount: number, order = 'asc'): InventorySet {
     const records: InventorySet = this.storeFor(good);
     if (!this.has(good, amount)) {
       return new InventorySet();
     }
     // $FlowFixMe
-    const sortedRecords: Array<InventoryRecord> = orderBy(records.entries(), ['cost'], [order]);
+    const sortedRecords: Array<InventoryRecord> = orderBy(records.entries(), ['cost'], [order as any]);
     let newSet: InventorySet = new InventorySet();
     let left: number = amount; // amount left to take
     // console.log(`\n\n\nTaking ${amount} of ${this.amountOf(good)}`);

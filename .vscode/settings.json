@@ -4,5 +4,6 @@
     "editor.formatOnPaste": true,
     "editor.minimap.enabled": true,
     "editor.snippetSuggestions": "top",
-    "eslint.enable": true
+    "eslint.enable": true,
+    "typescript.tsdk": "node_modules/typescript/lib"
   }

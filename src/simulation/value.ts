@@ -1,15 +1,15 @@
-enum ModifierType {
-  ADDITIVE,
-  MULTIPLICATIVE,
-}
+// enum ModifierType {
+//   ADDITIVE,
+//   MULTIPLICATIVE,
+// }
 
-interface IModifierEffect {
-  amount: number;
-  type: ModifierType;
-  value: Value;
-}
+// interface IModifierEffect {
+//   amount: number;
+//   type: ModifierType;
+//   value: Value;
+// }
 
-interface IModifier {
-  title: string
-  effects: IModifierEffect[];
-}
+// interface IModifier {
+//   title: string
+//   effects: IModifierEffect[];
+// }

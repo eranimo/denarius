@@ -6,8 +6,8 @@ import {
   ControlGroup,
   Alignment,
 } from '@blueprintjs/core';
-import { NavLink, withRouter } from 'react-router-dom';
-import { connect, Dispatch } from 'react-redux';
+import { NavLink } from 'react-router-dom';
+import { connect } from 'react-redux';
 import { historySelector } from '../selectors';
 import * as ACTIONS from '../actions';
 import { RootState, Moment } from '../types';
@@ -129,12 +129,12 @@ class Controls extends Component<ControlProps> {
   }
 }
 const mapStateToProps = (state: RootState): Moment => historySelector(state);
-const mapDispatchToProps = (dispatch: Dispatch) => ({
+const mapDispatchToProps = (dispatch) => ({
   backward: () => dispatch(ACTIONS.backward()),
   forward: () => dispatch(ACTIONS.forward()),
   reset: () => dispatch(ACTIONS.reset()),
   goToRound: (round: number) => dispatch(ACTIONS.goToRound(round)),
 });
-const ControlsConnect = withRouter<any>(connect(mapStateToProps, mapDispatchToProps)(Controls));
+const ControlsConnect = connect(mapStateToProps, mapDispatchToProps)(Controls);
 
 export default ControlsConnect;
